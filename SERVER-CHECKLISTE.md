@@ -11,7 +11,8 @@
 - ☐ KI-Kosten: wie viele KI-Bilder/Videos/Erkennungen pro Nutzer frei, was im Abo?
 - ☐ Sprachen: App hat jetzt 24 Sprachen (Entscheidung: alle). Offen: Welche Sprachen bekommen beim Start Rechtstexte (Impressum, Datenschutz, AGB) und Store-Einträge? Empfehlung: DE + EN sofort, weitere nach Nachfrage – Rechtstexte nur professionell übersetzen lassen.
 - ☑ Ein Konto für alle Apps (JoumHome + Joum 4D Build + WN + später weitere) – Entscheidung 27.11.: ja, Anmeldung ohne Passwort (Google, Facebook, Apple, Telefon, E-Mail)
-- ☐ Anmelde-Anbieter: Firebase Authentication oder Supabase Auth (EU)? → siehe Abschnitt 4
+- ☑ Entscheidung 27.11.: **erst nur kostenlose Wege**. Anmeldung vorerst NUR mit Google (Google Identity Services, kostenlos, ohne eigenen Server). Facebook, Apple, Telefon (SMS kostet), E-Mail: gesperrt bis später
+- ☐ Google-Client-ID anlegen und in `js/konfig.js` eintragen (siehe Abschnitt 4) – **nächster Schritt für dich**
 - ☐ Domains: joumhome.(de/com), Domain für Joum 4D Build, WN – je 10 Jahre + Auto-Verlängerung
 
 ## 1. Konten, Domains, Marke
@@ -41,9 +42,10 @@
 
 ## 4. Benutzerkonten & Sicherheit
 - ☐ Rollen: Kunde, Handwerker, Mitarbeiter, Admin
-- ◐ **Anmeldung ohne Passwort** (Seite in der App fertig, Knöpfe warten auf Server): Google, Facebook, Apple, Telefonnummer per SMS-Code, E-Mail-Link mit beliebiger Adresse; Passwort nur freiwillig. Gilt für ALLE Apps (Joum 4D Build, JoumHome, WN) mit einem gemeinsamen Konto
-  - ☐ Anbieter wählen: z. B. Firebase Authentication oder Supabase Auth (EU-Region) – beide können Google, Facebook, Apple, Telefon und E-Mail-Link
-  - ☐ Google Cloud: OAuth-Client anlegen (App-Name, Logo, Datenschutz-Link, Domains)
+- ◐ **Anmeldung mit Google** (in der App fertig, Konto-Seite, Abmelden; prüft Empfänger/Aussteller/Ablauf des Google-Ausweises). Gilt später für ALLE Apps (Joum 4D Build, JoumHome, WN)
+  - ☐ Google Cloud Console (kostenlos): Projekt „Joum“ → OAuth-Zustimmungsbildschirm (App-Name, Support-E-Mail, Logo, Datenschutz-Link) → Anmeldedaten → OAuth-Client-ID „Webanwendung“ → Autorisierte JavaScript-Quellen: `https://joum-4d-build.pages.dev` (+ später eigene Domain) → ID in `js/konfig.js` eintragen
+  - ☐ Mit Server: Google-Ausweis zusätzlich auf dem Server prüfen (Signatur), dann Cloud-Sync je Konto
+  - ☐ Später (wenn gewünscht): Firebase/Supabase für weitere Wege
   - ☐ Meta for Developers: Facebook-App anlegen, Prüfung durch Meta bestehen
   - ☐ Apple Developer (99 €/Jahr): „Mit Apple anmelden“ ist im App Store Pflicht, sobald Google/Facebook angeboten werden
   - ☐ SMS-Codes kosten Geld je SMS (ca. 5–10 Cent) → Limit + Schutz vor SMS-Missbrauch (Captcha/App-Check)

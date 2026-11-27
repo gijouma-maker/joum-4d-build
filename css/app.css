@@ -292,3 +292,7 @@ div.schritt { cursor: default; }
 .anm-facebook { background: #1877F2; border-color: #1877F2; }
 .anm-apple { background: #000; border-color: #fff; }
 .anmelden .grau { color: #888; margin-top: 14px; }
+
+#google-knopf-platz { display: flex; justify-content: center; min-height: 0; }
+#google-knopf-platz:empty { display: none; }
+.konto-bild { width: 52px; height: 52px; border-radius: 50%; margin-right: 12px; }
