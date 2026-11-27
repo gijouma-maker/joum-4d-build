@@ -110,6 +110,8 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
+- ☐ **„Andere KIs fragen“** (Knopf im Studio ist fertig, wartet auf Server): Endpunkt `POST /raum-ideen` auf dem Joum-Server; Server fragt Sprach-KI (Grundriss-Ideen als JSON) und Bild-KI (Foto im Stil). Antwortformat siehe `js/stile-mehr.js`. App prüft jede Idee mit den Raumregeln, nur Bestandenes wird gezeigt. Adresse in `js/konfig.js` → `kiServer` und in `_headers` bei `connect-src` freigeben. Interior AI/RoomGPT & Co. haben meist keine offene Schnittstelle – deshalb eigene KI-Anbindung mit Lizenz (Kosten je Anfrage, Limits im Abo)
+- ☐ **Treppen-Rückmeldungen lernen**: 👍/👎 und übernommene Treppen liegen in `S.lernen` → anonym an den Server, auswerten, Regeln/Vorschläge verbessern. Norm-Warnungen werden NIE automatisch abgeschaltet – nur von Fachleuten geprüft angepasst. Landesbauordnungen je Bundesland (Abweichungen z. B. Geländerhöhe) als Datenbank pflegen
 - ☐ Studio: KI-Server erzeugt zusätzliche, freie Grundriss-Ideen (z. B. nach Vorbild-Video/-Bild) – Ergebnis immer durch die App-Regeln prüfen; Möbel-Modelle je Stil realistischer (Hersteller-3D-Modelle)
 - ☐ **Vorbild-Bild & Skizze per KI auswerten** (geführter Start, Schritt 1): Möbel/Stil aus dem Vorbild erkennen und als Wünsche vorauswählen; Maße und Fenster/Tür aus Skizze/Foto ablesen – Ergebnis immer durch `platzieren()`/`pruefen()` (Fenster-, Tür-, Abstandsregeln) laufen lassen; danach fotorealistisches Bild der gewählten Variante
 - ☐ Preise der Vorschläge aus Händler-Feeds statt Richtwerten
@@ -128,6 +130,8 @@
 - ☑ KI-Raumprüfung (Regelwerk), Wasser/Abwasser/Elektro-Planer, Teile in 3D
 - ☑ Datensicherung lokal: Versionen, Papierkorb, Export/Import
 - ☑ Sicherheits-Header, Router-/Scroll-Fehler behoben
+- ☑ Treppen-Planer nach DIN 18065/MBO: Steigung, Auftritt, Schrittmaß, Laufbreite, Kopfhöhe aus Deckenöffnung, passt in den Raum, Podest, Türen (Absatz ≥ Türbreite, keine Tür neben Stufen), KI-Vorschläge, Rückmeldungen
+- ☑ 24 Einrichtungsstile + Stil-Mix (80/20, 70/30, 50/50) im Studio
 - ☑ Raum-Studio für alle Innenräume: Raum antippen → 3D + 8 Stile mit eigenen Möbeln/Farben/Preisen + Grundriss-Ideen (Trennwand/Zonen, WC abgetrennt, Hauptstück frei, an einer Wand, klassisch) → direkt ändern, übernehmen, 4D-Film, Einkaufsliste
 - ☑ Geführter Projektstart (jetzt im Studio aufgegangen): Foto+Zollstock / Skizze zeichnen / Skizze fotografieren / Vorbild-Bild / Maße → Maße mit Fenster → Wünsche, Stil, Budget → 3 Varianten mit Plan, Machbarkeit (Fenster/Tür/Platz), Kosten, Material, KI-Alternativen
 - ☑ Sprachsteuerung: sprechen → App öffnet die Seite, Ziel-Knopf blinkt schwarz-weiß; Eintipp-Weg ohne Mikrofon

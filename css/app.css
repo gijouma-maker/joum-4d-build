@@ -359,3 +359,6 @@ div.schritt { cursor: default; }
 .trp-pruef .fehler { color: #ff9a8a; } .trp-pruef .warnung { color: #ffd27a; } .trp-pruef .ok { color: #cfe9d5; }
 .urteil { display: flex; gap: 4px; } .mini { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 4px 8px; font-size: 14px; cursor: pointer; }
 .trp-vorschlag { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; } .trp-vorschlag.ok b { color: #cfe9d5; }
+
+.stil-mix { margin: 4px 0 6px; } .stil-mix summary { color: #ffd27a; font-size: 14px; padding: 4px 0; cursor: pointer; }
+.ki-knopf { border: 1px dashed #ffd27a !important; color: #ffd27a !important; margin-bottom: 10px; }

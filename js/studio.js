@@ -83,7 +83,7 @@ function specFuer(o, n) {
   return katalogFuer(o).find((k) => k[0] === n) || EXTRA_SPECS[n] || Object.values(ALTERNATIVEN).flat().find((k) => k[0] === n) || Object.values(STIL_REGELN).flatMap((s) => s.tausch.map((t) => t[1])).find((k) => k[0] === n) || null;
 }
 function stilListe(o) {
-  const L = losStatus(o), st = STIL_REGELN[o.stil] || STIL_REGELN.hell, art = raumArt(o.raum);
+  const L = losStatus(o), st = stilMix(o).regeln, art = raumArt(o.raum);
   let namen = (L.wuensche || standardWuensche(o)).slice();
   if (st.weg) namen = namen.filter((n) => !st.weg.test(n));
   (st.extra[art] || []).forEach((n) => { if (!namen.includes(n) && passt(o.raum, n).ok && !(n === 'Badewanne' && o.breite * o.tiefe < 60000)) namen.push(n); });
@@ -186,7 +186,7 @@ function konzeptVorplan(o, konzept, liste) {
 function vorne_(n) { return vorne(n); }
 
 function studioVarianten(o) {
-  const st = STIL_REGELN[o.stil] || STIL_REGELN.hell, art = raumArt(o.raum), liste = stilListe(o);
+  const st = stilMix(o).regeln, art = raumArt(o.raum), liste = stilListe(o);
   const flaeche = (k) => k[2] * Math.max(k[3], 4), prio = (k) => (ebene(k[0]) !== 'boden' ? 2 : WICHTIG.test(k[0]) ? 0 : 1);
   const sortiert = (l) => l.slice().sort((a, b) => (prio(a) - prio(b)) || (flaeche(b) - flaeche(a)));
   const out = [], gesehen = new Set(), nicht = [];
@@ -199,12 +199,14 @@ function studioVarianten(o) {
     if (gesehen.has(sig)) return; gesehen.add(sig);
     out.push({ konzept: k, titel, unter: text, plan: r.plan, ergebnis: r.ergebnis, kosten: losKosten(o, r.plan) });
   });
+  (KI_IDEEN[o.id + '|' + o.stil + '|' + (o.stil2 || '')] || []).forEach((v) => out.push(v));
   out.forEach((v) => { v.fehlt = v.ergebnis.filter((x) => !x.ok).length; v.ersetzt = v.ergebnis.filter((x) => x.ersatz).length; });
   return { vs: out, nicht };
 }
 
 /* ---------- Bildschirm ---------- */
 let STUDIO_CACHE = null;
+const KI_IDEEN = {};
 function studioSeite(rid, q) {
   const r = raum(rid);
   if (!r) return kopf('Nicht gefunden', '', '#/projekte');
@@ -214,15 +216,20 @@ function studioSeite(rid, q) {
   const { vs, nicht } = studioVarianten(o);
   const sel = Math.min(L.sel || 0, Math.max(0, vs.length - 1)), v = vs[sel];
   STUDIO_CACHE = { key: o.id + o.stil, vs };
-  const st = STILE.find((x) => x.id === o.stil) || STILE[0];
+  const M = stilMix(o), st = M.stil;
   nachRender(() => { studio3D(o, v); ['.stil-chip.an', '.variante-karte.an'].forEach((q) => { const e = document.querySelector(q); if (e && e.parentElement) e.parentElement.scrollLeft = e.offsetLeft - 12; }); });
   const F = o.fensterPos;
   return kopf(r.name, 'Studio · wische durch die Vorschläge', '#/projekte') + `<div class="inhalt studio">
-    <div class="studio-3d" id="studio3d"><div class="studio-3d-titel">${v ? esc(v.titel) + ' · ' + esc(st.name) : ''}</div></div>
+    <div class="studio-3d" id="studio3d"><div class="studio-3d-titel">${v ? esc(v.titel) + ' · ' + esc(M.name) : ''}</div></div>
     <div class="stil-leiste">${STILE.map((s) => `<button class="stil-chip ${o.stil === s.id ? 'an' : ''}" data-akt="studioStil" ${d} data-s="${s.id}"><i style="background:${s.wand};border-color:${s.akzent}"></i><i style="background:${STIL_FARBE[s.id]}"></i>${esc(s.name)}</button>`).join('')}</div>
+    <details class="stil-mix" ${o.stil2 ? 'open' : ''}><summary>Stile mischen ${o.stil2 ? '· ' + esc(M.name) : ''}</summary>
+      <div class="stil-leiste"><button class="stil-chip ${!o.stil2 ? 'an' : ''}" data-akt="studioStil2" ${d} data-s="">Kein Mix</button>${STILE.filter((s) => s.id !== o.stil).map((s) => `<button class="stil-chip ${o.stil2 === s.id ? 'an' : ''}" data-akt="studioStil2" ${d} data-s="${s.id}"><i style="background:${s.wand};border-color:${s.akzent}"></i>${esc(s.name)}</button>`).join('')}</div>
+      ${o.stil2 ? `<div class="zeile wrap">${[['80', '80/20 – Akzente'], ['70', '70/30'], ['50', '50/50']].map(([k, t]) => `<button class="chip ${(o.mix || '70') === k ? 'an' : ''}" data-akt="studioMix" ${d} data-m="${k}">${t}</button>`).join('')}</div>` : ''}
+    </details>
     <p class="klein grau">${esc(st.text)}</p>
     <div class="varianten">${vs.map((x, i) => `<button class="variante-karte ${i === sel ? 'an' : ''}" data-akt="studioWahl" ${d} data-i="${i}">
       ${raumSVG(o, x.plan)}<b>${esc(x.titel)}</b><span class="klein">${x.fehlt ? '⚠ ' + x.fehlt + ' passt nicht' : x.ersetzt ? '↺ angepasst' : '✓ passt'} · ca. ${euro(Math.round((x.kosten.wert + (x.kosten.arbeit ? x.kosten.arbeit.selbst : 0)) / 50) * 50)}</span></button>`).join('')}</div>
+    <button class="btn voll ki-knopf" data-akt="studioKI" ${d}>✨ Mehr Ideen von anderen KIs holen</button>
     ${nicht.length ? `<details class="klein grau"><summary>${nicht.length} Idee(n) passen hier nicht</summary><ul>${nicht.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>` : ''}
     ${v ? `<section class="karte"><h3>${esc(v.titel)}</h3><p class="klein">${esc(v.unter)}</p>
       <div class="unter">Antippen zum Ändern</div>
@@ -231,7 +238,7 @@ function studioSeite(rid, q) {
         ? `<li class="gelb">${x.neu ? '＋' : x.ersatz ? '↺' : '→'} <b>${esc(x.el ? x.el.n : x.n)}</b>${x.ersatz ? ` statt ${esc(x.ersatz)}` : ''}${x.verschoben ? ` – nicht vors Fenster, sondern ${o.fensterPos && wandVon(x.el) === o.fensterPos.wand ? 'daneben' : 'an die ' + (WAND_NAME[wandVon(x.el)] || 'Raummitte')}` : ''}${x.neu ? ' – ' + esc(x.grundNeu) : ''}</li>`
         : `<li class="nein">✗ <b>${esc(x.n)}</b>: ${esc(x.grund)}${x.tipp ? `<div class="klein gelb">💡 ${esc(x.tipp)}</div>` : ''}</li>`).join('') || '<li class="ok">✓ Alles passt – Tür frei, Abstände und Fenster geprüft.</li>'}</ul>
       <div class="los-kosten">
-        <div class="zeile"><span style="flex:1">Möbel & Ausstattung (${esc(st.name)})</span><b>ca. ${euro(Math.round(v.kosten.wert / 10) * 10)}</b></div>
+        <div class="zeile"><span style="flex:1">Möbel & Ausstattung (${esc(M.name)})</span><b>ca. ${euro(Math.round(v.kosten.wert / 10) * 10)}</b></div>
         ${v.kosten.arbeit ? `<div class="zeile"><span style="flex:1">${esc(v.kosten.arbeit.t)}</span><b>selbst ca. ${euro(Math.round(v.kosten.arbeit.selbst / 10) * 10)}</b></div>` : ''}
         <div class="zeile"><span style="flex:1">+ Montage durch Handwerker</span><b>ca. ${euro(v.kosten.montage)}</b></div>
         <div class="klein grau">Spanne ${euro(v.kosten.min)} – ${euro(v.kosten.max)} · Richtwerte</div>
@@ -259,13 +266,22 @@ function studioSeite(rid, q) {
 route('studio', (rid, q) => studioSeite(rid, q || {}));
 function studio3D(o, v) {
   const box = document.getElementById('studio3d'); if (!box || !window.zeigeRaum3D || !v) return;
-  const c = JSON.parse(JSON.stringify(o)); c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: STIL_FARBE[o.stil] } : {}));
+  const M = stilMix(o), c = JSON.parse(JSON.stringify(o)); c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}));
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
-  try { zeigeRaum3D(box, c, STILE.find((s) => s.id === o.stil), null, () => {}); } catch (e) { box.insertAdjacentHTML('beforeend', '<p class="klein" style="padding:12px">3D braucht WebGL.</p>'); }
+  try { zeigeRaum3D(box, c, M.stil, null, () => {}); } catch (e) { box.insertAdjacentHTML('beforeend', '<p class="klein" style="padding:12px">3D braucht WebGL.</p>'); }
 }
 function studioAktuell(d) { const o = studioObj(d); const { vs } = studioVarianten(o); return { o, v: vs[Math.min(losStatus(o).sel || 0, vs.length - 1)] }; }
 
-AKT.studioStil = (d) => aendern(() => { const o = studioObj(d); o.stil = d.s; losStatus(o).sel = 0; }, 'Stil gewählt');
+AKT.studioStil = (d) => aendern(() => { const o = studioObj(d); o.stil = d.s; if (o.stil2 === d.s) delete o.stil2; losStatus(o).sel = 0; }, 'Stil gewählt');
+AKT.studioStil2 = (d) => aendern(() => { const o = studioObj(d); if (d.s) { o.stil2 = d.s; o.mix = o.mix || '70'; } else delete o.stil2; losStatus(o).sel = 0; }, 'Stil-Mix gewählt');
+AKT.studioMix = (d) => aendern(() => { studioObj(d).mix = d.m; }, 'Mischverhältnis gewählt');
+AKT.studioKI = async (d) => {
+  const o = studioObj(d);
+  if (!KONFIG.kiServer) { info('Diese Funktion fragt über den Joum-Server andere KIs (Sprach- und Bild-KIs) nach weiteren Ideen für genau deinen Raum. Jede Idee wird danach mit den Raumregeln der App geprüft (Tür, Fenster, Abstände, Normen) – nur was besteht, wird angezeigt. Sie wird freigeschaltet, sobald der Server läuft.'); return; }
+  toast('Frage andere KIs …');
+  try { const ideen = await kiIdeenHolen(o); KI_IDEEN[o.id + '|' + o.stil + '|' + (o.stil2 || '')] = ideen; render(); toast(ideen.length ? ideen.length + ' neue Idee(n), alle geprüft' : 'Keine weitere Idee hat die Raumregeln bestanden'); }
+  catch (e) { info('Der KI-Server ist gerade nicht erreichbar. Bitte später nochmal.'); }
+};
 AKT.studioWahl = (d) => aendern(() => { losStatus(studioObj(d)).sel = Number(d.i); }, 'Vorschlag gewählt');
 AKT.studioTeil = (d) => {
   const o = studioObj(d), n = d.n, L = losStatus(o), alts = altFuer(n).map((k) => k[0]);
@@ -295,7 +311,7 @@ AKT.studioZu = (d) => { const p = studioAlsProjekt(studioObj(d)); geh('#/' + d.z
 AKT.studioNehmen = (d) => {
   const { o, v } = studioAktuell(d); if (!v) return;
   const p = studioAlsProjekt(o);
-  aendern(() => { p.plan = JSON.parse(JSON.stringify(v.plan)); p.stil = o.stil; losStatus(p).fertig = true; }, 'Vorschlag übernommen');
+  aendern(() => { p.plan = JSON.parse(JSON.stringify(v.plan)); p.stil = o.stil; if (o.stil2) { p.stil2 = o.stil2; p.mix = o.mix; } else delete p.stil2; losStatus(p).fertig = true; }, 'Vorschlag übernommen');
   toast('Übernommen – im Planer kannst du alles verschieben'); sprich('Vorschlag übernommen.', true);
   geh('#/planer/' + p.id);
 };
@@ -303,7 +319,7 @@ AKT.studio4D = (d) => {
   const { o, v } = studioAktuell(d); if (!v) return;
   const c = JSON.parse(JSON.stringify(o)); c.plan = v.plan;
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
-  try { zeigeBau4D(c, STILE.find((s) => s.id === o.stil), o.grundriss); } catch (e) { info('Der 4D-Film braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
+  try { zeigeBau4D(c, stilMix(o).stil, o.grundriss); } catch (e) { info('Der 4D-Film braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
 };
 AKT.studioEinkauf = (d) => {
   const { o, v } = studioAktuell(d); if (!v) return;

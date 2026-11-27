@@ -5,5 +5,7 @@ const KONFIG = {
   // Beispiel: '1234567890-abc123.apps.googleusercontent.com'
   googleClientId: '',
   // Freigeschaltete Anmeldewege. Vorerst nur Google (kostenlos). Später: 'facebook', 'apple', 'telefon', 'email'
-  anmeldeWege: ['google']
+  anmeldeWege: ['google'],
+  // Eigener Joum-KI-Server (fragt andere KIs nach Raum-Ideen, Bildern, Übersetzungen). Leer = aus.
+  kiServer: ''
 };

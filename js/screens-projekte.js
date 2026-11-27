@@ -379,7 +379,7 @@ function planer3D(p) {
   const box = document.getElementById('raum3d');
   if (!box || !window.zeigeRaum3D) return;
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
-  try { zeigeRaum3D(box, p, STILE.find((s) => s.id === p.stil), planAuswahl, (id) => { planAuswahl = id; render(); }); }
+  try { zeigeRaum3D(box, p, typeof stilMix === 'function' ? stilMix(p).stil : STILE.find((s) => s.id === p.stil), planAuswahl, (id) => { planAuswahl = id; render(); }); }
   catch (e) { box.innerHTML = '<p class="klein" style="padding:12px">3D-Ansicht wird von diesem Gerät nicht unterstützt (WebGL).</p>'; console.error(e); }
 }
 

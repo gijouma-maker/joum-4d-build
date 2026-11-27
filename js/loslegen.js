@@ -255,7 +255,7 @@ function losBauen(p, liste, opt) {
   return { plan: v.plan, ergebnis };
 }
 function losKosten(p, plan) {
-  const L = losStatus(p), b = L.budget || 'mittel', anteil = { spar: 0.15, mittel: 0.45, hoch: 0.8 }[b], fk = (typeof STIL_FAKTOR !== 'undefined' && STIL_FAKTOR[p.stil]) || 1;
+  const L = losStatus(p), b = L.budget || 'mittel', anteil = { spar: 0.15, mittel: 0.45, hoch: 0.8 }[b], fk = typeof stilMix === 'function' ? stilMix(p).faktor : 1;
   const zeilen = {}; plan.forEach((e) => { const k = e.n; zeilen[k] = zeilen[k] || { n: k, g: e.g, anz: 0 }; zeilen[k].anz++; });
   let min = 0, max = 0, wert = 0;
   const liste = Object.values(zeilen).map((z) => { let [a, c] = preisFuer(z.n, z.g); a = Math.round(a * fk); c = Math.round(c * fk); const x = a + (c - a) * anteil; min += a * z.anz; max += c * z.anz; wert += x * z.anz; return Object.assign(z, { preis: x, a, c }); });
