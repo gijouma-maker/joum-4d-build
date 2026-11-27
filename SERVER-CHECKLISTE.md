@@ -100,6 +100,7 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
+- ☐ Vorlesen: heute Stimme des Geräts (kostenlos, offline). Später optional natürliche KI-Stimmen über den Server, mehrsprachig (DE/EN/NL/TR/AR …) für Menschen, die nicht lesen können; Hilfe-Texte zentral pflegen und übersetzen.
 - ☐ Planungs-Assistent: freies Gespräch per KI-Sprachmodell auf dem Server (heute Regeln im Gerät). Ergebnis-Format beibehalten: Thema, Maße, Wünsche → Vorschläge; KI-Vorschläge immer durch `pruefen()` und die Raumregeln laufen lassen.
 - ☐ Fotorealistische Bilder und KI-Videos aus dem 3D-Raum/Garten (3D-Bild + Stil als Vorlage an ein KI-Bild-/Videomodell). Kosten je Bild/Video, Limits im Abo; Kunden bleiben in der App (kein Konto bei Drittanbietern).
 - ☐ Installationsplan als PDF für Elektriker und Sanitär (Leitungen zur Kücheninsel, Bad, Lüftung) – aus den Regeln der App erzeugt.

@@ -61,7 +61,7 @@ route('start', () => {
     const naechster = a ? a.schritte.findIndex((_, i) => !p.schritte[i]) : -1;
     haupt = `<section class="karte gross-karte">
       <div class="zeile">${ring(fortschritt(p))}<div style="flex:1"><div class="unter">Aktives Projekt</div><h2>${esc(p.name)}</h2>${a ? werBadge(a.wer) : ''}</div></div>
-      ${naechster >= 0 ? `<a class="naechster" href="#/anleitung/${p.anleitung}?p=${p.id}"><div class="unter">Nächster Schritt</div><b>${esc(a.schritte[naechster][0])}</b><div class="klein">${esc(a.schritte[naechster][1])}</div></a>` : (a && a.schritte.length ? '<div class="hinweis gruen">Alle Schritte erledigt – jetzt Abnahme/Fotos.</div>' : '')}
+      ${naechster >= 0 ? `<a class="naechster" href="#/schritt/${p.anleitung}?p=${p.id}&i=${naechster}"><div class="unter">Nächster Schritt</div><b>${esc(a.schritte[naechster][0])}</b><div class="klein">${esc(a.schritte[naechster][1])}</div></a>` : (a && a.schritte.length ? '<div class="hinweis gruen">Alle Schritte erledigt – jetzt Abnahme/Fotos.</div>' : '')}
       <div class="zeile"><a class="btn hell" href="#/projekt/${p.id}">Projekt öffnen</a><button class="btn" data-akt="bau4D" data-id="${p.id}">▶ 4D-Bauablauf</button></div></section>`;
   } else {
     haupt = `<section class="karte gross-karte"><h2>Willkommen bei Joum 4D Build</h2><p class="klein">Plan. Bau. Fertig. – Wähle einen Raum, Haus außen oder Garten und leg dein erstes Projekt an.</p><a class="btn hell voll" href="#/projekte">Projekt starten</a></section>`;
@@ -137,6 +137,7 @@ route('projekt', (id) => {
       ${a ? werBadge(a.wer) + `<div class="klein" style="margin-top:6px">${esc(a.dauer)}</div>` : '<div class="klein">Raumgestaltung</div>'}
       ${a ? `<div class="klein">Richtwert selbst ${euro(a.kosten[0] * (p.menge || 1))} · Profi ${euro(a.kosten[1] * (p.menge || 1))}</div>` : ''}
       <div class="klein">Ausgaben bisher: ${euro(ausgaben)}</div></div></section>
+    ${wasJetztKarte(p)}
     <label class="feld">Projektname<input value="${esc(p.name)}" data-ein="projektFeld" data-id="${p.id}" data-feld="name"></label>
     ${a ? `<label class="feld">Menge (${a.einheit})<input inputmode="decimal" value="${zahl(p.menge)}" data-ein="projektFeld" data-id="${p.id}" data-feld="menge" data-zahl="1"></label>` : ''}
     <div class="raster3">
@@ -180,15 +181,15 @@ AKT.materialInListe = (d) => {
 };
 
 /* ---------- Messen ---------- */
-EIN.wand = (v, d) => aendern(() => { const p = projekt(d.id); p[d.liste][+d.i][d.feld] = d.feld === 'n' ? v : parseZahl(v); });
-EIN.raumMass = (v, d) => aendern(() => { const p = projekt(d.id); p[d.feld] = Math.round(parseZahl(v) * 100); });
+EIN.wand = (v, d) => aendern(() => { const p = projekt(d.id); p.gemessen = true; p[d.liste][+d.i][d.feld] = d.feld === 'n' ? v : parseZahl(v); });
+EIN.raumMass = (v, d) => aendern(() => { const p = projekt(d.id); p.gemessen = true; p[d.feld] = Math.round(parseZahl(v) * 100); });
 AKT.wandPlus = (d) => aendern(() => { const p = projekt(d.id); p[d.liste].push(d.liste === 'waende' ? { n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: 3, h: 2.5 } : { n: 'Öffnung', b: 1, h: 1, anz: 1 }); });
 AKT.wandMinus = (d) => aendern(() => { const p = projekt(d.id); p[d.liste].splice(+d.i, 1); });
-AKT.flaecheUebernehmen = (d) => { aendern(() => { const p = projekt(d.id); p.menge = standardMenge(p); }, 'Fläche übernommen'); toast('Menge übernommen'); };
+AKT.flaecheUebernehmen = (d) => { aendern(() => { const p = projekt(d.id); p.gemessen = true; p.menge = standardMenge(p); }, 'Fläche übernommen'); toast('Menge übernommen'); };
 AKT.diktatWand = (d) => diktieren((t) => {
   const z = (t.match(/\d+([,.]\d+)?/g) || []).map(parseZahl);
   if (z.length < 2) { toast('Bitte z. B. „4,20 mal 2,50“ sagen. Erkannt: ' + t); return; }
-  aendern(() => { const p = projekt(d.id); p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: z[0], h: z[1] }); }, 'Wand diktiert');
+  aendern(() => { const p = projekt(d.id); p.gemessen = true; p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: z[0], h: z[1] }); }, 'Wand diktiert');
   toast('Wand ' + zahl(z[0]) + ' × ' + zahl(z[1]) + ' m hinzugefügt');
 });
 AKT.lidar = () => info('Der LiDAR-Scan (3D-Scanner im iPhone Pro/iPad Pro) kommt mit der Store-App. Bis dahin: „Foto + Zollstock“ nutzen, Maße eintippen oder diktieren.');
@@ -208,7 +209,7 @@ AKT.fmTipp = (d, el, e) => {
 AKT.fmNeu = (d) => { if (d.was === 'ref') { FM.ref = []; FM.strecke = []; } else FM.strecke = []; render(); };
 function fmLaenge() { if (FM.ref.length < 2 || FM.strecke.length < 2) return null; const pxRef = Math.hypot(FM.ref[1][0] - FM.ref[0][0], FM.ref[1][1] - FM.ref[0][1]); if (pxRef < 5) return null; return Math.hypot(FM.strecke[1][0] - FM.strecke[0][0], FM.strecke[1][1] - FM.strecke[0][1]) / pxRef * FM.refLen; }
 AKT.fmUebernehmen = (d) => {
-  const l = fmLaenge(); if (!l) return; const p = projekt(d.id);
+  const l = fmLaenge(); if (!l) return; const p = projekt(d.id); p.gemessen = true;
   aendern(() => {
     if (d.als === 'wand') p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: Math.round(l * 100) / 100, h: p.waende[0] ? p.waende[0].h : 2.5 });
     else if (d.als === 'hoehe') p.waende.forEach((w) => { w.h = Math.round(l * 100) / 100; });
@@ -274,7 +275,7 @@ route('messen', (id) => {
     ${p.aussparungen.map((w, i) => zeile('aussparungen', w, i)).join('')}
     <button class="btn klein-btn" data-akt="wandPlus" data-id="${p.id}" data-liste="aussparungen">+ Tür/Fenster</button>
     <section class="karte summe"><div><span class="klein">Wand brutto</span><b>${zahl(f.brutto)} m²</b></div><div><span class="klein">Aussparungen</span><b>− ${zahl(f.aus)} m²</b></div><div><span class="klein">Wand netto</span><b>${zahl(f.netto)} m²</b></div></section>
-    <button class="btn hell voll" data-akt="flaecheUebernehmen" data-id="${p.id}">Fläche ins Projekt übernehmen</button>
+    <button class="btn hell voll" data-akt="flaecheUebernehmen" data-id="${p.id}">Maße stimmen – ins Projekt übernehmen</button>
     <p class="klein">Maße werden an Einkauf, Planer und Anleitung weitergegeben.</p>
   </div>`;
 });
@@ -593,6 +594,7 @@ route('anleitung', (id, q) => {
     ${zeitKarte(id, p ? menge : (a.einheit === 'm²' ? 10 : a.einheit === 'm' ? 10 : 1), true)}
     ${a.schichten ? `<button class="btn hell voll" data-akt="schichten4D" data-anl="${id}">▶ 4D: Schicht für Schicht (Video)</button>` : ''}
     ${schichten}
+    ${a.schritte.length ? `<a class="btn hell voll" href="#/schritt/${id}?${p ? 'p=' + p.id + '&' : ''}i=${p ? Math.max(0, a.schritte.findIndex((_, i) => !p.schritte[i])) : 0}">${ICON.lautsprecher} Schritt für Schritt (mit Vorlesen)</a>` : ''}
     <h3>Schritte${p ? ' · ' + fortschritt(p) + ' %' : ''}</h3>
     ${a.schritte.map((s, i) => `<${p ? 'button data-akt="schritt" data-p="' + p.id + '" data-i="' + i + '"' : 'div'} class="schritt ${p && p.schritte[i] ? 'fertig' : ''}">
       <span class="nr">${p && p.schritte[i] ? '✓' : i + 1}</span><span><b>${esc(s[0])}</b>${s[1] ? `<span class="klein block">${esc(s[1])}</span>` : ''}</span></${p ? 'button' : 'div'}>`).join('')}

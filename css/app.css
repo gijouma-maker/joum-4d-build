@@ -250,3 +250,19 @@ div.schritt { cursor: default; }
 .datei-gruppe { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
 .datei-gruppe .btn { margin-bottom: 0; }
 .einfuegen { min-height: 40px; padding: 6px 12px; border-radius: 12px; border: 1px dashed #444; background: transparent; font-size: 13px; color: var(--grau); text-align: center; }
+
+/* Vorlesen, Hilfe, Schritt-Modus */
+.sprech-knopf { position: fixed; right: max(12px, calc(50% - 248px)); bottom: calc(86px + env(safe-area-inset-bottom)); z-index: 15; width: 52px; height: 52px; border-radius: 50%; border: 1px solid #444; background: #1a1a1a; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px #0008; cursor: pointer; }
+.hilfe-blase { position: fixed; z-index: 70; width: 280px; padding: 12px 14px; border-radius: 16px; background: #fff; color: #000; font-size: 15px; line-height: 1.4; box-shadow: 0 8px 30px #000a; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.hilfe-blase.an { opacity: 1; }
+.klein-rund { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.was-jetzt { border-color: #6b5a2a; background: #17140c; }
+.was-jetzt p { margin: 6px 0 4px; line-height: 1.45; }
+.schritt-modus { text-align: center; }
+.sm-fortschritt { height: 6px; border-radius: 3px; background: #222; overflow: hidden; margin: 4px 0 18px; }
+.sm-fortschritt span { display: block; height: 100%; background: var(--gruen); }
+.sm-nr { width: 84px; height: 84px; margin: 10px auto; border-radius: 50%; border: 3px solid var(--hell); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 600; }
+.sm-nr.gruen-rand { border-color: var(--gruen); color: var(--gruen); }
+.sm-titel { font-size: 1.6em; font-weight: 600; line-height: 1.2; margin: 10px 0; }
+.sm-text { font-size: 1.2em; line-height: 1.5; color: #ddd; margin: 0 0 16px; }
+.sm-gross { min-height: 64px; font-size: 1.1em; }

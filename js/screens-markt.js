@@ -271,6 +271,9 @@ route('mehr', () => kopf('Mehr', 'Joum 4D Build') + `<div class="inhalt">
   ${[['#/assistent', 'Planungs-Assistent (sprechen/schreiben)'], ['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/tour', 'Kino-Tour (Video aus Fotos)'], ['#/installation', 'Wasser, Abwasser & Elektro'], ['#/installation?tab=werkzeug', 'Werkzeug kaufen & leihen'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
   <h3>Einstellungen</h3>
   <label class="feld">Mein Können (für Zeitpläne)<select data-ein="koennen">${[['anfaenger', 'Anfänger'], ['fortgeschritten', 'Fortgeschritten'], ['profi', 'Profi / Handwerker']].map(([v, n]) => `<option value="${v}" ${(S.einstellungen.koennen || 'fortgeschritten') === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+  <label class="schalter"><input type="checkbox" ${S.einstellungen.vorlesen ? 'checked' : ''} data-ein="einst" data-k="vorlesen"> Alles vorlesen (bei jedem Antippen und Seitenwechsel)</label>
+  <label class="feld">Sprechtempo<select data-ein="vorlesenEinst" data-k="sprechTempo">${[[0.8, 'Langsam'], [0.95, 'Normal'], [1.15, 'Schnell']].map(([v, n]) => `<option value="${v}" ${(S.einstellungen.sprechTempo || 0.95) == v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+  <div class="hinweis klein">Tipp: Auf jeden Knopf <b>lange drücken</b> – die App zeigt einen Hinweis und liest ihn vor. Der Lautsprecher-Knopf unten rechts liest jede Seite vor.</div>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.gross ? 'checked' : ''} data-ein="einst" data-k="gross"> Großschrift</label>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.kontrast ? 'checked' : ''} data-ein="einst" data-k="kontrast"> Hoher Kontrast</label>
   <h3>Über</h3>
@@ -296,5 +299,6 @@ const ICON = {
   start: ic('<path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/>'),
   tropfen: ic('<path d="M12 2s7 8 7 13a7 7 0 01-14 0c0-5 7-13 7-13z"/>'),
   film: ic('<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 9l5 3-5 3z"/>'),
+  lautsprecher: ic('<path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/>'),
   mehr: ic('<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>')
 };

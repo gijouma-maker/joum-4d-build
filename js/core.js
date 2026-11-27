@@ -223,7 +223,7 @@ function render() {
 
 function navGruppe(n) {
   if (['start'].includes(n)) return 'start';
-  if (n === 'fotomessen') return 'projekte';
+  if (n === 'fotomessen' || n === 'schritt') return 'projekte';
   if (['projekte', 'raum', 'projekt', 'messen', 'planer', 'ideen', 'anleitung', 'einkauf'].includes(n)) return 'projekte';
   if (['garten'].includes(n)) return 'garten';
   if (['markt', 'handwerker'].includes(n)) return 'markt';

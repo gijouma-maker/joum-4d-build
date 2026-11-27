@@ -101,7 +101,7 @@ AKT.asGarten = (d) => { const liste = gartenListe(); G.v = liste.findIndex((x) =
 AKT.asGarten4D = (d) => { const v = gartenListe().find((x) => x.id === d.id); if (v) zeigeGarten4D(v); };
 AKT.asRaumAnlegen = (d) => {
   const vs = raumVarianten(), v = vs[+d.i], c = AS.ctx;
-  const p = projektAnlegen(c.thema, null, { breite: v.breite, tiefe: v.tiefe, plan: v.plan, stil: v.stil, fenster: c.wunsch.fenster, waende: [{ n: 'Wand A', l: c.L, h: 2.5 }, { n: 'Wand B', l: c.T, h: 2.5 }, { n: 'Wand C', l: c.L, h: 2.5 }, { n: 'Wand D', l: c.T, h: 2.5 }] });
+  const p = projektAnlegen(c.thema, null, { gemessen: true, breite: v.breite, tiefe: v.tiefe, plan: v.plan, stil: v.stil, fenster: c.wunsch.fenster, waende: [{ n: 'Wand A', l: c.L, h: 2.5 }, { n: 'Wand B', l: c.T, h: 2.5 }, { n: 'Wand C', l: c.L, h: 2.5 }, { n: 'Wand D', l: c.T, h: 2.5 }] });
   toast('Projekt angelegt'); geh('#/planer/' + p.id);
 };
 AKT.asRaum4D = (d) => { const v = raumVarianten()[+d.i]; window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE; zeigeBau4D(v, STILE.find((s) => s.id === v.stil)); };
