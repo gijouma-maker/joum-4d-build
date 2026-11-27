@@ -13,9 +13,11 @@ function sprich(text, still, lang) {
   if (!('speechSynthesis' in window)) { if (!still) toast('Vorlesen wird von diesem Gerät nicht unterstützt'); return; }
   try {
     speechSynthesis.cancel();
-    const sauber = String(text).replace(/<[^>]+>/g, ' ').replace(/[·•|]/g, ', ').replace(/\s+/g, ' ').replace(/(\d),(\d)/g, '$1 Komma $2').replace(/m²/g, ' Quadratmeter').replace(/ cm\b/g, ' Zentimeter').replace(/ mm\b/g, ' Millimeter').replace(/ m\b/g, ' Meter').replace(/ Std\./g, ' Stunden').replace(/€/g, ' Euro').replace(/DN (\d+)/g, 'D N $1').replace(/ca\./g, 'circa').replace(/z\. B\./g, 'zum Beispiel').replace(/§/g, 'Paragraf');
+    const roh = String(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    const fremd = (lang && !/^de/.test(lang)) ? roh : null;   // fremde Sprache: keine deutschen Abkürzungs-Ersetzungen
+    const sauber = fremd || roh.replace(/[·•|]/g, ', ').replace(/(\d),(\d)/g, '$1 Komma $2').replace(/m²/g, ' Quadratmeter').replace(/ cm\b/g, ' Zentimeter').replace(/ mm\b/g, ' Millimeter').replace(/ m\b/g, ' Meter').replace(/ Std\./g, ' Stunden').replace(/€/g, ' Euro').replace(/DN (\d+)/g, 'D N $1').replace(/ca\./g, 'circa').replace(/z\. B\./g, 'zum Beispiel').replace(/§/g, 'Paragraf');
     let lg = lang || 'de-DE', txt = sauber;
-    if (!lang && typeof spr === 'function' && spr() !== 'de') { const tr = TT(sauber.trim()); if (tr !== sauber.trim()) { txt = tr; lg = sprBcp(); } }
+    if (!lang && typeof spr === 'function' && spr() !== 'de') { const [tr, trLg] = TTL(roh.trim()); if (tr !== roh.trim()) { txt = tr.replace(/[·•|]/g, ', '); lg = trLg; } }
     const u = new SpeechSynthesisUtterance(txt);
     u.lang = lg; u.rate = S.einstellungen.sprechTempo || 0.95; const v = stimmeDE(lg); if (v) u.voice = v;
     speechSynthesis.speak(u);

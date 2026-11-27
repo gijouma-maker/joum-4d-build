@@ -1,5 +1,5 @@
 /* Joum 4D Build – Service Worker: App läuft auch offline */
-const CACHE = 'j4d-v16';
+const CACHE = 'j4d-v17';
 const DATEIEN = ['./', './index.html', './css/app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png',
   './js/data-raeume.js', './js/data-anleitungen.js', './js/data-garten.js', './js/core.js', './js/nav.js', './js/drei.js', './js/vendor/three.min.js', './js/vendor/OrbitControls.js',
   './js/screens-projekte.js', './js/screens-garten.js', './js/screens-markt.js', './js/ki-pruefung.js', './js/screens-installation.js', './js/tour.js', './js/assistent.js', './js/vorlesen.js', './js/sprachsteuerung.js', './js/sprachen.js', './js/vendor/RoomEnvironment.js', './js/vendor/Sky.js'];

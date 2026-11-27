@@ -9,7 +9,7 @@
 - ☐ Zahlungsdienstleister für Treuhand/Etappenzahlung (muss lizenziert sein – Treuhand nicht selbst „verwahren“)
 - ☐ Preismodell: Abo für Kunden? Gebühr je Auftrag für Handwerker? „Eigene Kunden“-Abo?
 - ☐ KI-Kosten: wie viele KI-Bilder/Videos/Erkennungen pro Nutzer frei, was im Abo?
-- ☐ Sprachen beim Start: App hat jetzt DE, EN, TR, AR, PL, RU, UK, RO – fehlt Niederländisch (NL)? Welche Sprachen sollen Rechtstexte und Store-Einträge bekommen?
+- ☐ Sprachen: App hat jetzt 24 Sprachen (Entscheidung: alle). Offen: Welche Sprachen bekommen beim Start Rechtstexte (Impressum, Datenschutz, AGB) und Store-Einträge? Empfehlung: DE + EN sofort, weitere nach Nachfrage – Rechtstexte nur professionell übersetzen lassen.
 - ☐ Ein Konto für alle Apps (JoumHome + Joum 4D Build + später weitere)? → empfohlen: ja, gemeinsamer Login
 - ☐ Domains: joumhome.(de/com), Domain für Joum 4D Build, WN – je 10 Jahre + Auto-Verlängerung
 
@@ -100,9 +100,9 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
-- ☐ **Volle Übersetzung** aller Anleitungen, Hinweise und Assistent-Antworten in die 8 Sprachen (KI-Übersetzung über Server, einmal erzeugt und gespeichert; danach von Muttersprachlern prüfen lassen – besonders Sicherheitshinweise Elektro/Gas)
+- ☐ **Volle Übersetzung** aller Anleitungen, Hinweise und Assistent-Antworten in alle 24 Sprachen (KI-Übersetzung über Server, einmal erzeugt und gespeichert; danach von Muttersprachlern prüfen lassen – besonders Sicherheitshinweise Elektro/Gas)
 - ☐ **Bessere Spracherkennung & Sprachbefehle** über Server (funktioniert dann in jeder App/jedem Browser, versteht freie Sätze in allen Sprachen statt Schlüsselwörtern)
-- ☐ Natürliche Stimmen für alle 8 Sprachen (Türkisch, Arabisch, Ukrainisch usw. klingen auf manchen Handys sonst roboterhaft)
+- ☐ Natürliche Stimmen für alle 24 Sprachen (Türkisch, Arabisch, Ukrainisch usw. klingen auf manchen Handys sonst roboterhaft)
 - ☐ Vorlesen: heute Stimme des Geräts (kostenlos, offline). Später optional natürliche KI-Stimmen über den Server, mehrsprachig (DE/EN/NL/TR/AR …) für Menschen, die nicht lesen können; Hilfe-Texte zentral pflegen und übersetzen.
 - ☐ Planungs-Assistent: freies Gespräch per KI-Sprachmodell auf dem Server (heute Regeln im Gerät). Ergebnis-Format beibehalten: Thema, Maße, Wünsche → Vorschläge; KI-Vorschläge immer durch `pruefen()` und die Raumregeln laufen lassen.
 - ☐ Fotorealistische Bilder und KI-Videos aus dem 3D-Raum/Garten (3D-Bild + Stil als Vorlage an ein KI-Bild-/Videomodell). Kosten je Bild/Video, Limits im Abo; Kunden bleiben in der App (kein Konto bei Drittanbietern).
@@ -116,4 +116,4 @@
 - ☑ Datensicherung lokal: Versionen, Papierkorb, Export/Import
 - ☑ Sicherheits-Header, Router-/Scroll-Fehler behoben
 - ☑ Sprachsteuerung: sprechen → App öffnet die Seite, Ziel-Knopf blinkt schwarz-weiß; Eintipp-Weg ohne Mikrofon
-- ☑ 8 Sprachen (DE, EN, TR, AR, PL, RU, UK, RO): Menüs, Startseite, Räume, Ansagen, Sprachbefehle; Arabisch von rechts nach links
+- ☑ 24 Sprachen (DE, EN, TR, AR, PL, RU, UK, RO, NL, FR, IT, ES, PT, SV, DA, NO, FI, CS, SK, HU, EL, HR, SQ, FA): Menüs, Startseite, Räume, Ansagen, Sprachbefehle; Arabisch/Persisch von rechts nach links. Neue Sprachen mit Kern-Wortschatz, Rest auf Englisch
