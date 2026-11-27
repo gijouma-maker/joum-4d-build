@@ -250,6 +250,7 @@ function studioSeite(rid, q) {
       <div class="zeile wrap"><button class="chip" data-akt="studioZu" ${d} data-z="fotomessen">${ICON.kamera} Raum messen per Foto</button><button class="chip" data-akt="studioZu" ${d} data-z="skizze">${ICON.stift} Skizze zeichnen</button>${dateiKnopf(o.vorbild ? 'Anderes Vorbild' : 'Vorbild-Bild', 'studioVorbild', o.entwurf ? { r: o.raum } : { p: o.id }, { icon: ICON.bild, klasse: 'chip-knopf' })}</div>
       ${bilderLeiste(o)}
     </section>
+    ${['treppenhaus', 'flur', 'dachgeschoss', 'keller'].includes(r.id) ? `<a class="btn hell voll" href="#/treppe">Treppe planen (DIN 18065 – Stufen, Kopfhöhe, Türen)</a>` : ''}
     <section class="karte"><h3>Arbeiten in diesem Raum</h3><div class="zeile wrap">${r.projekte.map((aid) => { const a = ANLEITUNGEN[aid]; return a ? `<button class="chip" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="${aid}">${esc(a.t)}</button>` : ''; }).join('')}<button class="chip" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="">Nur gestalten</button></div>
       ${!o.entwurf && ANLEITUNGEN[o.anleitung] ? `<a class="btn voll" href="#/projekt/${o.id}">Anleitung & Schritte: ${esc(ANLEITUNGEN[o.anleitung].t)}</a>` : ''}</section>
     ${r.sicherheit.length || r.tipps.length ? `<details class="karte"><summary>Sicherheit & Tipps</summary><ul>${r.sicherheit.concat(r.tipps).map((s) => `<li>${esc(s)}</li>`).join('')}</ul></details>` : ''}
