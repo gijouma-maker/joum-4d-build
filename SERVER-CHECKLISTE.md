@@ -9,7 +9,7 @@
 - ☐ Zahlungsdienstleister für Treuhand/Etappenzahlung (muss lizenziert sein – Treuhand nicht selbst „verwahren“)
 - ☐ Preismodell: Abo für Kunden? Gebühr je Auftrag für Handwerker? „Eigene Kunden“-Abo?
 - ☐ KI-Kosten: wie viele KI-Bilder/Videos/Erkennungen pro Nutzer frei, was im Abo?
-- ☐ Sprachen beim Start: nur DE oder gleich EN/NL?
+- ☐ Sprachen beim Start: App hat jetzt DE, EN, TR, AR, PL, RU, UK, RO – fehlt Niederländisch (NL)? Welche Sprachen sollen Rechtstexte und Store-Einträge bekommen?
 - ☐ Ein Konto für alle Apps (JoumHome + Joum 4D Build + später weitere)? → empfohlen: ja, gemeinsamer Login
 - ☐ Domains: joumhome.(de/com), Domain für Joum 4D Build, WN – je 10 Jahre + Auto-Verlängerung
 
