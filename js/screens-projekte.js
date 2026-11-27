@@ -62,7 +62,7 @@ route('start', () => {
     haupt = `<section class="karte gross-karte">
       <div class="zeile">${ring(fortschritt(p))}<div style="flex:1"><div class="unter">Aktives Projekt</div><h2>${esc(p.name)}</h2>${a ? werBadge(a.wer) : ''}</div></div>
       ${naechster >= 0 ? `<a class="naechster" href="#/anleitung/${p.anleitung}?p=${p.id}"><div class="unter">Nächster Schritt</div><b>${esc(a.schritte[naechster][0])}</b><div class="klein">${esc(a.schritte[naechster][1])}</div></a>` : (a && a.schritte.length ? '<div class="hinweis gruen">Alle Schritte erledigt – jetzt Abnahme/Fotos.</div>' : '')}
-      <a class="btn hell voll" href="#/projekt/${p.id}">Projekt öffnen</a></section>`;
+      <div class="zeile"><a class="btn hell" href="#/projekt/${p.id}">Projekt öffnen</a><button class="btn" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher</button></div></section>`;
   } else {
     haupt = `<section class="karte gross-karte"><h2>Willkommen bei Joum 4D Build</h2><p class="klein">Plan. Bau. Fertig. – Wähle einen Raum, Haus außen oder Garten und leg dein erstes Projekt an.</p><a class="btn hell voll" href="#/projekte">Projekt starten</a></section>`;
   }
@@ -143,6 +143,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/messen/${p.id}">${ICON.messen}<span>Messen</span></a>
       <a class="kachel" href="#/planer/${p.id}">${ICON.wuerfel}<span>Gestalten</span></a>
       <a class="kachel" href="#/ideen/${p.id}">${ICON.funke}<span>KI-Ideen</span></a>
+      <button class="kachel" data-akt="film" data-id="${p.id}">${ICON.film}<span>Vorher/Nachher</span></button>
       ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
       ${a ? `<button class="kachel" data-akt="materialInListe" data-id="${p.id}">${ICON.korb}<span>Material</span></button>` : ''}
       <a class="kachel" href="#/markt?p=${p.id}">${ICON.hand}<span>${auftrag ? 'Auftrag' : 'Profi anfragen'}</span></a>
@@ -264,6 +265,21 @@ function freierPlatz(p, w, d) {
   return [Math.max(0, (p.breite - w) / 2), Math.max(0, (p.tiefe - d) / 2)];
 }
 window.GRUPPEN_FARBE_3D = null;
+/* Vorher/Nachher-Film: leerer Plan → Beispiel-Einrichtung aus dem Raumkatalog (nur für die Vorschau) */
+AKT.film = (d) => {
+  const p = projekt(d.id); if (!p) return;
+  window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
+  let vorschau = p;
+  if (!p.plan.length) {
+    vorschau = JSON.parse(JSON.stringify(p));
+    const kat = katalogFuer(p).filter((k) => ['Möbel', 'Sanitär', 'Küche'].includes(k[1]) && k[2] <= p.breite && k[3] <= p.tiefe).slice(0, 6)
+      .concat(katalogFuer(p).filter((k) => /Teppich|Pflanze|Stehleuchte|Deckenleuchte|Spiegel/.test(k[0])).slice(0, 3));
+    kat.forEach((k) => { const pl = freierPlatz(vorschau, k[2], Math.max(k[3], 4)); vorschau.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], x: pl[0], y: pl[1], rot: 0 }); });
+    toast('Beispiel-Einrichtung – im Planer kannst du deine eigene zusammenstellen');
+  }
+  try { zeigeFilm(vorschau, STILE.find((s) => s.id === p.stil)); } catch (e) { info('Der Film braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
+};
+
 function planer3D(p) {
   const box = document.getElementById('raum3d');
   if (!box || !window.zeigeRaum3D) return;
@@ -293,6 +309,7 @@ route('planer', (id) => {
   return kopf('Gestalten', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
     <div class="raum3d" id="raum3d" data-pid="${p.id}" aria-label="3D-Ansicht des Raums"></div>
     <div class="klein mitte">3D: mit dem Finger drehen, zwei Finger zoomen, Möbel antippen zum Auswählen</div>
+    <button class="btn hell voll" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher-Film</button>
     <h3>Grundriss – hier verschieben</h3>
     <div class="plan-buehne" style="height:${hoehePx + 4}px">
       <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${stil ? stil.boden : '#1a1a1a'};border-color:${stil ? stil.wand : '#555'}">${elemente}</div>
@@ -391,7 +408,8 @@ route('ideen', (id) => {
     <div class="stile">${STILE.map((s) => `<button class="stil ${p.stil === s.id ? 'an' : ''}" data-akt="stil" data-id="${p.id}" data-s="${s.id}">
       <div class="paletten">${[s.wand, s.boden, s.moebel, s.akzent].map((c) => `<span style="background:${c}"></span>`).join('')}</div>
       <b>${esc(s.name)}</b><span class="klein">${esc(s.text)}</span></button>`).join('')}</div>
-    <div class="zeile"><button class="btn" data-akt="fotoreal">Fotorealistisch</button><a class="btn hell" href="#/planer/${p.id}">Im Planer anpassen</a></div>
+    <button class="btn hell voll" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher-Film im gewählten Stil</button>
+    <div class="zeile"><button class="btn" data-akt="fotoreal">Fotorealistisch</button><a class="btn" href="#/planer/${p.id}">Im Planer anpassen</a></div>
   </div>`;
 });
 

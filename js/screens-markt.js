@@ -295,5 +295,6 @@ const ICON = {
   mikro: ic('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4"/>'),
   start: ic('<path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/>'),
   tropfen: ic('<path d="M12 2s7 8 7 13a7 7 0 01-14 0c0-5 7-13 7-13z"/>'),
+  film: ic('<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 9l5 3-5 3z"/>'),
   mehr: ic('<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>')
 };

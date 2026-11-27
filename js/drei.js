@@ -340,4 +340,119 @@
     v.start();
     return v;
   };
+
+  /* ---------- Vorher/Nachher-Film (Hochformat wie Shorts/Reels) ---------- */
+  const leicht = (t) => t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t);
+  const huepfen = (t) => { if (t <= 0) return 0; if (t >= 1) return 1; const n = 7.5625, d = 2.75; let x = t; if (x < 1 / d) return n * x * x; if (x < 2 / d) return n * (x -= 1.5 / d) * x + 0.75; if (x < 2.5 / d) return n * (x -= 2.25 / d) * x + 0.9375; return n * (x -= 2.625 / d) * x + 0.984375; };
+  let film = null;
+  window.zeigeFilm = function (p, stil, extra) {
+    if (film) film.stopp();
+    let m = document.getElementById('film-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'film-modal'; m.className = 'film-modal'; document.body.appendChild(m); }
+    m.innerHTML = `<div class="film-box"><div class="zeile"><b style="flex:1">Vorher / Nachher</b><button class="x" id="film-zu" aria-label="Schließen">×</button></div>
+      <div class="film-buehne" id="film-buehne"></div>
+      <div class="zeile"><button class="btn" id="film-neu">Nochmal abspielen</button><button class="btn hell" id="film-rec">Als Video speichern</button></div>
+      <div class="klein" id="film-info">Vorschau deines Raums – Farben, Boden und Möbel aus deinem Planer.</div></div>`;
+    m.classList.add('an');
+    const buehne = document.getElementById('film-buehne');
+    const W = Math.min(360, Math.floor(window.innerWidth * 0.9)), H = Math.min(Math.floor(W * 16 / 9), Math.floor(window.innerHeight * 0.66));
+    const W2 = Math.floor(H * 9 / 16);
+    const pr = Math.min(2, window.devicePixelRatio || 1);
+    const renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(pr); renderer.setSize(W2, H); renderer.outputEncoding = T.sRGBEncoding;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setClearColor(0x0a0a0a);
+    const ausgabe = document.createElement('canvas'); ausgabe.width = W2 * pr; ausgabe.height = H * pr; ausgabe.style.width = W2 + 'px'; ausgabe.style.height = H + 'px';
+    const ctx = ausgabe.getContext('2d');
+    buehne.appendChild(ausgabe);
+    const sc = new T.Scene();
+    const camera = new T.PerspectiveCamera(50, W2 / H, 0.05, 100);
+    const hemi = new T.HemisphereLight(0xffffff, 0x333333, 0.35); sc.add(hemi);
+    const sonne = new T.DirectionalLight(0xffffff, 0.5); sonne.position.set(3, 7, 4); sonne.castShadow = true; sonne.shadow.mapSize.set(1024, 1024);
+    const B = p.breite / 100, D = p.tiefe / 100, Hh = 2.5, gr = Math.max(B, D);
+    Object.assign(sonne.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr }); sc.add(sonne);
+    // Rohbau
+    const beton = mat('#8d8a86', { roughness: 1 });
+    const rohBoden = mesh(new T.PlaneGeometry(B, D), beton); rohBoden.rotation.x = -Math.PI / 2; sc.add(rohBoden);
+    const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
+    const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
+    const neuBoden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 }));
+    neuBoden.rotation.x = -Math.PI / 2; neuBoden.position.y = 0.005; neuBoden.scale.set(0.0001, 1, 1); sc.add(neuBoden);
+    const zielWand = new T.Color(stil ? stil.wand : '#ece8e1'), rohWand = new T.Color('#9a9692');
+    const wandMat = new T.MeshStandardMaterial({ color: rohWand.clone(), roughness: 0.95 });
+    const wand = (w, x, z, ry) => { const me = mesh(new T.PlaneGeometry(w, Hh), wandMat); me.position.set(x, Hh / 2, z); me.rotation.y = ry; sc.add(me); };
+    wand(B, 0, -D / 2, 0); wand(B, 0, D / 2, Math.PI); wand(D, -B / 2, 0, Math.PI / 2); wand(D, B / 2, 0, -Math.PI / 2);
+    const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen);
+    const lampe = new T.PointLight(0xffe2b8, 0, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
+    // Möbel
+    const teile = (p.plan || []).map((e) => {
+      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
+      const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
+      g.position.set(e.x / 100 + ew / 2 - B / 2, 3, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; g.visible = false;
+      sc.add(g); return { g, n: e.n };
+    });
+    const T_ROH = 2.2, T_WAND = 2.4, T_BODEN = 2.4, T_JE = 0.55, T_LICHT = 1.6, T_ENDE = 5.5;
+    const tWand = T_ROH, tBoden = tWand + T_WAND, tMoebel = tBoden + T_BODEN, tLicht = tMoebel + Math.max(1, teile.length) * T_JE + 0.6, tEnde = tLicht + T_LICHT, tAus = tEnde + T_ENDE;
+    let start = performance.now(), laeuft = true, rec = null;
+    const titel = (extra && extra.titel) || p.name;
+    function schrift(text, y, groesse, farbe, fett) {
+      ctx.font = (fett ? '600 ' : '500 ') + groesse * pr + 'px Jost, Arial, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const w = ctx.measureText(text).width + 28 * pr, h = groesse * pr * 1.7;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)'; const x = ausgabe.width / 2 - w / 2, yy = y * pr - h / 2, r = h / 2;
+      ctx.beginPath(); ctx.moveTo(x + r, yy); ctx.arcTo(x + w, yy, x + w, yy + h, r); ctx.arcTo(x + w, yy + h, x, yy + h, r); ctx.arcTo(x, yy + h, x, yy, r); ctx.arcTo(x, yy, x + w, yy, r); ctx.fill();
+      ctx.fillStyle = farbe || '#fff'; ctx.fillText(text, ausgabe.width / 2, y * pr + 1);
+    }
+    function frame() {
+      if (!laeuft || !ausgabe.isConnected) { laeuft = false; return; }
+      const t = (performance.now() - start) / 1000;
+      // Wände streichen
+      const kw = leicht((t - tWand) / T_WAND); wandMat.color.copy(rohWand).lerp(zielWand, kw);
+      // Boden verlegen (wächst von links nach rechts)
+      const kb = leicht((t - tBoden) / T_BODEN); neuBoden.scale.x = Math.max(0.0001, kb); neuBoden.position.x = -B / 2 + B * kb / 2;
+      // Möbel fallen nacheinander hinein
+      let aktuell = null;
+      teile.forEach((o, i) => { const k = (t - tMoebel - i * T_JE) / 0.7; o.g.visible = k > 0; o.g.position.y = 3 * (1 - huepfen(k)); if (k > 0 && k < 1.2) aktuell = o.n; });
+      // Licht an
+      const kl = leicht((t - tLicht) / T_LICHT);
+      hemi.intensity = 0.35 + 0.4 * kl; sonne.intensity = 0.5 + 0.45 * kl; lampe.intensity = 0.55 * kl;
+      // Kamera: langsame Fahrt um den Raum, am Ende näher
+      const a = 0.6 + t * 0.22, rad = gr * (2.15 - 0.25 * leicht((t - tLicht) / 4)), hoch = gr * 1.15 + 0.9 - 0.3 * leicht((t - tLicht) / 4);
+      camera.position.set(Math.sin(a) * rad, hoch, Math.cos(a) * rad); camera.lookAt(0, 0.7, 0);
+      renderer.render(sc, camera);
+      ctx.drawImage(renderer.domElement, 0, 0, ausgabe.width, ausgabe.height);
+      // Texte
+      let cap = 'Vorher: Rohbau', farbe = '#ffd27a';
+      if (t >= tWand) cap = 'Wände streichen'; if (t >= tBoden) cap = nass ? 'Fliesen legen' : 'Boden verlegen';
+      if (t >= tMoebel) cap = aktuell || 'Einrichten'; if (t >= tLicht) { cap = 'Licht an'; } if (t >= tEnde) { cap = 'Nachher – so sieht es aus'; farbe = '#9fd69f'; }
+      schrift(titel.length > 34 ? titel.slice(0, 33) + '…' : titel, 26, 13, '#fff', false);
+      schrift(cap, H - 60, 18, farbe, true);
+      if (t >= tEnde) schrift((stil ? 'Stil ' + stil.name + ' · ' : '') + teile.length + ' Elemente · ' + (Math.round(B * D * 10) / 10).toString().replace('.', ',') + ' m²', H - 28, 12, '#ddd', false);
+      // Fortschrittsbalken
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(16 * pr, 48 * pr, ausgabe.width - 32 * pr, 3 * pr);
+      ctx.fillStyle = '#fff'; ctx.fillRect(16 * pr, 48 * pr, (ausgabe.width - 32 * pr) * Math.min(1, t / tAus), 3 * pr);
+      if (t > tAus + 1.5) { if (rec && rec.state === 'recording') rec.stop(); start = performance.now(); }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    film = { stopp() { laeuft = false; renderer.dispose(); } };
+    document.getElementById('film-zu').onclick = () => { m.classList.remove('an'); film.stopp(); film = null; };
+    document.getElementById('film-neu').onclick = () => { start = performance.now(); };
+    document.getElementById('film-rec').onclick = () => {
+      const info = document.getElementById('film-info');
+      if (!ausgabe.captureStream || !window.MediaRecorder) { info.textContent = 'Video speichern kann dieser Browser nicht. Tipp: Bildschirmaufnahme am Handy nutzen.'; return; }
+      try {
+        const typ = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((x) => MediaRecorder.isTypeSupported(x)) || '';
+        const stueck = []; rec = new MediaRecorder(ausgabe.captureStream(30), typ ? { mimeType: typ } : undefined);
+        rec.ondataavailable = (ev) => ev.data.size && stueck.push(ev.data);
+        rec.onstop = () => {
+          const blob = new Blob(stueck, { type: rec.mimeType || 'video/webm' }); rec = null;
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'joum4d-vorher-nachher.' + (/mp4/.test(blob.type) ? 'mp4' : 'webm');
+          document.body.appendChild(a); a.click(); a.remove();
+          info.textContent = 'Video fertig. Falls kein Download startet: Bildschirmaufnahme am Handy nutzen (in der Vorschau-Seite sind Downloads gesperrt).';
+        };
+        start = performance.now(); rec.start(); info.textContent = 'Aufnahme läuft … (' + Math.round(tAus) + ' Sekunden)';
+      } catch (e) { info.textContent = 'Aufnahme nicht möglich: ' + e.message; }
+    };
+  };
 })();
