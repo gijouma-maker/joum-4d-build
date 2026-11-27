@@ -125,6 +125,8 @@ const ANLEITUNGEN = {
   bodenbeschichtung: { t: 'Bodenbeschichtung (Garage/Keller)', b: 'innen', wer: 'Selbst', dauer: '2 Tage', einheit: 'm²', kosten: [12, 40],
     schritte: [['Reinigen, entfetten', ''], ['Anschleifen', ''], ['Grundierung', ''], ['Epoxid 2×', 'Topfzeit beachten.']], material: [['2K-Epoxid', 0.3, 'kg', ''], ['Grundierung', 0.15, 'kg', '']], tipps: [], warn: ['Lösemittel: lüften, Atemschutz.'] },
 
+  installation: { t: 'Wasser, Abwasser & Elektro planen', b: 'innen', wer: 'Teils Profi', dauer: 'Rohre, Gefälle, Kabel, Werkzeug', einheit: 'Stück', kosten: [0, 0], schritte: [], material: [], tipps: [], warn: [], route: '#/installation' },
+
   /* ---- Garten ---- */
   gartenplaner: { t: 'Gartenplaner 4D', b: 'garten', wer: 'Selbst', dauer: '', einheit: 'm²', kosten: [20, 120], schritte: [], material: [], tipps: [], warn: [], route: '#/garten' },
 

@@ -269,7 +269,7 @@ route('ticket', (_, q) => {
 /* ---------- Mehr & Einstellungen ---------- */
 EIN.einst = (v, d) => aendern((s) => { s.einstellungen[d.k] = v; });
 route('mehr', () => kopf('Mehr', 'Joum 4D Build') + `<div class="inhalt">
-  ${[['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
+  ${[['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/installation', 'Wasser, Abwasser & Elektro'], ['#/installation?tab=werkzeug', 'Werkzeug kaufen & leihen'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
   <h3>Einstellungen</h3>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.gross ? 'checked' : ''} data-ein="einst" data-k="gross"> Großschrift</label>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.kontrast ? 'checked' : ''} data-ein="einst" data-k="kontrast"> Hoher Kontrast</label>
@@ -294,5 +294,6 @@ const ICON = {
   kamera: ic('<path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/>'),
   mikro: ic('<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4"/>'),
   start: ic('<path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/>'),
+  tropfen: ic('<path d="M12 2s7 8 7 13a7 7 0 01-14 0c0-5 7-13 7-13z"/>'),
   mehr: ic('<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>')
 };

@@ -160,3 +160,15 @@ div.schritt { cursor: default; }
 .dialog.an { display: flex; }
 .d-box { width: 100%; max-width: 480px; background: #151515; border: 1px solid #333; border-radius: 22px; padding: 18px; margin-bottom: env(safe-area-inset-bottom); }
 .d-text { margin: 0 0 8px; line-height: 1.45; }
+
+/* Installation: Animationen */
+.anim { border: 1px solid var(--linie); border-radius: 18px; background: #0b0b0b; padding: 10px; margin: 10px 0; }
+.anim svg { display: block; font-family: Jost, sans-serif; }
+.fluss { animation: fliessen 1.2s linear infinite; }
+.fluss.langsam { animation-duration: 3.5s; }
+@keyframes fliessen { to { stroke-dashoffset: -24; } }
+.kabel { fill: none; stroke-dasharray: 400; stroke-dashoffset: 400; animation: ziehen 2.5s ease forwards infinite alternate; }
+@keyframes ziehen { to { stroke-dashoffset: 0; } }
+.klein-links { gap: 16px; margin-top: 4px; font-size: .82em; }
+.klein-links a { color: var(--blau); min-height: 32px; display: inline-flex; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .fluss, .kabel, .schicht { animation: none; stroke-dashoffset: 0; } }

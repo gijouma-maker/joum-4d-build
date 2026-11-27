@@ -70,7 +70,7 @@ const RAEUME = [
       ['Fliesenspiegel', 'Wand & Bau', 240, 1, 60, ''],
       ['Arbeitsplatte', 'Küche', 240, 60, 4, 'Schnittkanten versiegeln (Feuchte).']
     ], BASIS.licht, BASIS.technik),
-    projekte: ['fliesen', 'streichen', 'kueche_montage'],
+    projekte: ['fliesen', 'streichen', 'kueche_montage', 'installation'],
     sicherheit: ['Herdanschluss und neue Stromkreise nur durch Elektrofachkraft.', 'Gasgeräte nur durch eingetragenen Fachbetrieb.', 'Bei Kaminofen + Ablufthaube Unterdruck vermeiden.'],
     tipps: ['Arbeitsdreieck Spüle – Herd – Kühlschrank kurz halten.', 'Steckdosen über der Arbeitsplatte reichlich einplanen.'] },
 
@@ -85,13 +85,13 @@ const RAEUME = [
       ['Lüfter', 'Technik', 15, 10, 15, 'Innenbad ohne Fenster braucht Lüftung.'],
       ['Waschmaschine', 'Technik', 60, 60, 85, 'Aquastop, FI-Schutz.']
     ], BASIS.licht, [BASIS.deko[1]], BASIS.bau),
-    projekte: ['bad_abdichten', 'fliesen', 'silikon'],
+    projekte: ['bad_abdichten', 'fliesen', 'silikon', 'installation'],
     sicherheit: ['Abdichtung vor dem Fliesen ist Pflicht (DIN 18534).', 'Elektrik im Bad: Schutzbereiche 0–2, nur Elektrofachkraft.', 'Wasser vor Arbeiten abstellen.'],
     tipps: ['Erst abdichten, dann fliesen.', 'Große Fliesen und durchgehender Boden lassen kleine Bäder größer wirken.'] },
 
   { id: 'gaestewc', name: 'Gäste-WC', bereich: 'innen', w: 120, d: 180,
     katalog: kat([['WC wandhängend', 'Sanitär', 38, 55, 40, ''], ['Handwaschbecken', 'Sanitär', 45, 25, 85, ''], ['Spiegel', 'Deko', 40, 3, 60, ''], ['Lüfter', 'Technik', 15, 10, 15, 'Ohne Fenster Lüftung einplanen.']], BASIS.licht),
-    projekte: ['fliesen', 'streichen', 'silikon'], sicherheit: ['Elektrik nach Schutzbereichen.'], tipps: ['Wandhängendes WC spart optisch Platz.'] },
+    projekte: ['fliesen', 'streichen', 'silikon', 'installation'], sicherheit: ['Elektrik nach Schutzbereichen.'], tipps: ['Wandhängendes WC spart optisch Platz.'] },
 
   { id: 'schlafzimmer', name: 'Schlafzimmer', bereich: 'innen', w: 420, d: 380,
     katalog: kat([['Doppelbett 180', 'Möbel', 180, 210, 45, 'Rund ums Bett ca. 60–70 cm Platz.'], ['Nachttisch', 'Möbel', 45, 40, 50, ''], ['Kleiderschrank', 'Möbel', 250, 60, 230, 'Hohe Schränke kippsicher an Wand befestigen.'], ['Kommode', 'Möbel', 120, 50, 85, 'Kippschutz.'], ['Leselampe', 'Licht', 15, 15, 30, '']], BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau),
@@ -149,7 +149,7 @@ const RAEUME = [
 
   { id: 'waschraum', name: 'Waschraum / Hauswirtschaftsraum', bereich: 'innen', w: 300, d: 250,
     katalog: kat([['Waschmaschine', 'Technik', 60, 60, 85, 'Aquastop; auf Sockel nur mit Rutschsicherung.'], ['Trockner', 'Technik', 60, 65, 85, 'Kondens-/Wärmepumpentrockner oder Abluft nach draußen.'], ['Wasch-Trocken-Turm', 'Technik', 60, 65, 175, 'Original-Zwischenbausatz verwenden.'], ['Ausgussbecken', 'Sanitär', 60, 45, 85, ''], ['Wäscheleine / Trockengestell', 'Lager', 150, 60, 100, ''], ['Bodenablauf', 'Sanitär', 15, 15, 1, 'Mit Rückstauverschluss.'], ['Regal', 'Lager', 90, 40, 180, '']], [BASIS.licht[0]], BASIS.technik),
-    projekte: ['fliesen', 'streichen', 'keller_feuchte'], sicherheit: ['FI-Schutzschalter für Waschgeräte.', 'Wassermelder am Boden empfohlen.'], tipps: ['Gut lüften, Wäsche trocknen erhöht Feuchte.'] },
+    projekte: ['fliesen', 'streichen', 'keller_feuchte', 'installation'], sicherheit: ['FI-Schutzschalter für Waschgeräte.', 'Wassermelder am Boden empfohlen.'], tipps: ['Gut lüften, Wäsche trocknen erhöht Feuchte.'] },
 
   { id: 'keller', name: 'Keller', bereich: 'innen', w: 600, d: 400,
     katalog: kat([['Kellerregal', 'Lager', 100, 40, 180, 'Nicht direkt an feuchte Außenwand – 5 cm Abstand.'], ['Werkbank', 'Möbel', 150, 70, 90, ''], ['Luftentfeuchter', 'Technik', 35, 25, 50, ''], ['Lichtschacht-Abdeckung', 'Wand & Bau', 100, 50, 2, 'Gegen Laub und Tiere.'], ['Rückstauklappe', 'Sanitär', 20, 20, 20, 'Einbau durch Fachbetrieb; schützt bei Starkregen.']], [BASIS.licht[0]], BASIS.technik),

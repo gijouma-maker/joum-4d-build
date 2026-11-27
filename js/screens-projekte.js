@@ -115,6 +115,7 @@ route('raum', (id) => {
     <h3>Was möchtest du machen?</h3>
     ${r.projekte.map((aid) => { const a = ANLEITUNGEN[aid]; return a ? `<div class="liste-zeile"><a href="${a.route || '#/anleitung/' + aid}" style="flex:1"><b>${esc(a.t)}</b><span class="klein block">${esc(a.dauer)}</span></a>${werBadge(a.wer)}<button class="btn klein-btn" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="${aid}">+ Projekt</button></div>` : ''; }).join('')}
     <button class="btn voll" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="">Nur Raum gestalten (Planer 2D/3D)</button>
+    ${r.bereich === 'innen' || r.id === 'garage' ? `<a class="btn voll" href="#/installation?raum=${r.id}&tab=${['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum'].includes(r.id) ? 'abwasser' : 'elektro'}">${ICON.tropfen} Wasser, Abwasser & Elektro planen</a>` : ''}
     ${r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${r.tipps.length ? `<div class="hinweis"><b>Tipps</b><ul>${r.tipps.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${r.katalog.length ? `<h3>Katalog · ${r.katalog.length} Elemente</h3>${gruppen.map((g) => `<details class="karte"><summary>${esc(g)} (${r.katalog.filter((k) => k[1] === g).length})</summary>${r.katalog.filter((k) => k[1] === g).map((k) => `<div class="kat-zeile"><b>${esc(k[0])}</b> <span class="klein">${k[2]}×${k[3]}×${k[4]} cm</span>${k[5] ? `<div class="klein">${esc(k[5])}</div>` : ''}</div>`).join('')}</details>`).join('')}` : ''}
@@ -145,6 +146,7 @@ route('projekt', (id) => {
       ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
       ${a ? `<button class="kachel" data-akt="materialInListe" data-id="${p.id}">${ICON.korb}<span>Material</span></button>` : ''}
       <a class="kachel" href="#/markt?p=${p.id}">${ICON.hand}<span>${auftrag ? 'Auftrag' : 'Profi anfragen'}</span></a>
+      <a class="kachel" href="#/installation?raum=${p.raum}">${ICON.tropfen}<span>Wasser & Elektro</span></a>
       <a class="kachel" href="#/finanzen?p=${p.id}">${ICON.beleg}<span>Quittung</span></a>
     </div>
     ${r.sicherheit && r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
