@@ -121,6 +121,7 @@ function platzieren(p, k) {
     }
   }
   let reihen = wandReihenfolge(n);
+  if (p._wandFolge) reihen = p._wandFolge.concat(reihen.filter((w) => !p._wandFolge.includes(w)));
   if (p._wandDreh) reihen = reihen.map((w) => (w + p._wandDreh) % 4).concat(reihen.filter((w) => !reihen.map((x) => (x + p._wandDreh) % 4).includes(w)));
   const sofa = p.plan.find((e) => /Sofa/.test(e.n));
   if (/TV-Board|Fernseher/.test(n) && sofa) { const ws = [0, 90, 180, 270].indexOf(((sofa.rot || 0) % 360 + 360) % 360); reihen = [(ws + 2) % 4].concat(reihen.filter((x) => x !== (ws + 2) % 4)); }

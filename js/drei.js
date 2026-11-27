@@ -333,7 +333,7 @@
     const raumLicht = new T.PointLight(0xfff1dd, 0.35, 10); raumLicht.position.set(0, 2.3, 0); sc.add(raumLicht);
     const objekte = [];
     (p.plan || []).forEach((e) => {
-      const farbe = stil && e.g === 'Möbel' ? stil.moebel : (window.GRUPPEN_FARBE_3D[e.g] || '#aaa');
+      const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : (window.GRUPPEN_FARBE_3D[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
       const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
       g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2);
@@ -410,7 +410,7 @@
     const lampe = new T.PointLight(0xffe2b8, 0, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
     // Möbel
     const teile = (p.plan || []).map((e) => {
-      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
       const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
       g.position.set(e.x / 100 + ew / 2 - B / 2, 3, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; g.visible = false;
@@ -500,7 +500,7 @@
     if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
     sc.add(tuerGruppe(p, B));
     (p.plan || []).forEach((e) => {
-      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
       const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
       g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; sc.add(g);
@@ -700,7 +700,7 @@
 
     /* Möbel/Objekte für die Montage */
     const objekte = plan.map((e) => {
-      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8'); const [cx, cz] = mitte(e);
       g.position.set(cx, 3, cz); g.rotation.y = -(e.rot || 0) * Math.PI / 180; g.visible = false; sc.add(g); return { g, n: e.n };
     });

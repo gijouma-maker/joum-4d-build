@@ -110,6 +110,7 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
+- ☐ Studio: KI-Server erzeugt zusätzliche, freie Grundriss-Ideen (z. B. nach Vorbild-Video/-Bild) – Ergebnis immer durch die App-Regeln prüfen; Möbel-Modelle je Stil realistischer (Hersteller-3D-Modelle)
 - ☐ **Vorbild-Bild & Skizze per KI auswerten** (geführter Start, Schritt 1): Möbel/Stil aus dem Vorbild erkennen und als Wünsche vorauswählen; Maße und Fenster/Tür aus Skizze/Foto ablesen – Ergebnis immer durch `platzieren()`/`pruefen()` (Fenster-, Tür-, Abstandsregeln) laufen lassen; danach fotorealistisches Bild der gewählten Variante
 - ☐ Preise der Vorschläge aus Händler-Feeds statt Richtwerten
 - ☐ **Volle Übersetzung** aller Anleitungen, Hinweise und Assistent-Antworten in alle 24 Sprachen (KI-Übersetzung über Server, einmal erzeugt und gespeichert; danach von Muttersprachlern prüfen lassen – besonders Sicherheitshinweise Elektro/Gas)
@@ -127,6 +128,7 @@
 - ☑ KI-Raumprüfung (Regelwerk), Wasser/Abwasser/Elektro-Planer, Teile in 3D
 - ☑ Datensicherung lokal: Versionen, Papierkorb, Export/Import
 - ☑ Sicherheits-Header, Router-/Scroll-Fehler behoben
-- ☑ Geführter Projektstart: Foto+Zollstock / Skizze zeichnen / Skizze fotografieren / Vorbild-Bild / Maße → Maße mit Fenster → Wünsche, Stil, Budget → 3 Varianten mit Plan, Machbarkeit (Fenster/Tür/Platz), Kosten, Material, KI-Alternativen
+- ☑ Raum-Studio für alle Innenräume: Raum antippen → 3D + 8 Stile mit eigenen Möbeln/Farben/Preisen + Grundriss-Ideen (Trennwand/Zonen, WC abgetrennt, Hauptstück frei, an einer Wand, klassisch) → direkt ändern, übernehmen, 4D-Film, Einkaufsliste
+- ☑ Geführter Projektstart (jetzt im Studio aufgegangen): Foto+Zollstock / Skizze zeichnen / Skizze fotografieren / Vorbild-Bild / Maße → Maße mit Fenster → Wünsche, Stil, Budget → 3 Varianten mit Plan, Machbarkeit (Fenster/Tür/Platz), Kosten, Material, KI-Alternativen
 - ☑ Sprachsteuerung: sprechen → App öffnet die Seite, Ziel-Knopf blinkt schwarz-weiß; Eintipp-Weg ohne Mikrofon
 - ☑ 24 Sprachen (DE, EN, TR, AR, PL, RU, UK, RO, NL, FR, IT, ES, PT, SV, DA, NO, FI, CS, SK, HU, EL, HR, SQ, FA): Menüs, Startseite, Räume, Ansagen, Sprachbefehle; Arabisch/Persisch von rechts nach links. Neue Sprachen mit Kern-Wortschatz, Rest auf Englisch

@@ -41,7 +41,7 @@ AKT.neuesProjekt = (d) => {
   if (a && a.route) { geh(a.route); return; }
   const p = projektAnlegen(d.raum, d.anl);
   // Innenräume: geführter Start (Foto / Skizze / Vorbild → Maße → Wünsche → Vorschläge)
-  geh(p.bereich === 'innen' ? '#/loslegen/' + p.id : '#/projekt/' + p.id);
+  geh(p.bereich === 'innen' ? '#/studio/' + p.raum + '?p=' + p.id : '#/projekt/' + p.id);
 };
 AKT.aktiv = (d) => { S.aktivId = d.id; speichern(); geh('#/projekt/' + d.id); };
 AKT.projektLoeschen = (d) => {
@@ -70,7 +70,7 @@ route('start', () => {
   return kopf('Joum 4D Build', 'Plan. Bau. Fertig.') + `<div class="inhalt">${haupt}
     <div class="raster4">
       <a class="kachel" href="#/assistent">${ICON.mikro}<span>Assistent</span></a>
-      <a class="kachel" href="${p ? (p.bereich === 'innen' && !(p.plan || []).length ? '#/loslegen/' : '#/planer/') + p.id : '#/projekte'}">${ICON.wuerfel}<span>Gestalten 3D</span></a>
+      <a class="kachel" href="${p ? (p.bereich === 'innen' && !(p.plan || []).length ? '#/studio/' + p.raum + '?p=' : '#/planer/') + p.id : '#/projekte'}">${ICON.wuerfel}<span>Gestalten 3D</span></a>
       <a class="kachel" href="#/garten">${ICON.baum}<span>Garten 4D</span></a>
       <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
       <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
@@ -111,6 +111,7 @@ route('projekte', (_, q) => {
 route('raum', (id) => {
   const r = raum(id);
   if (!r) return kopf('Nicht gefunden', '', '#/projekte');
+  if (r.bereich === 'innen' && typeof studioSeite === 'function') return studioSeite(id, {});
   const gruppen = [...new Set(r.katalog.map((k) => k[1]))];
   return kopf(r.name, 'Raum · Katalog & Projekte', '#/projekte') + `<div class="inhalt">
     <h3>Was möchtest du machen?</h3>
@@ -138,7 +139,7 @@ route('projekt', (id) => {
       ${a ? werBadge(a.wer) + `<div class="klein" style="margin-top:6px">${esc(a.dauer)}</div>` : '<div class="klein">Raumgestaltung</div>'}
       ${a ? `<div class="klein">Richtwert selbst ${euro(a.kosten[0] * (p.menge || 1))} · Profi ${euro(a.kosten[1] * (p.menge || 1))}</div>` : ''}
       <div class="klein">Ausgaben bisher: ${euro(ausgaben)}</div></div></section>
-    ${p.bereich === 'innen' && !(p.plan || []).length ? `<a class="karte los-einstieg" href="#/loslegen/${p.id}"><b>Raum planen mit Foto, Skizze oder Vorbild</b><span class="klein">Maße → Wünsche → Vorschläge mit Kosten, Material und Prüfung, ob alles passt.</span></a>` : ''}
+    ${p.bereich === 'innen' && !(p.plan || []).length ? `<a class="karte los-einstieg" href="#/studio/${p.raum}?p=${p.id}"><b>Raum-Studio: Vorschläge in 8 Stilen</b><span class="klein">Grundriss-Ideen, Kosten, Material – direkt ändern, Foto/Skizze/Vorbild.</span></a>` : ''}
     ${wasJetztKarte(p)}
     <label class="feld">Projektname<input value="${esc(p.name)}" data-ein="projektFeld" data-id="${p.id}" data-feld="name"></label>
     ${a ? `<label class="feld">Menge (${a.einheit})<input inputmode="decimal" value="${zahl(p.menge)}" data-ein="projektFeld" data-id="${p.id}" data-feld="menge" data-zahl="1"></label>` : ''}
@@ -230,9 +231,10 @@ route('fotomessen', (id, q) => {
   const punkt = ([x, y], f) => `<circle cx="${x}" cy="${y}" r="${FM.w / 70}" fill="${f}" stroke="#000" stroke-width="${FM.w / 400}"/>`;
   const linie = (a, f) => a.length === 2 ? `<line x1="${a[0][0]}" y1="${a[0][1]}" x2="${a[1][0]}" y2="${a[1][1]}" stroke="${f}" stroke-width="${FM.w / 180}" stroke-linecap="round"/>` : '';
   const text = ['Foto mit Zollstock aufnehmen oder auswählen', 'Tippe auf Anfang und Ende des Zollstocks (gelb)', 'Tippe auf Anfang und Ende der Strecke, die du messen willst (blau)', 'Fertig – übernehmen oder neue Strecke antippen'][schritt];
-  const losZurueck = (q && q.z === 'los') || (p.los && !p.los.fertig);
-  return kopf('Foto + Zollstock', p.name, losZurueck ? '#/loslegen/' + p.id + '?s=2' : '#/messen/' + p.id) + `<div class="inhalt">
-    ${losZurueck && FM.ergebnisse.length ? `<a class="btn hell voll" href="#/loslegen/${p.id}?s=2">Fertig gemessen – weiter</a>` : ''}
+  const losZurueck = (q && (q.z === 'los' || q.z === 'studio')) || (p.los && !p.los.fertig);
+  const zurueckZiel = p.bereich === 'innen' ? '#/studio/' + p.raum + '?p=' + p.id : '#/loslegen/' + p.id + '?s=2';
+  return kopf('Foto + Zollstock', p.name, losZurueck ? zurueckZiel : '#/messen/' + p.id) + `<div class="inhalt">
+    ${losZurueck && FM.ergebnisse.length ? `<a class="btn hell voll" href="${zurueckZiel}">Fertig gemessen – zurück zu den Vorschlägen</a>` : ''}
     <div class="hinweis klein"><b>So geht’s:</b> Zollstock (oder ein bekanntes Maß, z. B. Türbreite) flach an dieselbe Wand halten, die du messen willst, und gerade von vorn fotografieren. Je gerader das Foto, desto genauer.</div>
     ${dateiKnopf(FM.url ? 'Anderes Foto' : 'Foto aufnehmen oder auswählen', 'fmFoto', {}, { icon: ICON.kamera, klasse: FM.url ? '' : 'hell voll' })}
     ${FM.url ? `<div class="karte"><b>Schritt ${schritt}/3:</b> ${text}</div>

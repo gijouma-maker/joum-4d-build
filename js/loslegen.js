@@ -28,6 +28,11 @@ const ALTERNATIVEN = {
   'Regal hoch': [['Wandregal schmal', 'Möbel', 60, 30, 180, '']],
   'Schranksystem offen': [['Kleiderstange', 'Möbel', 100, 45, 160, '']]
 };
+function altFuer(n) {
+  if (ALTERNATIVEN[n]) return ALTERNATIVEN[n];
+  const k = Object.keys(ALTERNATIVEN).find((b) => { const w = b.split(/[ \d]/)[0]; return w.length > 3 && new RegExp(w, 'i').test(n); });
+  return k ? ALTERNATIVEN[k].filter((a) => a[0] !== n) : [];
+}
 /* grobe Preise (Material/Möbel, ohne Montage) – Spanne günstig … hochwertig */
 const PREISE = [
   [/Dusche bodengleich/, 600, 2500], [/Dusche/, 400, 1500], [/Badewanne/, 300, 1500], [/^WC/, 400, 1200], [/Waschtisch/, 150, 900], [/Handwaschbecken/, 80, 350],
@@ -73,6 +78,7 @@ function typischeMasse(p) {
 route('loslegen', (id, q) => {
   const p = projekt(id);
   if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  if (p.bereich === 'innen' && typeof studioSeite === 'function' && !(q && q.alt)) return studioSeite(p.raum, { p: p.id });
   const L = losStatus(p), s = Number(q.s || 1);
   const stufen = ['Start', 'Maße', 'Wünsche', 'Vorschläge'];
   const leiste = `<div class="los-leiste">${stufen.map((t, i) => `<a class="los-stufe ${i + 1 === s ? 'an' : i + 1 < s ? 'fertig' : ''}" href="#/loslegen/${p.id}?s=${i + 1}"><b>${i + 1}</b><span>${t}</span></a>`).join('')}</div>`;
@@ -209,10 +215,11 @@ function warumNicht(v, k) {
 function wandVon(e) { return (((e.rot || 0) % 360 + 360) % 360) / 90; }
 function losBauen(p, liste, opt) {
   opt = opt || {};
-  const v = JSON.parse(JSON.stringify(p)); v.plan = []; if (opt.dreh) v._wandDreh = opt.dreh;
+  const v = JSON.parse(JSON.stringify(p)); v.plan = []; if (opt.dreh) v._wandDreh = opt.dreh; if (opt.folge) v._wandFolge = opt.folge;
   const ergebnis = [];
+  (opt.vorplan || []).forEach((e) => { const el = JSON.parse(JSON.stringify(e)); v.plan.push(el); if (!/Trennwand|Halbhohe Wand|Raumteiler|Walk-in Dusche \(2/.test(el.n)) ergebnis.push({ n: el.n, ok: true, el }); });
   liste.forEach((k0) => {
-    const versuche = [k0].concat(opt.alternativen ? (ALTERNATIVEN[k0[0]] || []) : []);
+    const versuche = [k0].concat(opt.alternativen ? altFuer(k0[0]) : []);
     let gesetzt = null, grund = '';
     for (const k of versuche) {
       if (k[2] > v.breite && k[3] > v.breite) { if (!grund) grund = warumNicht(v, k); continue; }
@@ -244,14 +251,14 @@ function losBauen(p, liste, opt) {
     v.plan.push({ id: uid(), n: 'Lüfter', g: 'Technik', w: 15, d: 10, h: 15, x: v.breite - 10, y: Math.max(5, v.tiefe * 0.25), rot: 90 });
     ergebnis.push({ n: 'Lüfter', ok: true, neu: true, grundNeu: 'Bad ohne Fenster braucht eine Entlüftung nach draußen (DIN 18017-3) – gegenüber der Tür eingeplant.' });
   }
-  delete v._wandDreh;
+  delete v._wandDreh; delete v._wandFolge;
   return { plan: v.plan, ergebnis };
 }
 function losKosten(p, plan) {
-  const L = losStatus(p), b = L.budget || 'mittel', anteil = { spar: 0.15, mittel: 0.45, hoch: 0.8 }[b];
+  const L = losStatus(p), b = L.budget || 'mittel', anteil = { spar: 0.15, mittel: 0.45, hoch: 0.8 }[b], fk = (typeof STIL_FAKTOR !== 'undefined' && STIL_FAKTOR[p.stil]) || 1;
   const zeilen = {}; plan.forEach((e) => { const k = e.n; zeilen[k] = zeilen[k] || { n: k, g: e.g, anz: 0 }; zeilen[k].anz++; });
   let min = 0, max = 0, wert = 0;
-  const liste = Object.values(zeilen).map((z) => { const [a, c] = preisFuer(z.n, z.g); const x = a + (c - a) * anteil; min += a * z.anz; max += c * z.anz; wert += x * z.anz; return Object.assign(z, { preis: x, a, c }); });
+  const liste = Object.values(zeilen).map((z) => { let [a, c] = preisFuer(z.n, z.g); a = Math.round(a * fk); c = Math.round(c * fk); const x = a + (c - a) * anteil; min += a * z.anz; max += c * z.anz; wert += x * z.anz; return Object.assign(z, { preis: x, a, c }); });
   const anl = ANLEITUNGEN[p.anleitung];
   let arbeit = null;
   if (anl && anl.kosten && p.menge) arbeit = { t: anl.t, menge: p.menge, einheit: anl.einheit, selbst: anl.kosten[0] * p.menge, profi: anl.kosten[1] * p.menge };
@@ -332,7 +339,7 @@ route('skizze', (id) => {
   const p = projekt(id);
   if (!p) return kopf('Kein Projekt', '', '#/projekte');
   nachRender(() => skizzeStarten(p));
-  return kopf('Skizze zeichnen', p.name, '#/loslegen/' + p.id) + `<div class="inhalt">
+  return kopf('Skizze zeichnen', p.name, '#/studio/' + p.raum + '?p=' + p.id) + `<div class="inhalt">
     <p class="klein">Zeichne den Grundriss mit dem Finger. „Gerade Linie“ zieht saubere Wände (rastet an den Kästchen ein). Maße trägst du im nächsten Schritt ein.</p>
     <div class="zeile wrap"><button class="chip ${SK.modus === 'linie' ? 'an' : ''}" data-akt="skModus" data-m="linie">Gerade Linie</button><button class="chip ${SK.modus === 'frei' ? 'an' : ''}" data-akt="skModus" data-m="frei">Freihand</button><button class="chip" data-akt="skZurueck">↶ Rückgängig</button><button class="chip" data-akt="skLeeren">Alles löschen</button></div>
     <canvas id="skizze-flaeche" class="skizze-flaeche" width="900" height="900"></canvas>
@@ -370,7 +377,7 @@ AKT.skSpeichern = (d) => {
   if (!SK.striche.length) { info('Zeichne zuerst etwas – oder geh zurück und tippe die Maße ein.'); return; }
   const url = cv.toDataURL('image/jpeg', 0.8);
   aendern(() => { projekt(d.id).skizze = url; }, 'Skizze gezeichnet');
-  SK.striche = []; toast('Skizze gespeichert'); geh('#/loslegen/' + d.id + '?s=2');
+  SK.striche = []; toast('Skizze gespeichert'); const pp = projekt(d.id); geh('#/studio/' + pp.raum + '?p=' + d.id);
 };
 
 HILFE.losUebernehmen = 'Diese Variante übernehmen. Sie kommt in den Planer, dort kannst du sie in 3D ansehen und anpassen.';

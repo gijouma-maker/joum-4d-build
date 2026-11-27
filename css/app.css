@@ -326,3 +326,24 @@ div.schritt { cursor: default; }
 .skizze-flaeche { width: 100%; aspect-ratio: 1; border-radius: 12px; touch-action: none; margin: 10px 0; background: #fff; }
 .raster3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .zeile.wrap { flex-wrap: wrap; }
+
+/* Raum-Studio */
+.studio-3d { position: relative; height: 280px; border-radius: 18px; overflow: hidden; background: #0b0b0b; margin-bottom: 10px; }
+.studio-3d canvas { width: 100% !important; height: 100% !important; }
+.studio-3d-titel { position: absolute; left: 12px; top: 10px; z-index: 2; background: rgba(0,0,0,.6); padding: 4px 10px; border-radius: 999px; font-size: 13px; pointer-events: none; }
+.stil-leiste { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.stil-leiste::-webkit-scrollbar, .varianten::-webkit-scrollbar { display: none; }
+.stil-chip { flex: none; display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 999px; border: 1px solid #333; background: #111; color: #ddd; font: inherit; font-size: 14px; cursor: pointer; }
+.stil-chip i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #555; display: inline-block; }
+.stil-chip.an { background: #fff; color: #000; border-color: #fff; font-weight: 600; }
+.varianten { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px 0 10px; scrollbar-width: none; }
+.variante-karte { flex: 0 0 72%; scroll-snap-align: start; display: grid; gap: 4px; text-align: left; padding: 10px; border-radius: 16px; border: 1px solid #333; background: #111; color: #fff; font: inherit; cursor: pointer; }
+.variante-karte .los-svg { margin: 0; max-width: none; }
+.variante-karte.an { border-color: #fff; box-shadow: 0 0 0 1px #fff; }
+.teil-chip.konzept { border-color: #ffd27a; }
+.chip.plus { border-style: dashed; }
+.chip svg { width: 16px; height: 16px; vertical-align: -3px; margin-right: 4px; }
+.chip-knopf { min-height: 36px !important; padding: 6px 12px !important; font-size: 14px !important; border-radius: 999px !important; }
+.studio .datei-gruppe { display: inline-flex; flex-direction: column; gap: 4px; }
+.studio .datei-gruppe .einfuegen { font-size: 12px; }
+.feld.mini { display: inline-flex; align-items: center; gap: 6px; margin: 0; } .feld.mini input { width: 70px; }

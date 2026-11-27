@@ -28,9 +28,9 @@ function absicht(text) {
   if (/zollstock|foto messen|per foto/.test(t)) return proj('#/fotomessen/{id}', 'label.datei-knopf', 'Halte den Zollstock an die Wand und mach ein Foto. Tippe auf den blinkenden Knopf.');
   if (/messen|ausmessen|maße|wie groß/.test(t)) return proj('#/messen/{id}', 'input[data-feld="breite"]', 'Trag hier Breite und Tiefe ein – oder sag die Maße mit dem Mikrofon.');
   if (/grundriss/.test(t)) return proj('#/messen/{id}', 'label.datei-knopf', 'Tippe auf den blinkenden Knopf und lade deinen Grundriss hoch.');
-  if (/skizze|zeichn/.test(t)) return proj('#/loslegen/{id}', 'a[href^="#/skizze/"]', 'Tippe auf den blinkenden Knopf und zeichne deinen Raum mit dem Finger – oder fotografiere eine Skizze auf Papier.');
-  if (/vorbild|so eins|inspiration|pinterest|bild aus dem internet/.test(t)) return proj('#/loslegen/{id}', 'label.datei-knopf:has(input[data-ein="losVorbild"])', 'Tippe auf „Vorbild-Bild hochladen“ und wähle das Bild, das dir gefällt.');
-  if (/vorschl|kosten|was kostet|passt das|machbar/.test(t)) return proj('#/loslegen/{id}?s=4', '.los-variante.empfohlen [data-akt="losUebernehmen"]', 'Hier sind meine Vorschläge mit Kosten und Material. Die Empfehlung ist markiert.');
+  if (/skizze|zeichn/.test(t)) return proj('#/loslegen/{id}', '[data-akt="studioZu"][data-z="skizze"]', 'Tippe auf den blinkenden Knopf und zeichne deinen Raum mit dem Finger – oder fotografiere eine Skizze auf Papier.');
+  if (/vorbild|so eins|inspiration|pinterest|bild aus dem internet/.test(t)) return proj('#/loslegen/{id}', 'label.datei-knopf:has(input[data-ein="studioVorbild"])', 'Tippe auf „Vorbild-Bild hochladen“ und wähle das Bild, das dir gefällt.');
+  if (/vorschl|kosten|was kostet|passt das|machbar/.test(t)) return proj('#/loslegen/{id}?s=4', '[data-akt="studioNehmen"]', 'Hier sind meine Vorschläge mit Kosten und Material. Die Empfehlung ist markiert.');
   if (/stil|farbe aussuchen|ideen/.test(t)) return proj('#/ideen/{id}', '.stil', 'Wähle einen Stil – tippe auf eine Karte.');
   if (/vorher|nachher|film/.test(t)) return proj('#/projekt/{id}', '[data-akt="film"]', 'Tippe auf den blinkenden Knopf – dann siehst du vorher und nachher.');
   if (/4d|bauablauf|wie wird gebaut|leitungen zeigen/.test(t)) return proj('#/projekt/{id}', '[data-akt="bau4D"], [data-akt="schichten4D"], [data-akt="garten4DProjekt"]', 'Tippe auf den blinkenden Knopf – dann siehst du den Bauablauf in 4D.');
