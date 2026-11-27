@@ -1,7 +1,7 @@
 /* Joum 4D Build – Service Worker: App läuft auch offline */
-const CACHE = 'j4d-v5';
+const CACHE = 'j4d-v6';
 const DATEIEN = ['./', './index.html', './css/app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png',
-  './js/data-raeume.js', './js/data-anleitungen.js', './js/data-garten.js', './js/core.js', './js/drei.js', './js/vendor/three.min.js', './js/vendor/OrbitControls.js',
+  './js/data-raeume.js', './js/data-anleitungen.js', './js/data-garten.js', './js/core.js', './js/nav.js', './js/drei.js', './js/vendor/three.min.js', './js/vendor/OrbitControls.js',
   './js/screens-projekte.js', './js/screens-garten.js', './js/screens-markt.js', './js/screens-installation.js'];
 
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(DATEIEN)).then(() => self.skipWaiting())); });

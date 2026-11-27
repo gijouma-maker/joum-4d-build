@@ -10,7 +10,13 @@ Die App ist eine **installierbare Web-App (PWA)** ohne Build-Schritt.
 
 - **Lokal:** Ordner öffnen und einen kleinen Webserver starten, z. B. `python3 -m http.server 8000`, dann `http://localhost:8000` im Browser öffnen.
 - **Aufs Handy:** Seite im Browser öffnen → „Zum Startbildschirm hinzufügen“. Danach läuft sie wie eine App, auch offline.
-- **Online stellen (kostenlos):** z. B. Netlify Drop (Ordner hineinziehen) oder Cloudflare Pages. GitHub Pages geht bei privaten Repositorys nur mit bezahltem Tarif.
+- **Online stellen (kostenlos, empfohlen): Cloudflare Pages**
+  1. Kostenloses Konto auf dash.cloudflare.com anlegen, Zwei-Faktor-Anmeldung einschalten.
+  2. Workers & Pages → Create → Pages → „Connect to Git“ → GitHub verbinden → dieses Repository wählen.
+  3. Build-Befehl leer lassen, Ausgabeverzeichnis `/` → Deploy. Die App läuft dann unter `<name>.pages.dev` mit HTTPS.
+  4. Eigene Domain (z. B. `4d.joumhome.com`) unter „Custom domains“ eintragen.
+  - Die Datei `_headers` setzt automatisch strenge Sicherheits-Header (CSP, HSTS, Klickjacking-Schutz).
+  - Jeder Push auf `main` veröffentlicht automatisch neu.
 
 ## Inhalt
 
