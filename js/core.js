@@ -156,8 +156,21 @@ function kopf(titel, unter, zurueck) {
 function dateiKnopf(text, ein, daten, opt) {
   opt = opt || {};
   const attr = Object.entries(daten || {}).map(([k, v]) => `data-${k}="${esc(v)}"`).join(' ');
-  return `<label class="btn datei-knopf ${opt.klasse || ''}">${opt.icon || ''}<span>${esc(text)}</span><input type="file" class="datei-versteckt" accept="${opt.accept || 'image/*'}" ${opt.mehrere ? 'multiple' : ''} data-ein="${ein}" ${attr}></label>`;
+  const knopf = `<label class="btn datei-knopf ${opt.klasse || ''}">${opt.icon || ''}<span>${esc(text)}</span><input type="file" class="datei-versteckt" accept="${opt.accept || 'image/*'}" ${opt.mehrere ? 'multiple' : ''} data-ein="${ein}" ${attr}></label>`;
+  if (opt.accept && !/image/.test(opt.accept)) return knopf;
+  // Zweiter Weg für Apps, die keine Dateiauswahl erlauben: Bild einfügen (kopieren → lange drücken → Einfügen)
+  return `<span class="datei-gruppe">${knopf}<input class="einfuegen" aria-label="Bild einfügen" placeholder="oder Bild einfügen" data-paste="${ein}" ${attr}></span>`;
 }
+document.addEventListener('paste', (e) => {
+  const ziel = e.target.closest && e.target.closest('[data-paste]');
+  const items = [...((e.clipboardData && e.clipboardData.items) || [])].filter((i) => i.type.startsWith('image/'));
+  if (!ziel) return;
+  e.preventDefault();
+  if (!items.length) { toast('Kein Bild in der Zwischenablage – Foto in der Galerie erst „Kopieren“'); return; }
+  const files = items.map((i) => i.getAsFile()).filter(Boolean);
+  const f = EIN[ziel.dataset.paste];
+  if (f) f('', ziel.dataset, { files, value: '' });
+});
 
 /* Spracheingabe (Web Speech API, wo verfügbar) */
 function diktieren(ziel) {

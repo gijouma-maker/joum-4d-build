@@ -365,6 +365,8 @@ function grundrissKnoepfe(p) {
   return `<div class="zeile">${dateiKnopf(p.grundriss ? 'Grundriss ändern' : 'Grundriss hochladen', 'grundrissDatei', { id: p.id }, { icon: ICON.kamera })}${p.grundriss ? `<button class="btn klein-btn rot-text" data-akt="grundrissWeg" data-id="${p.id}">Entfernen</button>` : ''}</div>`;
 }
 
+/* Raster im 2D-Grundriss: ein Kästchen = 50 cm */
+const RASTER = 'linear-gradient(rgba(255,255,255,.13) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.13) 1px, transparent 1px)';
 function planer3D(p) {
   const box = document.getElementById('raum3d');
   if (!box || !window.zeigeRaum3D) return;
@@ -398,10 +400,10 @@ route('planer', (id) => {
     ${grundrissKnoepfe(p)}
     <h3>Grundriss – hier verschieben</h3>
     <div class="plan-buehne" style="height:${hoehePx + 4}px">
-      <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${p.grundriss ? `url(${p.grundriss}) center/100% 100% no-repeat` : (stil ? stil.boden : '#1a1a1a')};border-color:${stil ? stil.wand : '#555'}"><div class="pl-tuer" style="top:${(p.tiefe / 2 - 45) * sk}px;height:${90 * sk}px;width:${90 * sk}px" aria-hidden="true"></div>${elemente}</div>
+      <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background-color:${stil ? stil.boden : '#1a1a1a'};background-image:${RASTER}${p.grundriss ? `,url(${p.grundriss})` : ''};background-size:${50 * sk}px ${50 * sk}px,${50 * sk}px ${50 * sk}px${p.grundriss ? ',100% 100%' : ''};background-repeat:repeat,repeat${p.grundriss ? ',no-repeat' : ''};border-color:${stil ? stil.wand : '#555'}"><div class="pl-tuer" style="top:${(p.tiefe / 2 - 45) * sk}px;height:${90 * sk}px;width:${90 * sk}px" aria-hidden="true"></div>${elemente}</div>
     </div>
     ${kiKarte(p)}
-    <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen</div>
+    <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen · 1 Kästchen = 50 cm</div>
     ${sel ? `<div class="karte werkzeug"><b>${esc(sel.n)}</b> <span class="klein">${sel.w}×${sel.d}×${sel.h} cm</span>
       <div class="zeile"><button class="btn klein-btn" data-akt="planDreh" data-id="${p.id}">Drehen 90°</button><button class="btn klein-btn" data-akt="planDoppel" data-id="${p.id}">Kopieren</button><button class="btn klein-btn rot-text" data-akt="planWeg" data-id="${p.id}">Löschen</button></div>
       ${/Kücheninsel/.test(sel.n) ? `<div class="klein" style="margin-top:8px">Was kommt in die Insel?</div><div class="chips" style="flex-wrap:wrap">${INSEL_OPT.map(([o, n]) => `<button class="chip ${(sel.aus || {})[o] ? 'an' : ''}" data-akt="inselOpt" data-id="${p.id}" data-e="${sel.id}" data-o="${o}">${n}</button>`).join('')}</div>${inselLeitungen(sel).map(([a, t]) => `<div class="hinweis ${a === 'strom' ? 'gelb' : a === 'wasser' ? '' : 'gruen'} klein">${esc(t)}</div>`).join('')}` : ''}
