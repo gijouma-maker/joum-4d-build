@@ -90,6 +90,7 @@ function toast(text) {
 /* Eigene Dialoge (statt alert/confirm – funktionieren auch in eingebetteten Vorschauen) */
 function dialog(text, knoepfe) {
   const d = document.getElementById('dialog');
+  const alt = document.getElementById('befehl-eingabe'); if (alt) alt.remove();
   d.querySelector('.d-text').textContent = text;
   const leiste = d.querySelector('.d-knoepfe'); leiste.innerHTML = '';
   knoepfe.forEach(([name, fn, hell]) => {

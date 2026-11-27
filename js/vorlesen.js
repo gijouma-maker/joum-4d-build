@@ -2,18 +2,22 @@
    Sprachausgabe über die Sprachausgabe des Geräts (Web Speech API, Deutsch). */
 
 /* ---------- Sprechen ---------- */
-function stimmeDE() {
+function stimmeDE(lg) {
   const st = (window.speechSynthesis && speechSynthesis.getVoices()) || [];
-  return st.find((v) => /de(-|_)DE/i.test(v.lang) && /google|natural|neural|premium|enhanced/i.test(v.name)) || st.find((v) => /^de/i.test(v.lang)) || null;
+  const k = (lg || 'de-DE').slice(0, 2), voll = (lg || 'de-DE').replace('-', '[-_]');
+  return st.find((v) => new RegExp(voll, 'i').test(v.lang) && /google|natural|neural|premium|enhanced/i.test(v.name)) || st.find((v) => new RegExp('^' + k, 'i').test(v.lang)) || null;
 }
-function sprich(text, still) {
+/* lang: BCP-47 (z. B. 'en-US'); ohne Angabe: übersetzt, was das Wörterbuch kennt, sonst Deutsch */
+function sprich(text, still, lang) {
   if (!text) return;
   if (!('speechSynthesis' in window)) { if (!still) toast('Vorlesen wird von diesem Gerät nicht unterstützt'); return; }
   try {
     speechSynthesis.cancel();
     const sauber = String(text).replace(/<[^>]+>/g, ' ').replace(/[·•|]/g, ', ').replace(/\s+/g, ' ').replace(/(\d),(\d)/g, '$1 Komma $2').replace(/m²/g, ' Quadratmeter').replace(/ cm\b/g, ' Zentimeter').replace(/ mm\b/g, ' Millimeter').replace(/ m\b/g, ' Meter').replace(/ Std\./g, ' Stunden').replace(/€/g, ' Euro').replace(/DN (\d+)/g, 'D N $1').replace(/ca\./g, 'circa').replace(/z\. B\./g, 'zum Beispiel').replace(/§/g, 'Paragraf');
-    const u = new SpeechSynthesisUtterance(sauber);
-    u.lang = 'de-DE'; u.rate = S.einstellungen.sprechTempo || 0.95; const v = stimmeDE(); if (v) u.voice = v;
+    let lg = lang || 'de-DE', txt = sauber;
+    if (!lang && typeof spr === 'function' && spr() !== 'de') { const tr = TT(sauber.trim()); if (tr !== sauber.trim()) { txt = tr; lg = sprBcp(); } }
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = lg; u.rate = S.einstellungen.sprechTempo || 0.95; const v = stimmeDE(lg); if (v) u.voice = v;
     speechSynthesis.speak(u);
   } catch (e) { if (!still) toast('Vorlesen nicht möglich'); }
 }
@@ -119,7 +123,7 @@ function blase(el, text) {
 document.addEventListener('click', (e) => {
   if (!S.einstellungen.vorlesen) return;
   const el = e.target.closest('[data-akt], a, button, label.datei-knopf');
-  if (!el || el.dataset.akt === 'vorlesen' || el.dataset.akt === 'wasJetzt' || el.closest('.schritt-modus')) return;
+  if (!el || ['vorlesen', 'wasJetzt', 'sprachbefehl'].includes(el.dataset.akt) || el.closest('.schritt-modus')) return;
   const h = hilfeFuer(el); if (h) sprich(h, true);
 }, true);
 let letzteSeite = '';
