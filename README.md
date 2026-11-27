@@ -18,7 +18,7 @@ Die App ist eine **installierbare Web-App (PWA)** ohne Build-Schritt.
 |---|---|
 | Start | Aktives Projekt mit Fortschritts-Ring, nächster Schritt, Schnellzugriffe |
 | Projekte | Reiter Innen / Haus außen / Garten, Kennzeichnung „Selbst“, „Teils Profi“, „Fachbetrieb“ |
-| Räume (26) | Wohnzimmer, Esszimmer, Küche, Bad, Gäste-WC, Schlafzimmer, Kinderzimmer, Babyzimmer, Jugendzimmer, Gästezimmer, Büro, Flur/Diele, Treppe, Ankleide, Abstellraum/Speisekammer, Waschraum/HWR, Keller, Heizungsraum, Dachgeschoss/Dachboden, Hobbyraum/Werkstatt, Fitnessraum, Heimkino, Wintergarten, Balkon/Loggia, Garage/Carport, Fassade, Dach, Garten – je mit Katalog, Montage- und Sicherheitshinweisen, Tipps |
+| Räume & Bereiche (28) | Wohnzimmer, Esszimmer, Küche, Bad, Gäste-WC, Schlafzimmer, Kinderzimmer, Babyzimmer, Jugendzimmer, Gästezimmer, Büro, Flur/Diele, Treppe, Ankleide, Abstellraum/Speisekammer, Waschraum/HWR, Keller, Heizungsraum, Dachgeschoss/Dachboden, Hobbyraum/Werkstatt, Fitnessraum, Heimkino, Wintergarten, Balkon/Loggia, Garage/Carport, Fassade, Dach, Garten – je mit Katalog, Montage- und Sicherheitshinweisen, Tipps |
 | Messen | Wände, Aussparungen, Netto-Fläche, Grundfläche, Diktieren per Mikrofon |
 | Gestalten | 2D-Grundriss: Elemente aus dem Raumkatalog hinzufügen, verschieben, drehen, kopieren, löschen; 3D-Ansicht |
 | KI-Ideen | Notizen aus Skizze („Licht, TV, Bild?“) → Elemente mit Bestätigung für Unsicheres; 8 Stile (Modern Hell, Skandinavisch, Industrial, Japandi, Landhaus, Luxus/Art déco, Familienfreundlich, Spar-Variante) |
