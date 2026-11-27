@@ -43,7 +43,8 @@ const RAEUME = [
       ['Couchtisch', 'Möbel', 110, 60, 40, ''],
       ['TV-Board', 'Möbel', 180, 45, 50, 'Hohe Kombinationen an der Wand gegen Kippen sichern.'],
       ['Regal hoch', 'Möbel', 80, 35, 200, 'Immer an der Wand kippsicher befestigen.'],
-      ['Esstisch', 'Möbel', 180, 90, 75, 'Um den Tisch ca. 80–100 cm Bewegungsfläche einplanen.'],
+      ['Esstisch 4 Pers.', 'Möbel', 120, 80, 75, 'Stühle kommen automatisch dazu. Hinter den Stühlen 60–80 cm frei.'],
+      ['Esstisch 6 Pers.', 'Möbel', 180, 90, 75, 'Stühle kommen automatisch dazu. Hinter den Stühlen 60–80 cm frei.'],
       ['Stuhl', 'Möbel', 45, 50, 90, ''],
       ['Kamin / Kaminofen', 'Wand & Bau', 60, 50, 110, 'Nur mit Abnahme durch Bezirksschornsteinfeger; Funkenschutzplatte vor dem Ofen; Abstände zu Brennbarem.'],
       ['Fernseher an Wand', 'Wand & Bau', 145, 8, 85, 'Halterung für Gewicht und Wandart; Leitungssucher vor dem Bohren.']
@@ -53,7 +54,7 @@ const RAEUME = [
     tipps: ['Helle Wände und große Bodenformate lassen den Raum größer wirken.', 'Licht in 3 Ebenen planen: Grundlicht, Zonenlicht, Akzent.'] },
 
   { id: 'esszimmer', name: 'Esszimmer', bereich: 'innen', w: 400, d: 350,
-    katalog: kat([['Esstisch 6 Pers.', 'Möbel', 200, 100, 75, '80–100 cm Abstand zur Wand für Stühle.'], ['Stuhl', 'Möbel', 45, 50, 90, ''], ['Sideboard', 'Möbel', 180, 45, 80, ''], ['Vitrine', 'Möbel', 90, 40, 190, 'Kippsicher befestigen.'], ['Pendelleuchte über Tisch', 'Licht', 100, 30, 40, 'Unterkante ca. 60–70 cm über Tischplatte.']], BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau),
+    katalog: kat([['Esstisch 4 Pers.', 'Möbel', 120, 80, 75, 'Stühle kommen automatisch dazu.'], ['Esstisch 6 Pers.', 'Möbel', 180, 90, 75, 'Stühle kommen automatisch dazu. Hinter den Stühlen 60–80 cm frei.'], ['Esstisch 8 Pers.', 'Möbel', 240, 100, 75, 'Stühle kommen automatisch dazu. Raum mind. ca. 4,6 × 3,2 m.'], ['Stuhl', 'Möbel', 45, 50, 90, ''], ['Sideboard', 'Möbel', 180, 45, 80, ''], ['Vitrine', 'Möbel', 90, 40, 190, 'Kippsicher befestigen.'], ['Pendelleuchte über Tisch', 'Licht', 100, 30, 40, 'Unterkante ca. 60–70 cm über Tischplatte.']], BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau),
     projekte: ['streichen', 'laminat', 'parkett'], sicherheit: [], tipps: ['Pendelleuchte mittig über dem Tisch, nicht über der Raummitte.'] },
 
   { id: 'kueche', name: 'Küche', bereich: 'innen', w: 400, d: 300,
@@ -66,7 +67,8 @@ const RAEUME = [
       ['Kühlschrank', 'Küche', 60, 65, 180, 'Lüftungsschlitze frei lassen.'],
       ['Geschirrspüler', 'Küche', 60, 60, 85, 'Aquastop-Schlauch; nicht neben Kühlschrank ohne Wärmeschutz.'],
       ['Dunstabzug', 'Küche', 90, 50, 60, 'Abluft bei Kaminofen nur mit Fensterkontakt/Unterdruckwächter (Schornsteinfeger fragen).'],
-      ['Kücheninsel', 'Küche', 180, 90, 92, 'Mind. 100–120 cm Abstand zur Küchenzeile.'],
+      ['Kücheninsel', 'Küche', 180, 90, 92, 'Mind. 100–120 cm Abstand zur Küchenzeile. Ausstattung (Kochfeld, Spüle, Geschirrspüler) antippen – die App zeigt, welche Leitungen durch den Boden müssen.'],
+      ['Esstheke / Barhocker', 'Möbel', 40, 45, 75, 'Barhocker an der Insel: ca. 60 cm Breite je Person.'],
       ['Fliesenspiegel', 'Wand & Bau', 240, 1, 60, ''],
       ['Arbeitsplatte', 'Küche', 240, 60, 4, 'Schnittkanten versiegeln (Feuchte).']
     ], BASIS.licht, BASIS.technik),
@@ -153,7 +155,7 @@ const RAEUME = [
 
   { id: 'keller', name: 'Keller', bereich: 'innen', w: 600, d: 400,
     katalog: kat([['Kellerregal', 'Lager', 100, 40, 180, 'Nicht direkt an feuchte Außenwand – 5 cm Abstand.'], ['Werkbank', 'Möbel', 150, 70, 90, ''], ['Luftentfeuchter', 'Technik', 35, 25, 50, ''], ['Lichtschacht-Abdeckung', 'Wand & Bau', 100, 50, 2, 'Gegen Laub und Tiere.'], ['Rückstauklappe', 'Sanitär', 20, 20, 20, 'Einbau durch Fachbetrieb; schützt bei Starkregen.']], [BASIS.licht[0]], BASIS.technik),
-    projekte: ['keller_feuchte', 'streichen', 'kellerdecke_daemmen'],
+    projekte: ['keller_feuchte', 'keller_abdichten', 'streichen', 'kellerdecke_daemmen', 'installation'],
     sicherheit: ['Feuchte: erst Ursache klären (außen, innen, Kondensat), dann sanieren.', 'Kellerräume zu Wohnraum umnutzen ist genehmigungspflichtig (Belichtung, Rettungsweg, Raumhöhe).', 'Radon: in einigen Regionen messen lassen.'],
     tipps: ['Kellerdecke dämmen spart spürbar Heizenergie und ist gut selbst machbar.', 'Im Sommer kühle Keller nicht tagsüber lüften (Kondensat).'] },
 

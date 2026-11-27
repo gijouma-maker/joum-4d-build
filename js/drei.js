@@ -16,6 +16,7 @@
     renderer.setClearColor(opt.hg || 0x111111);
     box.innerHTML = ''; box.appendChild(renderer.domElement);
     const scene = new T.Scene();
+    if (opt.realistisch) { renderer.toneMapping = T.ACESFilmicToneMapping; try { const pm = new T.PMREMGenerator(renderer); scene.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture; } catch (e) {} }
     const camera = new T.PerspectiveCamera(opt.fov || 45, W / H, 0.01, 200);
     scene.add(new T.HemisphereLight(0xffffff, 0x3a3a3a, 0.75));
     const sonne = new T.DirectionalLight(0xffffff, 0.85);
@@ -241,8 +242,17 @@
     } else if (is(/Babybett/)) { g.add(kiste(w, 0.1, d, WEI, 0, 0.35, 0)); for (let i = 0; i < 9; i++) { g.add(kiste(0.03, 0.55, 0.03, WEI, -w / 2 + i * w / 8, 0.62, d / 2)); g.add(kiste(0.03, 0.55, 0.03, WEI, -w / 2 + i * w / 8, 0.62, -d / 2)); } [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([a, b]) => g.add(kiste(0.05, 0.9, 0.05, WEI, a * w / 2, 0.45, b * d / 2)));
     } else if (is(/[Tt]isch|Werkbank|Kücheninsel/) && !is(/Nachttisch|Schreibtischleuchte/)) {
       const th = h; g.add(kiste(w, 0.04, d, is(/Werkbank/) ? holz : farbe, 0, th - 0.02, 0));
-      if (is(/Kücheninsel/)) g.add(kiste(w * 0.98, th - 0.04, d * 0.96, WEI, 0, (th - 0.04) / 2, 0));
+      if (is(/Kücheninsel/)) {
+        g.add(kiste(w * 0.98, th - 0.04, d * 0.96, WEI, 0, (th - 0.04) / 2, 0));
+        const a = e.aus || {};
+        if (a.kochfeld || a.mulde) { g.add(kiste(0.6, 0.006, 0.52, '#0b0b0b', -w / 2 + 0.45, th + 0.003, 0, { roughness: 0.08, metalness: 0.3 })); [[-0.13, -0.12], [0.13, -0.12], [-0.13, 0.12], [0.13, 0.12]].forEach(([x, z]) => { const r = mesh(new T.RingGeometry(0.07, 0.085, 24), mat('#555', { side: T.DoubleSide })); r.rotation.x = -Math.PI / 2; r.position.set(-w / 2 + 0.45 + x, th + 0.008, z); g.add(r); }); }
+        if (a.mulde) g.add(kiste(0.08, 0.008, 0.48, '#2a2a2a', -w / 2 + 0.45, th + 0.007, 0, { metalness: 0.6 }));
+        if (a.spuele) { g.add(kiste(0.5, 0.012, 0.4, '#9aa4a8', w / 2 - 0.4, th + 0.002, 0, { metalness: 0.7, roughness: 0.25 })); g.add(zyl(0.015, 0.3, CHROM, w / 2 - 0.4, th + 0.15, -0.25, { metalness: 0.9 })); g.add(kiste(0.03, 0.02, 0.18, CHROM, w / 2 - 0.4, th + 0.3, -0.17, { metalness: 0.9 })); }
+        if (a.gs) g.add(kiste(0.58, 0.7, 0.01, '#dcdcdc', w / 2 - 0.4, 0.45, d / 2 + 0.002, { metalness: 0.3 }));
+        if (a.haube) { g.add(kiste(0.9, 0.12, 0.6, '#2a2a2a', -w / 2 + 0.45, 1.75, 0, { metalness: 0.5 })); g.add(kiste(0.3, 2.5 - 1.81, 0.3, '#2a2a2a', -w / 2 + 0.45, 1.81 + (2.5 - 1.81) / 2, 0, { metalness: 0.5 })); }
+      }
       else [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([a, b]) => g.add(kiste(0.05, th - 0.04, 0.05, '#333', a * (w / 2 - 0.05), (th - 0.04) / 2, b * (d / 2 - 0.05))));
+    } else if (is(/Barhocker/)) { g.add(zyl(0.18, 0.05, farbe, 0, 0.75, 0)); g.add(zyl(0.025, 0.72, '#333', 0, 0.37, 0, { metalness: 0.7 })); g.add(zyl(0.2, 0.02, '#333', 0, 0.01, 0, { metalness: 0.7 }));
     } else if (is(/Stuhl|Hantelbank|Sitzbank|Bank/)) {
       g.add(kiste(w, 0.05, d, farbe, 0, 0.46, 0)); if (is(/Stuhl/)) g.add(kiste(w, h - 0.46, 0.04, farbe, 0, (h + 0.46) / 2, -d / 2));
       [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([a, b]) => g.add(kiste(0.035, 0.44, 0.035, '#333', a * (w / 2 - 0.03), 0.22, b * (d / 2 - 0.03))));
@@ -308,7 +318,7 @@
   let raumKamera = null;
   window.zeigeRaum3D = function (box, p, stil, auswahlId, beiAuswahl) {
     const B = p.breite / 100, D = p.tiefe / 100, H = 2.5;
-    const v = viewer(box, { hg: 0x0d0d0d, schattenGroesse: Math.max(B, D) });
+    const v = viewer(box, { hg: 0x0d0d0d, schattenGroesse: Math.max(B, D), realistisch: true });
     const sc = v.scene;
     const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
     const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
@@ -625,6 +635,19 @@
       leitung(w, 0.008, '#d9d9d9', 'elektro'); dose(umfang(s, 0.025), h);
     });
 
+    /* Kücheninsel: alle Leitungen durch den Boden (vor dem Estrich) */
+    const insel = plan.find((e) => /Kücheninsel/.test(e.n)), ia = (insel && insel.aus) || {};
+    let inselWasser = false, inselMulde = false;
+    if (insel) {
+      const vorher = leitungen.length;
+      const [ix, iz] = mitte(insel), s = sVon(ix, iz), wp = umfang(s, 0.06), y = 0.035;
+      const zu = (dx, dz) => [v3(wp.x + dx, y, wp.z + dz), v3(ix + dx, y, iz + dz), v3(ix + dx, 0.5, iz + dz)];
+      if (ia.spuele || ia.gs) { inselWasser = true; leitung(zu(0.12, 0.12).map((q, i) => i === 1 ? q : q), 0.028, '#9ea3a8', 'abwasser'); leitung(zu(-0.05, 0.05), 0.012, '#2f7fe0', 'wasser'); if (ia.spuele) leitung(zu(0.02, -0.02), 0.012, '#e0452f', 'wasser'); }
+      if (ia.kochfeld || ia.mulde || ia.gs || ia.steckdosen) leitung(zu(-0.15, -0.12), 0.014, '#e0a030', 'elektro');
+      if (ia.mulde) { inselMulde = true; const ss = sVon(ix, iz); const aw = umfang(ss, -0.2); leitung([v3(ix - 0.3, 0.06, iz), v3(aw.x, 0.06, aw.z)], 0.045, '#d9d9d9', 'lueftung'); }
+      leitungen.slice(vorher).forEach((l) => { l.boden = true; });
+    }
+
     /* Lüftung: Lüfter gegenüber der Tür, Abluft DN 100 nach draußen */
     const luefter = plan.find((e) => /Lüfter/.test(e.n));
     let lPos = null;
@@ -687,10 +710,10 @@
     const PH = [
       { id: 'grundriss', n: 'Grundriss', d: 3.5, txt: grundrissUrl ? 'Dein Grundriss' : 'Grundriss ' + zahl(B) + ' × ' + zahl(D) + ' m' },
       { id: 'durchbruch', n: 'Durchbruch', d: 3, txt: 'Durchbruch ' + Math.round(tb * 100) + ' × ' + Math.round(th * 100) + ' cm – Statik prüfen!' },
-      { id: 'abwasser', n: 'Abwasser', d: san.length ? 4.5 : 0, txt: 'Abwasser: ' + infoAb.slice(0, 3).join(', ') + ' · 2 % Gefälle' },
-      { id: 'wasser', n: 'Wasser', d: san.length ? 3.2 : 0, txt: 'Kalt- und Warmwasser bis zu den Eckventilen' },
-      { id: 'elektro', n: 'Elektro', d: 3.8, txt: 'Kabel in der Zone oben, senkrecht zu ' + (dosen.length) + ' Dosen' },
-      { id: 'lueftung', n: 'Lüftung', d: luefter ? 3.2 : 0, txt: 'Lüfter gegenüber der Tür · Abluft DN 100 nach draußen' + (['bad', 'gaestewc', 'waschraum'].includes(p.raum) ? ' · Tür mit Lüftungsgitter' : '') },
+      { id: 'abwasser', n: 'Abwasser', d: san.length || inselWasser ? 4.5 : 0, txt: 'Abwasser: ' + infoAb.slice(0, 3).join(', ') + ' · 2 % Gefälle' },
+      { id: 'wasser', n: 'Wasser', d: san.length || inselWasser ? 3.2 : 0, txt: 'Kalt- und Warmwasser bis zu den Eckventilen' },
+      { id: 'elektro', n: 'Elektro', d: 3.8, txt: insel && (ia.kochfeld || ia.mulde) ? 'Starkstrom 400 V zur Insel durch den Boden · Kabel in den Zonen' : 'Kabel in der Zone oben, senkrecht zu ' + (dosen.length) + ' Dosen' },
+      { id: 'lueftung', n: 'Lüftung', d: luefter || inselMulde ? 3.2 : 0, txt: inselMulde ? 'Muldenlüfter: Abluftkanal im Bodenaufbau zur Außenwand (oder geführte Umluft im Sockel)' : 'Lüfter gegenüber der Tür · Abluft DN 100 nach draußen' + (['bad', 'gaestewc', 'waschraum'].includes(p.raum) ? ' · Tür mit Lüftungsgitter' : '') },
       { id: 'trocken', n: 'Trockenbau', d: trocken.length ? 4.5 : 0, txt: (san.length ? 'Vorwand' : '') + (tv ? (san.length ? ', ' : '') + 'TV-Kasten' : '') + (leds.length > 1 ? ', Decken-Voute' : '') + ': erst Profile, dann Platten' },
       { id: 'putz', n: nass ? 'Fliesen' : 'Wände & Boden', d: 3.5, txt: nass ? 'Abdichten, fliesen, Boden verlegen' : 'Verputzen, streichen, Boden verlegen' },
       { id: 'montage', n: 'Montage', d: Math.max(2, objekte.length * 0.55 + 0.8), txt: 'Einbauen' },
@@ -704,7 +727,7 @@
     /* Kamera je Phase */
     const ziel = { grundriss: [v3(0.01, gr * 1.9, 0.6), v3(0, 0, 0)], durchbruch: [v3(B * 0.35, 1.6, D * 0.35), v3(-B / 2, 1.0, tz)],
       abwasser: [v3(-fallPos.x * 0.35, 1.5, -fallPos.z * 0.35), v3(fallPos.x * 0.85, 0.4, fallPos.z * 0.85)], wasser: [v3(-fallPos.x * 0.3, 1.3, -fallPos.z * 0.3), v3(fallPos.x * 0.8, 0.5, fallPos.z * 0.8)],
-      elektro: [v3(B * 0.3, 1.8, D * 0.4), v3(-B / 2, 1.6, -0.3)], lueftung: lPos ? [v3(-B * 0.25, 1.75, lPos.z * 0.5), v3(B / 2, 2.0, lPos.z)] : [v3(0, 2, 0), v3(0, 1, 0)], trocken: [v3(-fallPos.x * 0.3 + 0.2, 1.6, -fallPos.z * 0.3 + 0.2), tv ? umfang(sVon(...mitte(tv)), 0).setY(1.3) : v3(fallPos.x * 0.7, 0.8, fallPos.z * 0.7)],
+      elektro: [v3(B * 0.3, 1.8, D * 0.4), v3(-B / 2, 1.6, -0.3)], lueftung: lPos ? [v3(-B * 0.25, 1.75, lPos.z * 0.5), v3(B / 2, 2.0, lPos.z)] : [v3(B * 0.5, 2.6, D * 0.6), v3(0, 0, 0)], trocken: [v3(-fallPos.x * 0.3 + 0.2, 1.6, -fallPos.z * 0.3 + 0.2), tv ? umfang(sVon(...mitte(tv)), 0).setY(1.3) : v3(fallPos.x * 0.7, 0.8, fallPos.z * 0.7)],
       putz: [v3(B * 0.9, gr * 1.2, D * 1.1), v3(0, 0.6, 0)], montage: [v3(B * 0.8, gr * 1.15, D * 1.2), v3(0, 0.7, 0)], fertig: [v3(B * 0.9, gr * 1.1, D * 1.25), v3(0, 0.8, 0)] };
     const camPos = v3(B, gr * 2, D * 1.5), camZiel = v3(0, 0, 0);
 
@@ -739,7 +762,7 @@
       platten.forEach((x, i) => { x.me.visible = kt > 0.5 + (i / Math.max(1, platten.length)) * 0.45; });
       // Putz/Fliesen/Boden
       const kp = k('putz', t); wandMat.color.set('#a39e97').lerp(zielWand, leicht(kp)); belag.scale.x = Math.max(0.0001, leicht(kp)); belag.position.x = -B / 2 + B * leicht(kp) / 2;
-      leitungen.forEach((l) => { if (l.phase === 'elektro' && kp > 0.4) l.segs.forEach((sg) => { sg.me.visible = false; }); });
+      leitungen.forEach((l) => { if ((l.phase === 'elektro' || l.boden) && kp > 0.4) l.segs.forEach((sg) => { sg.me.visible = false; }); });
       // Montage
       const pm = ph('montage');
       objekte.forEach((o, i) => { const kk = (t - pm.a - i * 0.55) / 0.7; o.g.visible = kk > 0; o.g.position.y = 3 * (1 - huepfen(kk)); });
@@ -777,5 +800,266 @@
       rec.onstop = () => { const blob = new Blob(st, { type: rec.mimeType || 'video/webm' }); rec = null; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'joum4d-bauablauf.' + (/mp4/.test(blob.type) ? 'mp4' : 'webm'); document.body.appendChild(a); a.click(); a.remove(); info.textContent = 'Video fertig. Falls kein Download startet: Bildschirmaufnahme nutzen.'; };
       start = performance.now(); pause = false; rec.start(); info.textContent = 'Aufnahme läuft … ' + Math.round(GES) + ' Sekunden';
     };
+  };
+
+  /* ---------- Realistischere Darstellung: Filmlook, Umgebungslicht, Himmel ---------- */
+  function filmLook(renderer, sc, aussen) {
+    renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = aussen ? 0.85 : 1.0;
+    try {
+      const pm = new T.PMREMGenerator(renderer);
+      if (aussen && T.Sky) {
+        const sky = new T.Sky(); sky.scale.setScalar(450);
+        const u = sky.material.uniforms; u.turbidity.value = 6; u.rayleigh.value = 1.6; u.mieCoefficient.value = 0.005; u.mieDirectionalG.value = 0.8;
+        const sonne = new T.Vector3().setFromSphericalCoords(1, T.MathUtils.degToRad(58), T.MathUtils.degToRad(200)); u.sunPosition.value.copy(sonne);
+        sc.add(sky); sc.environment = pm.fromScene(sky).texture; return { sky, sonne };
+      }
+      if (T.RoomEnvironment) sc.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture;
+    } catch (e) { console.warn(e); }
+    return {};
+  }
+  function textur(zeichnen, wieder) {
+    const c = document.createElement('canvas'); c.width = c.height = 256; const ctx = c.getContext('2d'); zeichnen(ctx, 256);
+    const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.encoding = T.sRGBEncoding; if (wieder) t.repeat.set(wieder[0], wieder[1]); t.anisotropy = 4; return t;
+  }
+  const rausch = (ctx, n, f, a, b) => { for (let i = 0; i < n; i++) { ctx.fillStyle = f[(Math.random() * f.length) | 0]; ctx.globalAlpha = a + Math.random() * b; ctx.fillRect(Math.random() * 256, Math.random() * 256, 2 + Math.random() * 3, 2 + Math.random() * 3); } ctx.globalAlpha = 1; };
+  const TX = {
+    rasen: (L, Tt) => textur((c, n) => { c.fillStyle = '#4f8a35'; c.fillRect(0, 0, n, n); rausch(c, 2600, ['#3f7a2a', '#5f9e3e', '#6fae4a', '#2f6a22'], 0.5, 0.5); }, [L / 2, Tt / 2]),
+    erde: (L, Tt) => textur((c, n) => { c.fillStyle = '#5b4636'; c.fillRect(0, 0, n, n); rausch(c, 1800, ['#4a382a', '#6b5442', '#3e2f22'], 0.6, 0.4); }, [L / 2, Tt / 2]),
+    kies: (L, Tt) => textur((c, n) => { c.fillStyle = '#c9c2b4'; c.fillRect(0, 0, n, n); rausch(c, 3000, ['#e2dccf', '#a9a294', '#bdb5a6', '#8f887b'], 0.7, 0.3); }, [L, Tt]),
+    schotter: (L, Tt) => textur((c, n) => { c.fillStyle = '#8f8f8a'; c.fillRect(0, 0, n, n); rausch(c, 2500, ['#6f6f6a', '#a7a7a1', '#7f7f7a'], 0.7, 0.3); }, [L, Tt]),
+    holz: (L, Tt, f) => textur((c, n) => { for (let y = 0; y < n; y += 32) { c.fillStyle = new T.Color(f || '#b08a5e').offsetHSL(0, 0, (Math.random() - 0.5) * 0.08).getStyle(); c.fillRect(0, y, n, 30); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, y + 30, n, 2); for (let k = 0; k < 6; k++) { c.fillStyle = 'rgba(0,0,0,.06)'; c.fillRect(0, y + 4 + k * 4, n, 1); } } }, [L / 1.2, Tt / 1.2]),
+    platten: (L, Tt, f, gross) => textur((c, n) => { c.fillStyle = 'rgba(40,40,40,1)'; c.fillRect(0, 0, n, n); const g = gross ? 128 : 64; for (let y = 0; y < n; y += g) for (let x = 0; x < n; x += g) { c.fillStyle = new T.Color(f || '#b9b2a6').offsetHSL(0, 0, (Math.random() - 0.5) * 0.1).getStyle(); c.fillRect(x + 2, y + 2, g - 4, g - 4); } rausch(c, 1500, ['#000', '#fff'], 0.03, 0.05); }, [L / (gross ? 1.2 : 0.6) / 2, Tt / (gross ? 1.2 : 0.6) / 2]),
+    putz: (f) => textur((c, n) => { c.fillStyle = f || '#ece8e1'; c.fillRect(0, 0, n, n); rausch(c, 3000, ['#000', '#fff'], 0.02, 0.04); }, [3, 3]),
+    ziegel: () => textur((c, n) => { for (let y = 0; y < n; y += 32) for (let x = (y / 32) % 2 ? -32 : 0; x < n; x += 64) { c.fillStyle = new T.Color('#b5523a').offsetHSL(0, 0, (Math.random() - 0.5) * 0.1).getStyle(); c.fillRect(x + 2, y + 2, 60, 28); } }, [4, 4]),
+    wasser: () => textur((c, n) => { const g = c.createLinearGradient(0, 0, n, n); g.addColorStop(0, '#2f6fa0'); g.addColorStop(1, '#4f9fd0'); c.fillStyle = g; c.fillRect(0, 0, n, n); rausch(c, 600, ['#9fd3ef'], 0.15, 0.2); }, [2, 2])
+  };
+
+  /* ---------- Gemeinsamer 4D-Film-Rahmen (Kapitel, Kamera, Untertitel, Aufnahme) ---------- */
+  function filmRahmen(titel, opt) {
+    if (film) film.stopp();
+    let m = document.getElementById('film-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'film-modal'; m.className = 'film-modal'; document.body.appendChild(m); }
+    m.innerHTML = `<div class="film-box"><div class="zeile"><b style="flex:1">${esc(titel)}</b><button class="x" id="film-zu" aria-label="Schließen">×</button></div>
+      <div class="film-buehne" id="film-buehne"></div>
+      <div class="zeile"><button class="btn" id="film-pause">Pause</button><button class="btn" id="film-neu">Von vorn</button><button class="btn hell" id="film-rec">Als Video</button></div>
+      <div class="bau-phasen" id="bau-phasen"></div><div class="klein" id="film-info">${esc(opt.info || 'Kapitel antippen springt dorthin.')}</div></div>`;
+    m.classList.add('an');
+    const H = Math.min(Math.floor(window.innerHeight * 0.58), 640), W2 = Math.floor(H * 9 / 16), pr = Math.min(2, window.devicePixelRatio || 1);
+    const renderer = new T.WebGLRenderer({ antialias: true }); renderer.setPixelRatio(pr); renderer.setSize(W2, H); renderer.outputEncoding = T.sRGBEncoding;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setClearColor(0x0a0a0a);
+    const aus = document.createElement('canvas'); aus.width = W2 * pr; aus.height = H * pr; aus.style.width = W2 + 'px'; aus.style.height = H + 'px';
+    const ctx = aus.getContext('2d'); document.getElementById('film-buehne').appendChild(aus);
+    const sc = new T.Scene(), cam = new T.PerspectiveCamera(48, W2 / H, 0.05, 900);
+    const look = filmLook(renderer, sc, opt.aussen);
+    const f = { renderer, sc, cam, look, H, W2, pr, PH: [], update: null, camPos: new T.Vector3(10, 10, 10), camZiel: new T.Vector3(0, 0, 0) };
+    let start = performance.now(), pause = false, pauseT = 0, laeuft = true, rec = null, aktIdx = -1;
+    const zeit = () => pause ? pauseT : (performance.now() - start) / 1000;
+    function schrift(text, y, g, farbe, fett) {
+      ctx.font = (fett ? '600 ' : '500 ') + g * pr + 'px Jost, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const w = Math.min(aus.width - 16 * pr, ctx.measureText(text).width + 26 * pr), hh = g * pr * 1.75, x = aus.width / 2 - w / 2, yy = y * pr - hh / 2, r = hh / 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.moveTo(x + r, yy); ctx.arcTo(x + w, yy, x + w, yy + hh, r); ctx.arcTo(x + w, yy + hh, x, yy + hh, r); ctx.arcTo(x, yy + hh, x, yy, r); ctx.arcTo(x, yy, x + w, yy, r); ctx.fill();
+      ctx.fillStyle = farbe || '#fff'; ctx.fillText(text, aus.width / 2, y * pr + 1, aus.width - 30 * pr);
+    }
+    f.start = () => {
+      let t0 = 0; f.PH.forEach((x) => { x.a = t0; t0 += x.d; x.e = t0; }); f.GES = t0;
+      document.getElementById('bau-phasen').innerHTML = f.PH.map((x, i) => `<button class="chip" data-i="${i}">${i + 1}. ${esc(x.n)}</button>`).join('');
+      f.camPos.copy(f.PH[0].kam[0]); f.camZiel.copy(f.PH[0].kam[1]);
+      requestAnimationFrame(frame);
+    };
+    f.k = (id, t) => { const x = f.PH.find((y) => y.id === id); return !x ? 1 : Math.max(0, Math.min(1, (t - x.a) / x.d)); };
+    f.ph = (id) => f.PH.find((y) => y.id === id) || { a: -1, e: -1, d: 1 };
+    function frame() {
+      if (!laeuft || !aus.isConnected) { laeuft = false; return; }
+      let t = zeit(); if (t > f.GES + 1.5) { if (rec && rec.state === 'recording') rec.stop(); start = performance.now(); t = 0; }
+      const akt = f.PH.find((x) => t >= x.a && t < x.e) || f.PH[f.PH.length - 1], ai = f.PH.indexOf(akt);
+      if (ai !== aktIdx) { aktIdx = ai; document.querySelectorAll('#bau-phasen .chip').forEach((c, i) => c.classList.toggle('an', i === ai)); }
+      const kt = Math.max(0, Math.min(1, (t - akt.a) / akt.d));
+      // Kamerafahrt wie bei Immobilien-Reels: Start → Ziel innerhalb des Kapitels, sanft
+      const [p0, z0, p1] = akt.kam; const ziel = p1 ? p0.clone().lerp(p1, leicht(kt)) : p0;
+      f.camPos.lerp(ziel, 0.045); f.camZiel.lerp(z0, 0.06); cam.position.copy(f.camPos); cam.lookAt(f.camZiel);
+      if (f.update) f.update(t, akt, kt);
+      renderer.render(sc, cam); ctx.drawImage(renderer.domElement, 0, 0, aus.width, aus.height);
+      schrift((ai + 1) + '/' + f.PH.length + ' · ' + akt.n, 26, 12, '#ffd27a', true);
+      schrift(typeof akt.txt === 'function' ? akt.txt(t, kt) : akt.txt, H - 34, 13.5, ai === f.PH.length - 1 ? '#9fd69f' : '#fff', true);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(14 * pr, 46 * pr, aus.width - 28 * pr, 3 * pr);
+      ctx.fillStyle = '#fff'; ctx.fillRect(14 * pr, 46 * pr, (aus.width - 28 * pr) * Math.min(1, t / f.GES), 3 * pr);
+      requestAnimationFrame(frame);
+    }
+    film = { stopp() { laeuft = false; renderer.dispose(); } };
+    document.getElementById('film-zu').onclick = () => { m.classList.remove('an'); film.stopp(); film = null; };
+    document.getElementById('film-neu').onclick = () => { start = performance.now(); pause = false; document.getElementById('film-pause').textContent = 'Pause'; };
+    document.getElementById('film-pause').onclick = (e) => { if (pause) { start = performance.now() - pauseT * 1000; pause = false; e.target.textContent = 'Pause'; } else { pauseT = zeit(); pause = true; e.target.textContent = 'Weiter'; } };
+    document.getElementById('bau-phasen').onclick = (e) => { const c = e.target.closest('[data-i]'); if (!c) return; const x = f.PH[+c.dataset.i]; start = performance.now() - (x.a + 0.01) * 1000; if (pause) pauseT = x.a + x.d * 0.9; };
+    document.getElementById('film-rec').onclick = () => {
+      const info = document.getElementById('film-info');
+      if (!aus.captureStream || !window.MediaRecorder) { info.textContent = 'Video speichern kann dieser Browser nicht. Tipp: Bildschirmaufnahme.'; return; }
+      const typ = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((x) => MediaRecorder.isTypeSupported(x)) || '';
+      const st = []; rec = new MediaRecorder(aus.captureStream(30), typ ? { mimeType: typ, videoBitsPerSecond: 6e6 } : undefined);
+      rec.ondataavailable = (ev) => ev.data.size && st.push(ev.data);
+      rec.onstop = () => { const blob = new Blob(st, { type: rec.mimeType || 'video/webm' }); rec = null; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'joum4d-' + titel.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.' + (/mp4/.test(blob.type) ? 'mp4' : 'webm'); document.body.appendChild(a); a.click(); a.remove(); info.textContent = 'Video fertig. Falls kein Download startet: Bildschirmaufnahme nutzen.'; };
+      start = performance.now(); pause = false; rec.start(); info.textContent = 'Aufnahme läuft … ' + Math.round(f.GES) + ' Sekunden';
+    };
+    return f;
+  }
+
+  /* ---------- Garten in 4D: Abstecken → Aushub → Unterbau → Beläge → Beete → Rasen → Pflanzen → Wachstum → Abend ---------- */
+  window.zeigeGarten4D = function (v) {
+    const L = v.L || 20, Tt = v.T || 12;
+    const f = filmRahmen('Garten 4D – ' + v.name, { aussen: true, info: 'Bauablauf und Wachstum über 5 Jahre. Kapitel antippen springt dorthin.' });
+    const sc = f.sc, gr = Math.max(L, Tt);
+    sc.add(new T.HemisphereLight(0xdfefff, 0x4a3a2a, 0.55));
+    const so = new T.DirectionalLight(0xfff1dd, 1.1); so.position.set(L * 0.3 - 8, 14, -6); so.castShadow = true; so.shadow.mapSize.set(2048, 2048);
+    Object.assign(so.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr, far: 80 }); so.target.position.set(0, 0, 0); sc.add(so, so.target);
+    const ox = -L / 2, oz = -Tt / 2; // Garten zentriert; Haus bei z < oz
+    const P = (x, y) => new T.Vector3(ox + x, 0, oz + y);
+    // Umgebung: Wiese außen, Haus, Nachbarzaun
+    const umg = mesh(new T.PlaneGeometry(gr * 4, gr * 4), new T.MeshStandardMaterial({ map: TX.rasen(gr * 4, gr * 4), roughness: 1 })); umg.rotation.x = -Math.PI / 2; umg.position.y = -0.02; sc.add(umg);
+    const haus = new T.Group();
+    haus.add(mesh(new T.BoxGeometry(L + 2, 3.2, 4), new T.MeshStandardMaterial({ map: TX.putz('#efe9df'), roughness: 0.9 })).translateY(1.6));
+    const dach = mesh(new T.CylinderGeometry(0.01, 2.9, L + 2.6, 3, 1), new T.MeshStandardMaterial({ map: TX.ziegel(), roughness: 0.8 })); dach.rotation.z = Math.PI / 2; dach.rotation.y = 0; dach.position.y = 4.1; dach.scale.set(1, 1, 0.75); haus.add(dach);
+    const glas = mat('#9fc3d8', { metalness: 0.6, roughness: 0.05 });
+    for (let x = -L / 2 + 1; x < L / 2; x += 3) { const fe = mesh(new T.BoxGeometry(1.6, 2.1, 0.05), glas); fe.position.set(x + 0.5, 1.15, 2.01); haus.add(fe); }
+    haus.position.set(0, 0, oz - 2.1); sc.add(haus);
+    // Boden des Gartens: Erde (wird später überdeckt)
+    const erde = mesh(new T.PlaneGeometry(L, Tt), new T.MeshStandardMaterial({ map: TX.erde(L, Tt), roughness: 1 })); erde.rotation.x = -Math.PI / 2; erde.position.y = 0.005; sc.add(erde);
+    // Abstecken: Pflöcke + Schnüre
+    const abst = new T.Group(); sc.add(abst);
+    const schnurMat = new T.LineBasicMaterial({ color: 0xff5533 });
+    const flaechen = v.elemente.filter((e) => e.w != null && e.k !== 'licht');
+    flaechen.forEach((e) => {
+      const pts = [P(e.x, e.y), P(e.x + e.w, e.y), P(e.x + e.w, e.y + e.h), P(e.x, e.y + e.h), P(e.x, e.y)].map((q) => q.setY(0.25));
+      abst.add(new T.Line(new T.BufferGeometry().setFromPoints(pts), schnurMat));
+      pts.slice(0, 4).forEach((q) => abst.add(kiste(0.04, 0.4, 0.04, '#c9a64a', q.x, 0.2, q.z)));
+    });
+    abst.visible = false;
+    // Elemente
+    const schichten = { aushub: [], unterbau: [], belag: [], beet: [], rasen: [], wasser: [], bau: [], pflanzen: [], licht: [] };
+    flaechen.forEach((e) => {
+      const c = P(e.x + e.w / 2, e.y + e.h / 2);
+      const platte = (tex, h, y, liste, farbeOpt) => { const me = mesh(new T.BoxGeometry(e.w, h, e.h), tex ? new T.MeshStandardMaterial({ map: tex, roughness: 0.8 }) : mat(farbeOpt)); me.position.set(c.x, y, c.z); me.visible = false; sc.add(me); liste.push(me); return me; };
+      if (['terrasse', 'weg'].includes(e.k)) {
+        platte(null, 0.02, 0.01, schichten.aushub, '#3e2f22');
+        platte(TX.schotter(e.w, e.h), 0.08, 0.04, schichten.unterbau);
+        const m = e.mat || (e.k === 'weg' ? 'stein' : 'holz');
+        const tex = m === 'holz' || m === 'wpc' ? TX.holz(e.w, e.h, BELAEGE[m].farbe) : TX.platten(e.w, e.h, BELAEGE[m].farbe, m === 'beton');
+        const b = platte(tex, 0.06, 0.1, schichten.belag); b.userData.wachsen = true;
+      } else if (e.k === 'kies' || e.k === 'spiel' || e.k === 'sand') {
+        platte(TX.schotter(e.w, e.h), 0.04, 0.02, schichten.unterbau);
+        platte(e.k === 'kies' ? TX.kies(e.w, e.h) : null, 0.05, 0.05, schichten.belag, e.k === 'sand' ? '#e6d4a0' : '#c9a57a');
+        if (e.k === 'spiel') { const g = new T.Group(); [-1, 1].forEach((s) => { const st = zyl(0.05, 2.2, '#8a6a4a', s * Math.min(1.2, e.w / 3), 1.1, 0); st.rotation.z = s * 0.15; g.add(st); }); g.add(zyl(0.05, Math.min(2.6, e.w / 1.4), '#8a6a4a', 0, 2.15, 0).rotateZ(Math.PI / 2)); g.add(kiste(0.5, 0.04, 0.2, '#d9433a', 0, 0.5, 0)); g.position.set(c.x, 0, c.z); g.visible = false; sc.add(g); schichten.bau.push(g); }
+      } else if (e.k === 'rasen') {
+        const r = platte(TX.rasen(e.w, e.h), 0.03, 0.02, schichten.rasen); r.userData.wachsen = true;
+      } else if (['beet', 'insel', 'lavendel'].includes(e.k)) {
+        platte(TX.erde(e.w, e.h), 0.06, 0.03, schichten.beet);
+        const n = Math.min(60, Math.round(e.w * e.h * 3));
+        for (let i = 0; i < n; i++) { const pf = mesh(new T.SphereGeometry(0.16 + Math.random() * 0.08, 8, 6), mat(e.k === 'lavendel' ? '#7a6fb8' : ['#6b9a3a', '#e58fb5', '#e8d36a', '#b8a0e8', '#ffb36b'][i % 5], { roughness: 0.9 })); pf.position.set(c.x - e.w / 2 + 0.2 + Math.random() * (e.w - 0.4), 0.15, c.z - e.h / 2 + 0.2 + Math.random() * (e.h - 0.4)); pf.scale.setScalar(0.01); pf.visible = false; pf.userData.pflanze = { max: 0.7 + Math.random() * 0.6, jahre: 2 }; sc.add(pf); schichten.pflanzen.push(pf); }
+      } else if (e.k === 'hochbeet') {
+        const g = new T.Group(); const rah = TX.holz(e.w, 1, '#8a6a4a');
+        [[e.w, 0.8, 0.05, 0, -e.h / 2], [e.w, 0.8, 0.05, 0, e.h / 2], [0.05, 0.8, e.h, -e.w / 2, 0], [0.05, 0.8, e.h, e.w / 2, 0]].forEach(([w, h, d, x, z]) => { const me = mesh(new T.BoxGeometry(w, h, d), new T.MeshStandardMaterial({ map: rah })); me.position.set(x, 0.4, z); g.add(me); });
+        g.add(mesh(new T.BoxGeometry(e.w - 0.1, 0.05, e.h - 0.1), new T.MeshStandardMaterial({ map: TX.erde(e.w, e.h) })).translateY(0.76));
+        for (let i = 0; i < 8; i++) { const pf = mesh(new T.SphereGeometry(0.14, 8, 6), mat(i % 2 ? '#5c9a3a' : '#8fcf6a')); pf.position.set(-e.w / 2 + 0.25 + (i % 4) * (e.w - 0.5) / 3, 0.85, i < 4 ? -0.2 : 0.2); g.add(pf); }
+        g.position.set(c.x, 0, c.z); g.visible = false; sc.add(g); schichten.beet.push(g);
+      } else if (e.k === 'teich') {
+        platte(null, 0.02, 0.01, schichten.aushub, '#2a2018');
+        const w = mesh(new T.CircleGeometry(1, 40), new T.MeshStandardMaterial({ map: TX.wasser(), roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.92 })); w.rotation.x = -Math.PI / 2; w.scale.set(e.w / 2, e.h / 2, 1); w.position.set(c.x, 0.03, c.z); w.visible = false; sc.add(w); schichten.wasser.push(w);
+        for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2, st = mesh(new T.DodecahedronGeometry(0.18 + Math.random() * 0.1), mat('#9a948c', { roughness: 1 })); st.position.set(c.x + Math.cos(a) * e.w / 2, 0.08, c.z + Math.sin(a) * e.h / 2); st.visible = false; sc.add(st); schichten.wasser.push(st); }
+      } else if (e.k === 'hecke') {
+        const he = mesh(new T.BoxGeometry(e.w, 1.6, Math.max(0.5, e.h)), mat(v.stil === 'lounge' ? '#6e5a4a' : '#2f5f22', { roughness: 1 })); he.position.set(c.x, 0.8, c.z); he.scale.y = 0.01; he.visible = false; he.userData.pflanze = { max: 1, jahre: 4, hecke: true }; sc.add(he); schichten.pflanzen.push(he);
+      } else if (e.k === 'haus') {
+        const g = new T.Group(); g.add(mesh(new T.BoxGeometry(e.w, 2.2, e.h), new T.MeshStandardMaterial({ map: TX.holz(e.w, 2, '#7a5a3a') })).translateY(1.1));
+        const d2 = mesh(new T.CylinderGeometry(0.01, e.h * 0.62, e.w + 0.3, 3), mat('#3a3a3a')); d2.rotation.z = Math.PI / 2; d2.position.y = 2.5; d2.scale.set(1, 1, 0.5); g.add(d2);
+        g.position.set(c.x, 0, c.z); g.visible = false; sc.add(g); schichten.bau.push(g);
+      }
+    });
+    // Bäume & Sträucher (wachsen)
+    v.elemente.filter((e) => e.r != null).forEach((e) => {
+      const c = P(e.x, e.y), g = new T.Group();
+      const stamm = zyl(0.08, 1, '#5a3f2a', 0, 0.5, 0); g.add(stamm);
+      const krone = new T.Group(); [[0, 0, 0, 1], [0.35, -0.15, 0.2, 0.7], [-0.3, -0.1, -0.25, 0.75], [0, 0.35, 0, 0.6]].forEach(([x, y, z, r]) => { const k = mesh(new T.IcosahedronGeometry(r, 1), mat(e.k === 'obstbaum' ? '#4a8a30' : e.k === 'strauch' ? '#3d6e2a' : '#3f7a2a', { roughness: 0.95, flatShading: true })); k.position.set(x, y, z); krone.add(k); }); g.add(krone);
+      g.userData.baum = { r0: e.r, r1: e.rMax, jahre: e.jahre, krone, stamm, art: e.k };
+      g.position.copy(c); g.visible = false; sc.add(g); schichten.pflanzen.push(g);
+    });
+    // Licht am Abend
+    v.elemente.filter((e) => e.k === 'licht').forEach((e) => { [0, 2.5, 5].forEach((dy) => { if (e.y + dy > Tt) return; const q = P(e.x, e.y + dy); const pf = zyl(0.05, 0.5, '#333', q.x, 0.25, q.z); sc.add(pf); const l = new T.PointLight(0xffc982, 0, 4); l.position.set(q.x, 0.55, q.z); sc.add(l); schichten.licht.push(l); const kopf = mesh(new T.SphereGeometry(0.06, 8, 6), mat('#fff', { emissive: new T.Color('#ffc982'), emissiveIntensity: 0 })); kopf.position.set(q.x, 0.52, q.z); sc.add(kopf); schichten.licht.push(kopf); }); });
+    const terr = v.elemente.find((e) => e.k === 'terrasse');
+    const tc = terr ? P(terr.x + terr.w / 2, terr.y + terr.h / 2) : P(L / 2, 2);
+    const V = (x, y, z) => new T.Vector3(x, y, z);
+    f.PH = [
+      { id: 'leer', n: 'Vorher', d: 2.5, txt: `Garten ${zahl(L)} × ${zahl(Tt)} m – Ausgangslage`, kam: [V(L * 0.7, gr * 0.75, Tt * 1.1), V(0, 0, 0), V(L * 0.55, gr * 0.6, Tt * 0.9)] },
+      { id: 'abstecken', n: 'Abstecken', d: 3, txt: 'Flächen mit Pflöcken und Schnur abstecken', kam: [V(0.01, gr * 1.15, 0.6), V(0, 0, 0)] },
+      { id: 'aushub', n: 'Aushub', d: 2.8, txt: 'Aushub für Terrasse, Weg und Teich (25–35 cm)', kam: [V(tc.x + 4, 3.2, tc.z + 6), tc] },
+      { id: 'unterbau', n: 'Unterbau', d: 2.8, txt: 'Schotter einbauen und verdichten, Gefälle 2 % vom Haus weg', kam: [V(tc.x + 3, 2.2, tc.z + 4.5), tc, V(tc.x - 2, 2, tc.z + 4)] },
+      { id: 'belag', n: 'Terrasse & Wege', d: 3.6, txt: (terr ? 'Terrasse: ' + BELAEGE[terr.mat || 'holz'].n + ' verlegen' : 'Beläge verlegen'), kam: [V(tc.x - 3, 1.4, tc.z + 3.2), tc, V(tc.x + 3, 1.6, tc.z + 3.5)] },
+      { id: 'beete', n: 'Beete & Bauten', d: 3, txt: 'Beete, Hochbeete (Wühlmausgitter!), Teich und Gartenhaus', kam: [V(L * 0.2, 3.5, Tt * 0.7), V(0, 0, Tt * 0.15)] },
+      { id: 'rasen', n: 'Rasen', d: 2.5, txt: 'Rollrasen auslegen und wässern', kam: [V(-L * 0.3, 2.6, Tt * 0.6), V(0, 0, 0)] },
+      { id: 'pflanzen', n: 'Pflanzen', d: 2.6, txt: 'Bäume, Sträucher und Stauden pflanzen – Abstand nach Endgröße', kam: [V(L * 0.4, 3, Tt * 0.2), V(0, 1, Tt * 0.3)] },
+      { id: 'wachsen', n: '5 Jahre', d: 7, txt: (t, k) => ['Frühling', 'Sommer', 'Herbst', 'Winter'][Math.floor(k * 20) % 4] + ' · Jahr ' + Math.min(5, 1 + Math.floor(k * 5)), kam: [V(L * 0.75, gr * 0.55, Tt * 1.05), V(0, 0.5, 0), V(-L * 0.6, gr * 0.5, Tt * 1.0)] },
+      { id: 'abend', n: 'Abends', d: 5, txt: 'Fertig – abends mit Licht', kam: [V(tc.x + 2, 1.5, tc.z + 5), V(0, 0.8, Tt * 0.1), V(L * 0.5, 2.2, Tt * 0.8)] }
+    ];
+    const saisonFarbe = ['#7fbf5a', '#3f7a2a', '#c9772e', '#6b5a4a'];
+    f.update = (t) => {
+      abst.visible = t >= f.ph('abstecken').a && t < f.ph('belag').e;
+      const sicht = (liste, id, wachsen) => { const k = f.k(id, t), pa = f.ph(id).a; liste.forEach((me, i) => { const ki = Math.max(0, Math.min(1, (k * liste.length - i * 0.6))); me.visible = t >= pa && ki > 0; if (wachsen && me.userData && me.userData.wachsen) { me.scale.x = Math.max(0.001, leicht(ki)); } }); };
+      sicht(schichten.aushub, 'aushub'); sicht(schichten.unterbau, 'unterbau'); sicht(schichten.belag, 'belag', true); sicht(schichten.beet, 'beete'); sicht(schichten.bau, 'beete'); sicht(schichten.wasser, 'beete'); sicht(schichten.rasen, 'rasen', true);
+      schichten.aushub.forEach((me) => { if (t >= f.ph('unterbau').e) me.visible = false; });
+      erde.visible = true;
+      // Pflanzen und Wachstum
+      const kp = f.k('pflanzen', t), kw = f.k('wachsen', t), jahr = kw * 5, saison = Math.floor(kw * 20) % 4;
+      schichten.pflanzen.forEach((g, i) => {
+        g.visible = t >= f.ph('pflanzen').a && kp * schichten.pflanzen.length >= i * 0.3;
+        if (g.userData.baum) { const b = g.userData.baum, r = b.r0 + (b.r1 - b.r0) * Math.min(1, jahr / b.jahre), h = r * 1.6 + 0.6; b.krone.scale.setScalar(r); b.krone.position.y = h; b.stamm.scale.y = h; b.stamm.position.y = h / 2; const kahl = kw > 0 && saison === 3 && b.art !== 'strauch'; b.krone.visible = !kahl; b.krone.children.forEach((c) => c.material.color.set(kw > 0 ? (b.art === 'obstbaum' && saison === 0 ? '#f2c4d6' : saisonFarbe[saison]) : '#4a8a30')); }
+        else if (g.userData.pflanze) { const pp = g.userData.pflanze, gk = Math.min(1, 0.35 + jahr / pp.jahre * 0.65) * (kp > 0 ? 1 : 0); if (pp.hecke) { g.scale.y = Math.max(0.01, 0.3 + 0.7 * Math.min(1, jahr / pp.jahre)); g.position.y = 0.8 * g.scale.y; } else g.scale.setScalar(Math.max(0.01, pp.max * gk * (kw > 0 && saison === 3 ? 0.4 : 1))); }
+      });
+      schichten.rasen.forEach((r) => r.material.color.set(kw > 0 && saison === 3 ? '#c8d0c0' : kw > 0 && saison === 2 ? '#b7c48a' : '#ffffff'));
+      // Abend: Sonne runter, Lichter an
+      const ka = f.k('abend', t); so.intensity = 1.1 - 0.9 * leicht(ka); f.renderer.toneMappingExposure = 0.85 - 0.45 * leicht(ka);
+      schichten.licht.forEach((l) => { if (l.isLight) l.intensity = 1.6 * leicht(ka); else l.material.emissiveIntensity = 2 * leicht(ka); });
+    };
+    f.start();
+  };
+
+  /* ---------- Schichtaufbau in 4D (Fassade, Keller, Dach, Terrasse, Bad, Fenster …) ---------- */
+  window.zeigeSchichten4D = function (anlId) {
+    const a = ANLEITUNGEN[anlId]; if (!a || !a.schichten) return;
+    const lage = /dach/.test(anlId) && anlId !== 'oberste_decke' ? 'schraeg' : /terrasse|hochbeet|gartenweg|bad_abdichten|balkon|laminat|bodenbeschichtung/.test(anlId) ? 'boden' : 'wand';
+    const aussen = /fassade|dach$|keller_abdichten|terrasse|hochbeet|regenrinne|carport|zaun|teich|gartenweg/.test(anlId) || a.b === 'garten' || anlId === 'dach';
+    const f = filmRahmen(a.t + ' – 4D', { aussen, info: 'Schicht für Schicht – Kapitel antippen springt dorthin.' });
+    const sc = f.sc;
+    sc.add(new T.HemisphereLight(0xffffff, 0x555555, 0.6));
+    const so = new T.DirectionalLight(0xffffff, 1); so.position.set(4, 7, 5); so.castShadow = true; so.shadow.mapSize.set(1024, 1024); sc.add(so);
+    const boden = mesh(new T.PlaneGeometry(12, 12), aussen ? new T.MeshStandardMaterial({ map: TX.rasen(12, 12) }) : mat('#cfcac2')); boden.rotation.x = -Math.PI / 2; boden.position.y = -0.01; sc.add(boden);
+    const sch = a.schichten, n = sch.length, B2 = 2.4, H2 = 2.0;
+    const dicke = sch.map((s, i) => /dämm|wdvs|schotter|äste|grasschnitt|kompost|pflanzerde|perimeter/i.test(s[0] + s[2]) ? 0.18 : /folie|bahn|band|dampf|abdichtung|grundier|manschett|anstrich|kleber|gitter|vlies/i.test(s[0] + s[2]) ? 0.025 : i === 0 ? 0.24 : 0.07);
+    const gruppe = new T.Group(); sc.add(gruppe);
+    const teile = []; let off = 0;
+    sch.forEach((s, i) => {
+      const d = dicke[i], farbe = s[1];
+      let me, tex = null;
+      if (/ziegel|eindeckung/i.test(s[0])) tex = TX.ziegel(); else if (/putz|anstrich|innenverkleidung|gipskarton/i.test(s[0])) tex = TX.putz(farbe); else if (/holz|lattung|sparren|dielen|platten \/ unterkonstruktion/i.test(s[0])) tex = TX.holz(2, 2, farbe); else if (/schotter|splitt|kies/i.test(s[0])) tex = TX.schotter(2, 2); else if (/erde|kompost/i.test(s[0])) tex = TX.erde(2, 2);
+      const m2 = tex ? new T.MeshStandardMaterial({ map: tex, roughness: 0.85 }) : mat(farbe, { roughness: 0.8 });
+      // jede Schicht etwas kleiner → Treppenschnitt, damit alle Schichten sichtbar bleiben
+      const st = i * 0.18;
+      if (lage === 'boden') { me = mesh(new T.BoxGeometry(B2 - st, d, B2 - st), m2); me.position.set(st / 2, off + d / 2, st / 2); }
+      else { me = mesh(new T.BoxGeometry(B2 - st, H2 - st * 0.6, d), m2); me.position.set(st / 2, (H2 - st * 0.6) / 2 + st * 0.6, off + d / 2); }
+      off += d; me.visible = false; me.userData.ziel = me.position.clone(); gruppe.add(me);
+      const sp = schild((i + 1) + ' ' + s[0], s[1].length === 7 ? s[1] : '#ffd27a', 0.09);
+      sp.position.copy(me.position).add(lage === 'boden' ? new T.Vector3(-(B2 - st) / 2 - 0.1, 0.05, (B2 - st) / 2) : new T.Vector3(-(B2 - st) / 2 - 0.2, (H2 - st * 0.6) / 2 - 0.1, d / 2)); sp.visible = false; gruppe.add(sp);
+      teile.push({ me, sp });
+    });
+    if (lage === 'schraeg') { gruppe.rotation.x = -0.6; gruppe.position.set(0, 0.6, 0.4); }
+    if (lage === 'wand') gruppe.position.set(0, 0, -0.4);
+    const V = (x, y, z) => new T.Vector3(x, y, z);
+    const mitte = lage === 'boden' ? V(0, 0.3, 0) : V(0, 1.1, 0.2);
+    f.PH_SKAL = 1.35;
+    f.PH = sch.map((s, i) => ({ id: 's' + i, n: s[0].replace(/^[①②③]\s*/, '').split(':')[0].slice(0, 22), d: 2.6, txt: s[0] + (s[2] ? ' – ' + s[2] : ''), kam: [lage === 'boden' ? V(3.2 - i * 0.1, 2.1, 3.4) : V(3.4 - (i % 2) * 1.5, 1.8 + (i % 3) * 0.2, 3.7), mitte, lage === 'boden' ? V(2.4, 1.7, 3.8) : V(2.1, 1.6, 4.2)] }));
+    f.PH.push({ id: 'fertig', n: 'Fertig', d: 4.5, txt: a.t + ' – alle Schichten', kam: [V(3.2, 2.2, 3.4), mitte, V(-2.6, 2, 3.4)] });
+    f.update = (t) => {
+      teile.forEach((x, i) => {
+        const k = f.k('s' + i, t), pa = f.ph('s' + i).a; x.me.visible = t >= pa; x.sp.visible = t >= pa;
+        const ein = leicht(k / 0.6); const z = x.me.userData.ziel;
+        if (lage === 'boden') x.me.position.set(z.x, z.y + (1 - ein) * 1.2, z.z); else x.me.position.set(z.x, z.y, z.z + (1 - ein) * 1.2);
+      });
+    };
+    f.start();
   };
 })();

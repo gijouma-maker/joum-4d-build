@@ -68,7 +68,7 @@ route('start', () => {
   }
   return kopf('Joum 4D Build', 'Plan. Bau. Fertig.') + `<div class="inhalt">${haupt}
     <div class="raster4">
-      <a class="kachel" href="${p ? '#/messen/' + p.id : '#/projekte'}">${ICON.messen}<span>Messen</span></a>
+      <a class="kachel" href="#/assistent">${ICON.mikro}<span>Assistent</span></a>
       <a class="kachel" href="${p ? '#/planer/' + p.id : '#/projekte'}">${ICON.wuerfel}<span>Gestalten 3D</span></a>
       <a class="kachel" href="#/garten">${ICON.baum}<span>Garten 4D</span></a>
       <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
@@ -143,7 +143,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/messen/${p.id}">${ICON.messen}<span>Messen</span></a>
       <a class="kachel" href="#/planer/${p.id}">${ICON.wuerfel}<span>Gestalten</span></a>
       <a class="kachel" href="#/ideen/${p.id}">${ICON.funke}<span>KI-Ideen</span></a>
-      <button class="kachel" data-akt="bau4D" data-id="${p.id}">${ICON.wuerfel}<span>4D-Bauablauf</span></button>
+      ${p.gartenPlan ? `<button class="kachel" data-akt="garten4DProjekt" data-id="${p.id}">${ICON.baum}<span>Garten 4D</span></button>` : a && a.schichten && p.bereich !== 'innen' ? `<button class="kachel" data-akt="schichten4D" data-anl="${p.anleitung}">${ICON.wuerfel}<span>4D-Ablauf</span></button>` : `<button class="kachel" data-akt="bau4D" data-id="${p.id}">${ICON.wuerfel}<span>4D-Bauablauf</span></button>`}
       <button class="kachel" data-akt="film" data-id="${p.id}">${ICON.film}<span>Vorher/Nachher</span></button>
       <a class="kachel" href="#/tour">${ICON.kamera}<span>Kino-Tour</span></a>
       ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
@@ -163,6 +163,8 @@ route('projekt', (id) => {
   </div>`;
 });
 AKT.drucken = () => window.print();
+AKT.garten4DProjekt = (d) => { const p = projekt(d.id); try { zeigeGarten4D(p.gartenPlan); } catch (e) { info('Der 4D-Garten braucht WebGL.'); } };
+AKT.schichten4D = (d) => { try { zeigeSchichten4D(d.anl); } catch (e) { console.error(e); info('Die 4D-Ansicht braucht WebGL – auf diesem Gerät nicht verfügbar.'); } };
 
 AKT.materialInListe = (d) => {
   const p = projekt(d.id), a = ANLEITUNGEN[p.anleitung];
@@ -240,13 +242,16 @@ AKT.planAdd = (d) => {
   const p = projekt(d.id), k = katalogFuer(p)[+d.i];
   const platz = platzieren(p, k);
   const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: platz.x, y: platz.y, rot: platz.rot };
-  if (platz.eng) toast('Kein passender Platz frei – bitte im Grundriss verschieben');
+  if (platz.eng && istTisch(k[0])) { const kl = tischFuerRaum(p, katalogFuer(p)); toast(kl && kl[0] !== k[0] ? `Zu wenig Platz für ${k[0]} mit Stühlen – passend wäre ${kl[0]}` : 'Zu wenig Platz für einen Esstisch mit Stühlen und Durchgang'); }
+  else if (platz.eng) toast('Kein passender Platz frei – bitte im Grundriss verschieben');
+  if (platz.gruppe) el.gruppe = platz.gruppe;
   planAuswahl = el.id;
-  aendern(() => p.plan.push(el), 'Element hinzugefügt');
+  aendern(() => { p.plan.push(el); if (istTisch(el.n)) essgruppeHinzufuegen(p, el); }, istTisch(el.n) ? 'Essgruppe hinzugefügt' : 'Element hinzugefügt');
+  if (istTisch(el.n)) toast(p.plan.filter((e) => e.gruppe === el.id).length + ' Stühle automatisch dazugestellt');
 };
-AKT.planDreh = (d) => aendern(() => { const e = projekt(d.id).plan.find((x) => x.id === planAuswahl); if (e) e.rot = (e.rot + 90) % 360; });
-AKT.planDoppel = (d) => aendern(() => { const p = projekt(d.id), e = p.plan.find((x) => x.id === planAuswahl); if (e) { const n = Object.assign({}, e, { id: uid(), x: e.x + 20, y: e.y + 20 }); p.plan.push(n); planAuswahl = n.id; } });
-AKT.planWeg = (d) => aendern(() => { const p = projekt(d.id); p.plan = p.plan.filter((x) => x.id !== planAuswahl); planAuswahl = null; }, 'Element gelöscht');
+AKT.planDreh = (d) => aendern(() => { const p = projekt(d.id), e = p.plan.find((x) => x.id === planAuswahl); if (!e) return; e.rot = (e.rot + 90) % 360; if (istTisch(e.n)) essgruppeHinzufuegen(p, e); });
+AKT.planDoppel = (d) => aendern(() => { const p = projekt(d.id), e = p.plan.find((x) => x.id === planAuswahl); if (e) { const n = Object.assign({}, e, { id: uid(), x: e.x + 20, y: e.y + 20 }); p.plan.push(n); planAuswahl = n.id; if (istTisch(n.n)) essgruppeHinzufuegen(p, n); } });
+AKT.planWeg = (d) => aendern(() => { const p = projekt(d.id); p.plan = p.plan.filter((x) => x.id !== planAuswahl && x.gruppe !== planAuswahl); planAuswahl = null; }, 'Element gelöscht');
 AKT.plan3D = () => { plan3D = !plan3D; render(); };
 AKT.planInListe = (d) => {
   const p = projekt(d.id);
@@ -286,15 +291,19 @@ function beispielEinrichtung(p) {
   const v = JSON.parse(JSON.stringify(p));
   if (v.plan.length) return v;
   const klein = p.breite * p.tiefe < 70000; // unter 7 m²
-  const muster = { bad: ['WC wandhängend', 'Waschtisch', 'Spiegelschrank', 'Dusche bodengleich'].concat(klein ? [] : ['Badewanne']).concat(['Handtuchheizkörper', 'Deckenleuchte']), gaestewc: ['WC wandhängend', 'Handwaschbecken', 'Spiegel', 'Deckenleuchte'], kueche: ['Kühlschrank', 'Spüle mit Unterschrank', 'Geschirrspüler', 'Unterschrank 60', 'Herd / Kochfeld', 'Hängeschrank 60', 'Deckenleuchte'], waschraum: ['Waschmaschine', 'Trockner', 'Ausgussbecken', 'Regal', 'Deckenleuchte'], wohnzimmer: ['Sofa 3-Sitzer', 'TV-Board', 'Couchtisch', 'Fernseher an Wand', 'Indirektes Licht (LED-Profil)', 'Stehleuchte', 'Pflanze groß', 'Teppich', 'Rauchmelder'], schlafzimmer: ['Doppelbett 180', 'Nachttisch', 'Nachttisch', 'Kleiderschrank', 'Deckenleuchte', 'Rauchmelder'], kinderzimmer: ['Kinderbett', 'Schreibtisch höhenverstellbar', 'Spielzeugregal', 'Kleiderschrank Kind', 'Spielecke / Teppich', 'Rauchmelder'], buero: ['Schreibtisch höhenverstellbar', 'Bürostuhl', 'Aktenschrank', 'Deckenleuchte'], flur: ['Garderobe', 'Schuhschrank', 'Spiegel groß', 'Rauchmelder'] }[p.raum];
+  const muster = { bad: ['WC wandhängend', 'Waschtisch', 'Spiegelschrank', 'Dusche bodengleich'].concat(klein ? [] : ['Badewanne']).concat(['Handtuchheizkörper', 'Deckenleuchte']), gaestewc: ['WC wandhängend', 'Handwaschbecken', 'Spiegel', 'Deckenleuchte'], kueche: ['Kühlschrank', 'Spüle mit Unterschrank', 'Geschirrspüler', 'Unterschrank 60', 'Herd / Kochfeld', 'Hängeschrank 60', 'Deckenleuchte'], waschraum: ['Waschmaschine', 'Trockner', 'Ausgussbecken', 'Regal', 'Deckenleuchte'], wohnzimmer: ['Sofa 3-Sitzer', 'TV-Board', 'Couchtisch', 'Fernseher an Wand', 'Indirektes Licht (LED-Profil)', 'Stehleuchte', 'Pflanze groß', 'Teppich', 'Rauchmelder'], schlafzimmer: ['Doppelbett 180', 'Nachttisch', 'Nachttisch', 'Kleiderschrank', 'Deckenleuchte', 'Rauchmelder'], kinderzimmer: ['Kinderbett', 'Schreibtisch höhenverstellbar', 'Spielzeugregal', 'Kleiderschrank Kind', 'Spielecke / Teppich', 'Rauchmelder'], buero: ['Schreibtisch höhenverstellbar', 'Bürostuhl', 'Aktenschrank', 'Deckenleuchte'], flur: ['Garderobe', 'Schuhschrank', 'Spiegel groß', 'Rauchmelder'], esszimmer: ['Pendelleuchte über Tisch', 'Sideboard', 'Vitrine'] }[p.raum];
   const kat = katalogFuer(p);
+  if (p.raum === 'esszimmer' || (p.raum === 'wohnzimmer' && p.breite * p.tiefe > 250000)) { const t = tischFuerRaum(p, kat); if (t) { const pl = platzieren(v, t); if (!pl.eng) { const el = { id: uid(), n: t[0], g: t[1], w: t[2], d: t[3], h: t[4], hint: t[5], x: pl.x, y: pl.y, rot: pl.rot }; v.plan.push(el); essgruppeHinzufuegen(v, el); } } }
   const liste = muster ? muster.map((n) => kat.find((k) => k[0] === n)).filter(Boolean) : kat.filter((k) => ['Möbel', 'Sanitär', 'Küche', 'Lager'].includes(k[1])).slice(0, 5);
-  liste.forEach((k) => { if (k[2] > v.breite && k[3] > v.breite) return; const pl = platzieren(v, k); if (pl.eng) return; v.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }); });
+  liste.forEach((k) => { if (k[2] > v.breite && k[3] > v.breite) return; const pl = platzieren(v, k); if (pl.eng) return; const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }; v.plan.push(el); if (istTisch(el.n)) essgruppeHinzufuegen(v, el); });
+  if (p.raum === 'kueche' && p.breite >= 400 && p.tiefe >= 380 && !v.plan.some((e) => /Kücheninsel/.test(e.n))) { const k = kat.find((x) => /Kücheninsel/.test(x[0])); if (k) { const pl = platzieren(v, k); if (!pl.eng) v.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: k[3], h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot, aus: { kochfeld: true, mulde: true, steckdosen: true } }); } }
   if (NASS.includes(p.raum) && p.fenster !== true) { const ziel = v.plan.find((e) => /Dusche/.test(e.n)) || v.plan.find((e) => /^WC/.test(e.n)); let y = v.tiefe * 0.25; if (ziel) { const f = fussabdruck(ziel); y = f.y + f.h / 2; } v.plan.push({ id: uid(), n: 'Lüfter', g: 'Technik', w: 15, d: 10, h: 15, x: v.breite - 10, y: Math.min(v.tiefe - 20, Math.max(5, Math.min(y, v.tiefe / 2 - 70 > 5 ? y : 5))), rot: 90 }); }
   return v;
 }
 AKT.bau4D = (d) => {
   const p = projekt(d.id); if (!p) return;
+  if (p.gartenPlan) { AKT.garten4DProjekt(d); return; }
+  if (p.bereich !== 'innen' && ANLEITUNGEN[p.anleitung] && ANLEITUNGEN[p.anleitung].schichten) { AKT.schichten4D({ anl: p.anleitung }); return; }
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
   const v = beispielEinrichtung(p);
   if (!p.plan.length) toast('Beispiel-Einrichtung – im Planer kannst du deine eigene festlegen');
@@ -347,6 +356,8 @@ route('planer', (id) => {
     <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen</div>
     ${sel ? `<div class="karte werkzeug"><b>${esc(sel.n)}</b> <span class="klein">${sel.w}×${sel.d}×${sel.h} cm</span>
       <div class="zeile"><button class="btn klein-btn" data-akt="planDreh" data-id="${p.id}">Drehen 90°</button><button class="btn klein-btn" data-akt="planDoppel" data-id="${p.id}">Kopieren</button><button class="btn klein-btn rot-text" data-akt="planWeg" data-id="${p.id}">Löschen</button></div>
+      ${/Kücheninsel/.test(sel.n) ? `<div class="klein" style="margin-top:8px">Was kommt in die Insel?</div><div class="chips" style="flex-wrap:wrap">${INSEL_OPT.map(([o, n]) => `<button class="chip ${(sel.aus || {})[o] ? 'an' : ''}" data-akt="inselOpt" data-id="${p.id}" data-e="${sel.id}" data-o="${o}">${n}</button>`).join('')}</div>${inselLeitungen(sel).map(([a, t]) => `<div class="hinweis ${a === 'strom' ? 'gelb' : a === 'wasser' ? '' : 'gruen'} klein">${esc(t)}</div>`).join('')}` : ''}
+      ${sel.gruppe ? '<div class="klein">Gehört zur Essgruppe – Tisch verschieben bewegt alle Stühle mit.</div>' : ''}
       ${sel.hint ? `<div class="hinweis gelb klein">${esc(sel.hint)}</div>` : ''}</div>` : ''}
     <h3>Katalog</h3>
     <div class="chips">${gruppen.map((g) => `<button class="chip ${g === planGruppe ? 'an' : ''}" data-akt="planGruppe" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
@@ -367,6 +378,7 @@ document.addEventListener('pointerdown', (e) => {
   if (planAuswahl !== obj.id) { planAuswahl = obj.id; render(); }
   const neu = document.querySelector(`.pl-el[data-pid="${obj.id}"]`);
   const sx = e.clientX, sy = e.clientY, ox = obj.x, oy = obj.y;
+  const mit = p.plan.filter((x) => x.gruppe === obj.id).map((x) => ({ x, ox: x.x, oy: x.y, el: document.querySelector(`.pl-el[data-pid="${x.id}"]`) }));
   const rot = obj.rot % 180 !== 0, w = rot ? obj.d : obj.w, d = rot ? obj.w : obj.d;
   let bewegt = false;
   const move = (ev) => {
@@ -374,6 +386,7 @@ document.addEventListener('pointerdown', (e) => {
     obj.x = Math.min(Math.max(0, ox + (ev.clientX - sx) / sk), Math.max(0, p.breite - w));
     obj.y = Math.min(Math.max(0, oy + (ev.clientY - sy) / sk), Math.max(0, p.tiefe - d));
     neu.style.left = obj.x * sk + 'px'; neu.style.top = obj.y * sk + 'px';
+    mit.forEach((m) => { m.x.x = m.ox + (obj.x - ox); m.x.y = m.oy + (obj.y - oy); if (m.el) { m.el.style.left = m.x.x * sk + 'px'; m.el.style.top = m.x.y * sk + 'px'; } if (window.raum3DViewer && window.raum3DViewer.bewegen) window.raum3DViewer.bewegen(m.x); });
     if (window.raum3DViewer && window.raum3DViewer.bewegen) window.raum3DViewer.bewegen(obj);
   };
   const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); if (bewegt) speichern(); };
@@ -392,7 +405,7 @@ const STILE = [
   { id: 'familie', name: 'Familienfreundlich', wand: '#f4f1ea', boden: '#b79c7a', moebel: '#7fa7c9', akzent: '#e0a040', text: 'Abwaschbare Farben, robuster Boden, abgerundete Kanten, viel Stauraum.' },
   { id: 'spar', name: 'Spar-Variante', wand: '#ececec', boden: '#b8a58a', moebel: '#dcdcdc', akzent: '#5a7a9a', text: 'Streichen statt umbauen, Möbel umstellen, Licht ergänzen – geringe Kosten.' }
 ];
-const STICHWORTE = [[/licht|led|indirekt/i, 'Indirektes Licht (LED-Profil)'], [/lampe|leuchte/i, 'Stehleuchte'], [/\btv\b|fernseh/i, 'Fernseher an Wand'], [/bild/i, 'Bild / Rahmen'], [/spiegel/i, 'Spiegel'], [/sofa|couch/i, 'Sofa 3-Sitzer'], [/sessel/i, 'Sessel'], [/bett/i, 'Doppelbett 180'], [/schreibtisch/i, 'Schreibtisch höhenverstellbar'], [/esstisch|tisch/i, 'Esstisch'], [/regal/i, 'Regal hoch'], [/schrank/i, 'Kleiderschrank'], [/pflanze/i, 'Pflanze groß'], [/teppich/i, 'Teppich'], [/kamin|ofen/i, 'Kamin / Kaminofen'], [/vorhang|gardine/i, 'Vorhang / Gardine'], [/steckdose/i, 'Steckdose (zusätzlich)'], [/rauchmelder/i, 'Rauchmelder']];
+const STICHWORTE = [[/licht|led|indirekt/i, 'Indirektes Licht (LED-Profil)'], [/lampe|leuchte/i, 'Stehleuchte'], [/\btv\b|fernseh/i, 'Fernseher an Wand'], [/bild/i, 'Bild / Rahmen'], [/spiegel/i, 'Spiegel'], [/sofa|couch/i, 'Sofa 3-Sitzer'], [/sessel/i, 'Sessel'], [/bett/i, 'Doppelbett 180'], [/schreibtisch/i, 'Schreibtisch höhenverstellbar'], [/esstisch|tisch/i, 'Esstisch 6 Pers.'], [/regal/i, 'Regal hoch'], [/schrank/i, 'Kleiderschrank'], [/pflanze/i, 'Pflanze groß'], [/teppich/i, 'Teppich'], [/kamin|ofen/i, 'Kamin / Kaminofen'], [/vorhang|gardine/i, 'Vorhang / Gardine'], [/steckdose/i, 'Steckdose (zusätzlich)'], [/rauchmelder/i, 'Rauchmelder']];
 let ideenErkannt = [];
 
 EIN.ideenNotiz = (v, d) => { projekt(d.id).skizzeNotiz = v; speichern(); ideenErkennen(projekt(d.id)); render(); };
@@ -410,7 +423,7 @@ AKT.ideenDiktat = (d) => diktieren((t) => { const p = projekt(d.id); p.skizzeNot
 AKT.ideenUebernehmen = (d) => {
   const p = projekt(d.id);
   const neu = ideenErkannt.filter((x) => x.ok && x.k);
-  aendern(() => neu.forEach((x) => { const k = x.k, pl = platzieren(p, k); p.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }); }), 'Ideen übernommen');
+  aendern(() => neu.forEach((x) => { const k = x.k, pl = platzieren(p, k); const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }; if (pl.gruppe) el.gruppe = pl.gruppe; p.plan.push(el); if (istTisch(el.n)) essgruppeHinzufuegen(p, el); }), 'Ideen übernommen');
   toast(neu.length + ' Elemente in den Planer übernommen');
   geh('#/planer/' + p.id);
 };
@@ -530,6 +543,7 @@ route('anleitung', (id, q) => {
     <div class="zeile">${werBadge(a.wer)}<span class="klein">${esc(a.dauer)}</span><span class="klein">Richtwert ${euro(a.kosten[0])}–${euro(a.kosten[1])} je ${a.einheit}</span></div>
     ${a.warn.length ? `<div class="hinweis rot">${a.warn.map(esc).join('<br>')}</div>` : ''}
     ${zeitKarte(id, p ? menge : (a.einheit === 'm²' ? 10 : a.einheit === 'm' ? 10 : 1), true)}
+    ${a.schichten ? `<button class="btn hell voll" data-akt="schichten4D" data-anl="${id}">▶ 4D: Schicht für Schicht (Video)</button>` : ''}
     ${schichten}
     <h3>Schritte${p ? ' · ' + fortschritt(p) + ' %' : ''}</h3>
     ${a.schritte.map((s, i) => `<${p ? 'button data-akt="schritt" data-p="' + p.id + '" data-i="' + i + '"' : 'div'} class="schritt ${p && p.schritte[i] ? 'fertig' : ''}">

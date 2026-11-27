@@ -219,3 +219,22 @@ div.schritt { cursor: default; }
 .plan-tag { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1d1d1d; font-size: .88em; line-height: 1.35; }
 .plan-tag b { flex: none; width: 74px; }
 .plan-tag.warte { color: var(--gelb); }
+
+.garten-liste { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.garten-karte { display: flex; flex-direction: column; gap: 3px; padding: 8px; border-radius: 14px; border: 1px solid var(--linie); background: var(--karte); text-align: left; cursor: pointer; }
+.garten-karte.an { border-color: var(--hell); }
+.garten-karte svg { border-radius: 8px; }
+
+/* Assistent */
+.as-inhalt { padding-bottom: 20px; }
+.as-ich { margin: 10px 0 10px 18%; padding: 10px 14px; border-radius: 18px 18px 4px 18px; background: var(--hell); color: #000; }
+.as-app { margin: 10px 8% 10px 0; padding: 12px 14px; border-radius: 18px 18px 18px 4px; background: #151515; border: 1px solid var(--linie); line-height: 1.45; }
+.as-app .chips { flex-wrap: wrap; overflow: visible; }
+.as-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; scroll-snap-type: x mandatory; }
+.as-karte { flex: none; width: 200px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 14px; border: 1px solid var(--linie); background: #0e0e0e; }
+.as-karte svg { border-radius: 8px; }
+.as-farben { display: flex; height: 40px; border-radius: 8px; overflow: hidden; }
+.as-farben span { flex: 1; }
+.as-leiste { position: sticky; bottom: 92px; display: flex; gap: 8px; align-items: center; padding: 8px; border-radius: 999px; background: #121212; border: 1px solid #333; margin-top: 12px; }
+.as-leiste input { flex: 1; min-width: 0; min-height: 44px; border: none; background: transparent; font-size: 16px; color: #fff; outline: none; }
+.hell-rund { background: var(--hell); color: #000; font-weight: 700; }

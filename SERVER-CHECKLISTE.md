@@ -100,6 +100,10 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
+- ☐ Planungs-Assistent: freies Gespräch per KI-Sprachmodell auf dem Server (heute Regeln im Gerät). Ergebnis-Format beibehalten: Thema, Maße, Wünsche → Vorschläge; KI-Vorschläge immer durch `pruefen()` und die Raumregeln laufen lassen.
+- ☐ Fotorealistische Bilder und KI-Videos aus dem 3D-Raum/Garten (3D-Bild + Stil als Vorlage an ein KI-Bild-/Videomodell). Kosten je Bild/Video, Limits im Abo; Kunden bleiben in der App (kein Konto bei Drittanbietern).
+- ☐ Installationsplan als PDF für Elektriker und Sanitär (Leitungen zur Kücheninsel, Bad, Lüftung) – aus den Regeln der App erzeugt.
+- ☐ Hersteller-Daten für Küchengeräte (Muldenlüfter-Maße, Abluft/Umluft-Sets, Kochfeld-Anschlusswerte) über Händler-/Hersteller-Feeds.
 - ☐ Zeitaufwand (Anfänger/Fortgeschritten/Profi): Richtwerte später mit echten Zeiten aus abgeschlossenen Aufträgen verbessern (Server sammelt anonymisiert: Arbeit, Menge, Stunden). Handwerker-Angebote können den Profi-Aufwand übernehmen.
 
 ## Erledigt in der App (ohne Server)
