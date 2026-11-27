@@ -10,7 +10,8 @@
 - ☐ Preismodell: Abo für Kunden? Gebühr je Auftrag für Handwerker? „Eigene Kunden“-Abo?
 - ☐ KI-Kosten: wie viele KI-Bilder/Videos/Erkennungen pro Nutzer frei, was im Abo?
 - ☐ Sprachen: App hat jetzt 24 Sprachen (Entscheidung: alle). Offen: Welche Sprachen bekommen beim Start Rechtstexte (Impressum, Datenschutz, AGB) und Store-Einträge? Empfehlung: DE + EN sofort, weitere nach Nachfrage – Rechtstexte nur professionell übersetzen lassen.
-- ☐ Ein Konto für alle Apps (JoumHome + Joum 4D Build + später weitere)? → empfohlen: ja, gemeinsamer Login
+- ☑ Ein Konto für alle Apps (JoumHome + Joum 4D Build + WN + später weitere) – Entscheidung 27.11.: ja, Anmeldung ohne Passwort (Google, Facebook, Apple, Telefon, E-Mail)
+- ☐ Anmelde-Anbieter: Firebase Authentication oder Supabase Auth (EU)? → siehe Abschnitt 4
 - ☐ Domains: joumhome.(de/com), Domain für Joum 4D Build, WN – je 10 Jahre + Auto-Verlängerung
 
 ## 1. Konten, Domains, Marke
@@ -92,7 +93,7 @@
 ## 9. Apps & Stores
 - ☐ Native App (iOS/Android) für LiDAR-Messung, Kamera, Push – oder PWA zuerst
 - ☐ Store-Einträge DE/EN/NL (Untertitel: Plan. Bau. Fertig. / Plan. Build. Done. / Plan. Bouw. Klaar.)
-- ☐ Oberfläche mehrsprachig (EN/NL), Großschrift/Kontrast (fertig)
+- ◐ Oberfläche in 24 Sprachen (Kern fertig), Großschrift/Kontrast (fertig)
 
 ## 10. Verknüpfungen
 - ☐ JoumHome-Ticket → Renovierungsprojekt per Schnittstelle (heute: Direktlink `#/ticket?...`)
