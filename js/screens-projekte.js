@@ -1,0 +1,420 @@
+/* Joum 4D Build – Start, Projekte, Räume, Projekt, Messen, Raumplaner 2D/3D, KI-Ideen, Anleitungen */
+
+const WAND_ANL = ['streichen', 'tapezieren', 'vorsatzschale', 'fassade', 'keller_feuchte', 'trockenbau_wand'];
+const BODEN_ANL = ['laminat', 'parkett', 'bodenbeschichtung', 'kellerdecke_daemmen', 'oberste_decke', 'bad_abdichten', 'fliesen', 'dach_daemmen_innen', 'balkon_abdichten'];
+
+function wandFlaeche(p) {
+  const brutto = (p.waende || []).reduce((s, w) => s + parseZahl(w.l) * parseZahl(w.h), 0);
+  const aus = (p.aussparungen || []).reduce((s, a) => s + parseZahl(a.b) * parseZahl(a.h) * (parseZahl(a.n) || 1), 0);
+  return { brutto, aus, netto: Math.max(0, brutto - aus) };
+}
+function bodenFlaeche(p) { return (p.breite / 100) * (p.tiefe / 100); }
+function umfang(p) { return 2 * (p.breite + p.tiefe) / 100; }
+
+function standardMenge(p) {
+  const a = ANLEITUNGEN[p.anleitung];
+  if (!a) return 1;
+  if (a.einheit === 'm²') return Math.round((WAND_ANL.includes(p.anleitung) ? wandFlaeche(p).netto : bodenFlaeche(p)) * 10) / 10;
+  if (a.einheit === 'm') return Math.round(umfang(p) * 10) / 10;
+  return 1;
+}
+
+function projektAnlegen(raumId, anlId, extra) {
+  const r = raum(raumId) || RAEUME[0];
+  const a = ANLEITUNGEN[anlId];
+  const h = r.bereich === 'innen' ? 2.5 : 3;
+  const p = Object.assign({
+    id: uid(), name: (a ? a.t : 'Gestaltung') + ' – ' + r.name, raum: r.id, bereich: r.bereich, anleitung: anlId,
+    breite: r.w, tiefe: r.d, schritte: {}, plan: [], stil: null, notizen: '', erstellt: new Date().toISOString(),
+    waende: [{ n: 'Wand A', l: r.w / 100, h }, { n: 'Wand B', l: r.d / 100, h }, { n: 'Wand C', l: r.w / 100, h }, { n: 'Wand D', l: r.d / 100, h }],
+    aussparungen: r.bereich === 'innen' ? [{ n: 'Tür', b: 0.9, h: 2.1, n2: 1 }, { n: 'Fenster', b: 1.2, h: 1.3 }] : []
+  }, extra || {});
+  p.aussparungen.forEach((x) => { x.n = x.n || ''; if (x.n2) { x.anz = x.n2; delete x.n2; } });
+  p.menge = standardMenge(p);
+  S.projekte.unshift(p); S.aktivId = p.id;
+  speichern('Projekt angelegt');
+  return p;
+}
+
+AKT.neuesProjekt = (d) => {
+  const a = ANLEITUNGEN[d.anl];
+  if (a && a.route) { location.hash = a.route; return; }
+  const p = projektAnlegen(d.raum, d.anl);
+  location.hash = '#/projekt/' + p.id;
+};
+AKT.aktiv = (d) => { S.aktivId = d.id; speichern(); location.hash = '#/projekt/' + d.id; };
+AKT.projektLoeschen = (d) => {
+  if (!confirm('Projekt in den Papierkorb legen? (30 Tage wiederherstellbar)')) return;
+  aendern((s) => { const p = projekt(d.id); inPapierkorb('projekt', p); s.projekte = s.projekte.filter((x) => x.id !== d.id); if (s.aktivId === d.id) s.aktivId = null; }, 'Projekt gelöscht');
+  location.hash = '#/projekte';
+};
+
+/* ---------- Start ---------- */
+route('start', () => {
+  const p = aktivesProjekt();
+  const offen = S.einkauf.filter((e) => !e.erledigt).length;
+  const auftr = S.auftraege.filter((a) => a.status !== 'abgeschlossen').length;
+  let haupt;
+  if (p) {
+    const a = ANLEITUNGEN[p.anleitung];
+    const naechster = a ? a.schritte.findIndex((_, i) => !p.schritte[i]) : -1;
+    haupt = `<section class="karte gross-karte">
+      <div class="zeile">${ring(fortschritt(p))}<div style="flex:1"><div class="unter">Aktives Projekt</div><h2>${esc(p.name)}</h2>${a ? werBadge(a.wer) : ''}</div></div>
+      ${naechster >= 0 ? `<a class="naechster" href="#/anleitung/${p.anleitung}?p=${p.id}"><div class="unter">Nächster Schritt</div><b>${esc(a.schritte[naechster][0])}</b><div class="klein">${esc(a.schritte[naechster][1])}</div></a>` : (a && a.schritte.length ? '<div class="hinweis gruen">Alle Schritte erledigt – jetzt Abnahme/Fotos.</div>' : '')}
+      <a class="btn hell voll" href="#/projekt/${p.id}">Projekt öffnen</a></section>`;
+  } else {
+    haupt = `<section class="karte gross-karte"><h2>Willkommen bei Joum 4D Build</h2><p class="klein">Plan. Bau. Fertig. – Wähle einen Raum, Haus außen oder Garten und leg dein erstes Projekt an.</p><a class="btn hell voll" href="#/projekte">Projekt starten</a></section>`;
+  }
+  return kopf('Joum 4D Build', 'Plan. Bau. Fertig.') + `<div class="inhalt">${haupt}
+    <div class="raster4">
+      <a class="kachel" href="${p ? '#/messen/' + p.id : '#/projekte'}">${ICON.messen}<span>Messen</span></a>
+      <a class="kachel" href="${p ? '#/planer/' + p.id : '#/projekte'}">${ICON.wuerfel}<span>Gestalten 3D</span></a>
+      <a class="kachel" href="#/garten">${ICON.baum}<span>Garten 4D</span></a>
+      <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
+      <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
+      <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>
+      <a class="kachel" href="#/markt">${ICON.hand}<span>Profi${auftr ? ' · ' + auftr : ''}</span></a>
+      <a class="kachel" href="#/ticket">${ICON.link}<span>JoumHome</span></a>
+    </div>
+    ${S.projekte.length > 1 ? `<h3>Weitere Projekte</h3>${S.projekte.filter((x) => x !== p).slice(0, 5).map(projektZeile).join('')}` : ''}
+  </div>`;
+});
+
+function projektZeile(p) {
+  return `<button class="liste-zeile" data-akt="aktiv" data-id="${p.id}"><span>${esc(p.name)}<span class="klein block">${esc((raum(p.raum) || {}).name || '')} · ${datum(p.erstellt)}</span></span><span class="klein">${fortschritt(p)} %</span></button>`;
+}
+
+/* ---------- Projekte wählen ---------- */
+route('projekte', (_, q) => {
+  const tab = q.tab || 'innen';
+  const tabs = [['innen', 'Innen'], ['aussen', 'Haus außen'], ['garten', 'Garten']];
+  let inhalt = '';
+  if (tab === 'innen') {
+    inhalt = `<p class="klein">Alle Räume mit Katalog, Sicherheitshinweisen und passenden Anleitungen.</p><div class="raster2">${RAEUME.filter((r) => r.bereich === 'innen').map((r) => `<a class="raum-kachel" href="#/raum/${r.id}"><b>${esc(r.name)}</b><span class="klein">${r.katalog.length} Elemente · ${r.projekte.length} Projekte</span></a>`).join('')}</div>`;
+  } else {
+    const ids = tab === 'aussen' ? ['fenster', 'haustuer', 'dach', 'dachfenster', 'fassade', 'regenrinne', 'vordach', 'carport', 'garagentor', 'balkon_abdichten'] : ['gartenplaner', 'hochbeet', 'terrasse', 'gartenweg', 'teich', 'zaun', 'gartenhaus', 'bewaesserung', 'gartenlicht'];
+    const raumFuer = (id) => tab === 'garten' ? 'garten' : (['dach', 'dachfenster'].includes(id) ? 'dach' : ['carport', 'garagentor'].includes(id) ? 'garage' : id === 'balkon_abdichten' ? 'balkon' : 'fassade');
+    inhalt = (tab === 'aussen' ? `<div class="raster2" style="margin-bottom:12px">${['balkon', 'garage'].map((id) => `<a class="raum-kachel" href="#/raum/${id}"><b>${raum(id).name}</b><span class="klein">Planer & Katalog</span></a>`).join('')}</div>` : '') +
+      ids.map((id) => { const a = ANLEITUNGEN[id]; return `<div class="liste-zeile"><a href="${a.route || '#/anleitung/' + id}" style="flex:1"><b>${esc(a.t)}</b><span class="klein block">${a.dauer ? esc(a.dauer) + ' · ' : ''}${a.route ? '5 Vorschläge, Zeit-Regler' : 'Richtwert ' + euro(a.kosten[0]) + '–' + euro(a.kosten[1]) + ' je ' + a.einheit}</span></a>${werBadge(a.wer)}<button class="btn klein-btn" data-akt="neuesProjekt" data-raum="${raumFuer(id)}" data-anl="${id}">+ Projekt</button></div>`; }).join('');
+  }
+  return kopf('Projekte', 'Innen · Haus außen · Garten') + `<div class="inhalt">
+    <div class="segment">${tabs.map(([k, n]) => `<a href="#/projekte?tab=${k}" class="${k === tab ? 'an' : ''}">${n}</a>`).join('')}</div>
+    <div class="legende">${werBadge('Selbst')} ${werBadge('Teils Profi')} ${werBadge('Fachbetrieb')}</div>
+    ${inhalt}
+    ${S.projekte.length ? `<h3>Meine Projekte</h3>${S.projekte.map(projektZeile).join('')}` : ''}
+  </div>`;
+});
+
+/* ---------- Raum ---------- */
+route('raum', (id) => {
+  const r = raum(id);
+  if (!r) return kopf('Nicht gefunden', '', '#/projekte');
+  const gruppen = [...new Set(r.katalog.map((k) => k[1]))];
+  return kopf(r.name, 'Raum · Katalog & Projekte', '#/projekte') + `<div class="inhalt">
+    <h3>Was möchtest du machen?</h3>
+    ${r.projekte.map((aid) => { const a = ANLEITUNGEN[aid]; return a ? `<div class="liste-zeile"><a href="${a.route || '#/anleitung/' + aid}" style="flex:1"><b>${esc(a.t)}</b><span class="klein block">${esc(a.dauer)}</span></a>${werBadge(a.wer)}<button class="btn klein-btn" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="${aid}">+ Projekt</button></div>` : ''; }).join('')}
+    <button class="btn voll" data-akt="neuesProjekt" data-raum="${r.id}" data-anl="">Nur Raum gestalten (Planer 2D/3D)</button>
+    ${r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    ${r.tipps.length ? `<div class="hinweis"><b>Tipps</b><ul>${r.tipps.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    ${r.katalog.length ? `<h3>Katalog · ${r.katalog.length} Elemente</h3>${gruppen.map((g) => `<details class="karte"><summary>${esc(g)} (${r.katalog.filter((k) => k[1] === g).length})</summary>${r.katalog.filter((k) => k[1] === g).map((k) => `<div class="kat-zeile"><b>${esc(k[0])}</b> <span class="klein">${k[2]}×${k[3]}×${k[4]} cm</span>${k[5] ? `<div class="klein">${esc(k[5])}</div>` : ''}</div>`).join('')}</details>`).join('')}` : ''}
+  </div>`;
+});
+
+/* ---------- Projekt-Übersicht ---------- */
+EIN.projektFeld = (v, d) => aendern(() => { const p = projekt(d.id); p[d.feld] = d.zahl ? parseZahl(v) : v; });
+
+route('projekt', (id) => {
+  const p = projekt(id);
+  if (!p) return kopf('Projekt nicht gefunden', '', '#/projekte');
+  if (S.aktivId !== p.id) { S.aktivId = p.id; speichern(); }
+  const a = ANLEITUNGEN[p.anleitung], r = raum(p.raum) || {};
+  const auftrag = S.auftraege.find((x) => x.projekt === p.id);
+  const ausgaben = S.quittungen.filter((q) => q.projekt === p.id).reduce((s, q) => s + parseZahl(q.betrag), 0);
+  return kopf(p.name, r.name || '', '#/projekte') + `<div class="inhalt">
+    <section class="karte zeile">${ring(fortschritt(p))}<div style="flex:1">
+      ${a ? werBadge(a.wer) + `<div class="klein" style="margin-top:6px">${esc(a.dauer)}</div>` : '<div class="klein">Raumgestaltung</div>'}
+      ${a ? `<div class="klein">Richtwert selbst ${euro(a.kosten[0] * (p.menge || 1))} · Profi ${euro(a.kosten[1] * (p.menge || 1))}</div>` : ''}
+      <div class="klein">Ausgaben bisher: ${euro(ausgaben)}</div></div></section>
+    <label class="feld">Projektname<input value="${esc(p.name)}" data-ein="projektFeld" data-id="${p.id}" data-feld="name"></label>
+    ${a ? `<label class="feld">Menge (${a.einheit})<input inputmode="decimal" value="${zahl(p.menge)}" data-ein="projektFeld" data-id="${p.id}" data-feld="menge" data-zahl="1"></label>` : ''}
+    <div class="raster3">
+      <a class="kachel" href="#/messen/${p.id}">${ICON.messen}<span>Messen</span></a>
+      <a class="kachel" href="#/planer/${p.id}">${ICON.wuerfel}<span>Gestalten</span></a>
+      <a class="kachel" href="#/ideen/${p.id}">${ICON.funke}<span>KI-Ideen</span></a>
+      ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
+      ${a ? `<button class="kachel" data-akt="materialInListe" data-id="${p.id}">${ICON.korb}<span>Material</span></button>` : ''}
+      <a class="kachel" href="#/markt?p=${p.id}">${ICON.hand}<span>${auftrag ? 'Auftrag' : 'Profi anfragen'}</span></a>
+      <a class="kachel" href="#/finanzen?p=${p.id}">${ICON.beleg}<span>Quittung</span></a>
+    </div>
+    ${r.sicherheit && r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    ${a && a.warn.length ? `<div class="hinweis gelb">${a.warn.map(esc).join('<br>')}</div>` : ''}
+    ${p.ticket ? `<div class="hinweis">Verknüpft mit JoumHome-Ticket <b>${esc(p.ticket.nr)}</b> · ${esc(p.ticket.objekt)}</div>` : ''}
+    <label class="feld">Notizen<textarea rows="3" data-ein="projektFeld" data-id="${p.id}" data-feld="notizen">${esc(p.notizen)}</textarea></label>
+    <button class="btn voll" data-akt="drucken">Als PDF speichern / drucken</button>
+    <button class="btn voll rot-text" data-akt="projektLoeschen" data-id="${p.id}">Projekt löschen</button>
+  </div>`;
+});
+AKT.drucken = () => window.print();
+
+AKT.materialInListe = (d) => {
+  const p = projekt(d.id), a = ANLEITUNGEN[p.anleitung];
+  if (!a) return;
+  aendern((s) => {
+    a.material.forEach(([n, je, einheit, hinweis]) => {
+      const menge = Math.ceil(je * (p.menge || 1) * 10) / 10;
+      s.einkauf.push({ id: uid(), n, menge, einheit, hinweis, projekt: p.id, erledigt: false });
+    });
+  }, 'Material in Liste');
+  toast(a.material.length + ' Positionen in der Einkaufsliste');
+  location.hash = '#/einkauf';
+};
+
+/* ---------- Messen ---------- */
+EIN.wand = (v, d) => aendern(() => { const p = projekt(d.id); p[d.liste][+d.i][d.feld] = d.feld === 'n' ? v : parseZahl(v); });
+EIN.raumMass = (v, d) => aendern(() => { const p = projekt(d.id); p[d.feld] = Math.round(parseZahl(v) * 100); });
+AKT.wandPlus = (d) => aendern(() => { const p = projekt(d.id); p[d.liste].push(d.liste === 'waende' ? { n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: 3, h: 2.5 } : { n: 'Öffnung', b: 1, h: 1, anz: 1 }); });
+AKT.wandMinus = (d) => aendern(() => { const p = projekt(d.id); p[d.liste].splice(+d.i, 1); });
+AKT.flaecheUebernehmen = (d) => { aendern(() => { const p = projekt(d.id); p.menge = standardMenge(p); }, 'Fläche übernommen'); toast('Menge übernommen'); };
+AKT.diktatWand = (d) => diktieren((t) => {
+  const z = (t.match(/\d+([,.]\d+)?/g) || []).map(parseZahl);
+  if (z.length < 2) { toast('Bitte z. B. „4,20 mal 2,50“ sagen. Erkannt: ' + t); return; }
+  aendern(() => { const p = projekt(d.id); p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: z[0], h: z[1] }); }, 'Wand diktiert');
+  toast('Wand ' + zahl(z[0]) + ' × ' + zahl(z[1]) + ' m hinzugefügt');
+});
+AKT.lidar = () => alert('LiDAR-Scan und Messen per Foto + Zollstock sind für die Store-App (iOS/Android) vorgesehen. In dieser Web-Version bitte Maße eintippen oder diktieren (Mikrofon).');
+
+route('messen', (id) => {
+  const p = projekt(id);
+  if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  const f = wandFlaeche(p);
+  const zeile = (liste, w, i) => `<div class="mess-zeile">
+      <input aria-label="Bezeichnung" value="${esc(w.n)}" data-ein="wand" data-id="${p.id}" data-liste="${liste}" data-i="${i}" data-feld="n">
+      <input aria-label="${liste === 'waende' ? 'Länge' : 'Breite'} in m" inputmode="decimal" value="${zahl(liste === 'waende' ? w.l : w.b)}" data-ein="wand" data-id="${p.id}" data-liste="${liste}" data-i="${i}" data-feld="${liste === 'waende' ? 'l' : 'b'}">
+      <span>×</span>
+      <input aria-label="Höhe in m" inputmode="decimal" value="${zahl(w.h)}" data-ein="wand" data-id="${p.id}" data-liste="${liste}" data-i="${i}" data-feld="h">
+      ${liste === 'aussparungen' ? `<input aria-label="Anzahl" class="anz" inputmode="numeric" value="${w.anz || 1}" data-ein="wand" data-id="${p.id}" data-liste="${liste}" data-i="${i}" data-feld="anz">` : ''}
+      <button class="x" aria-label="Entfernen" data-akt="wandMinus" data-id="${p.id}" data-liste="${liste}" data-i="${i}">×</button></div>`;
+  return kopf('Messen', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
+    <div class="raster3">
+      <button class="kachel" data-akt="lidar">${ICON.scan}<span>LiDAR-Scan</span></button>
+      <button class="kachel" data-akt="lidar">${ICON.kamera}<span>Foto + Zollstock</span></button>
+      <button class="kachel" data-akt="diktatWand" data-id="${p.id}">${ICON.mikro}<span>Diktieren</span></button>
+    </div>
+    <h3>Grundfläche</h3>
+    <div class="mess-zeile"><span style="flex:1">Breite × Tiefe (m)</span>
+      <input inputmode="decimal" aria-label="Breite in m" value="${zahl(p.breite / 100)}" data-ein="raumMass" data-id="${p.id}" data-feld="breite"><span>×</span>
+      <input inputmode="decimal" aria-label="Tiefe in m" value="${zahl(p.tiefe / 100)}" data-ein="raumMass" data-id="${p.id}" data-feld="tiefe"></div>
+    <div class="klein">Boden ${zahl(bodenFlaeche(p))} m² · Umfang ${zahl(umfang(p))} m</div>
+    <h3>Wände (Länge × Höhe in m)</h3>
+    ${p.waende.map((w, i) => zeile('waende', w, i)).join('')}
+    <button class="btn klein-btn" data-akt="wandPlus" data-id="${p.id}" data-liste="waende">+ Wand</button>
+    <h3>Aussparungen (Breite × Höhe, Anzahl)</h3>
+    ${p.aussparungen.map((w, i) => zeile('aussparungen', w, i)).join('')}
+    <button class="btn klein-btn" data-akt="wandPlus" data-id="${p.id}" data-liste="aussparungen">+ Tür/Fenster</button>
+    <section class="karte summe"><div><span class="klein">Wand brutto</span><b>${zahl(f.brutto)} m²</b></div><div><span class="klein">Aussparungen</span><b>− ${zahl(f.aus)} m²</b></div><div><span class="klein">Wand netto</span><b>${zahl(f.netto)} m²</b></div></section>
+    <button class="btn hell voll" data-akt="flaecheUebernehmen" data-id="${p.id}">Fläche ins Projekt übernehmen</button>
+    <p class="klein">Maße werden an Einkauf, Planer und Anleitung weitergegeben.</p>
+  </div>`;
+});
+
+/* ---------- Raumplaner 2D/3D ---------- */
+const GRUPPEN_FARBE = { 'Licht': '#ffd27a', 'Möbel': '#9db8d9', 'Wand & Bau': '#b0a090', 'Deko': '#d9a0c0', 'Technik': '#9fd69f', 'Sanitär': '#a0d8e8', 'Küche': '#e0c090', 'Lager': '#c0c0c0', 'Garten': '#8fcf6a', 'Sicherheit': '#ff9a8a' };
+let planAuswahl = null, plan3D = false, planGruppe = null;
+
+function katalogFuer(p) {
+  const r = raum(p.raum);
+  return r && r.katalog.length ? r.katalog : kat(BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau);
+}
+AKT.planGruppe = (d) => { planGruppe = d.g; render(); };
+AKT.planAdd = (d) => {
+  const p = projekt(d.id), k = katalogFuer(p)[+d.i];
+  const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: Math.max(0, (p.breite - k[2]) / 2), y: Math.max(0, (p.tiefe - k[3]) / 2), rot: 0 };
+  planAuswahl = el.id;
+  aendern(() => p.plan.push(el), 'Element hinzugefügt');
+};
+AKT.planDreh = (d) => aendern(() => { const e = projekt(d.id).plan.find((x) => x.id === planAuswahl); if (e) e.rot = (e.rot + 90) % 360; });
+AKT.planDoppel = (d) => aendern(() => { const p = projekt(d.id), e = p.plan.find((x) => x.id === planAuswahl); if (e) { const n = Object.assign({}, e, { id: uid(), x: e.x + 20, y: e.y + 20 }); p.plan.push(n); planAuswahl = n.id; } });
+AKT.planWeg = (d) => aendern(() => { const p = projekt(d.id); p.plan = p.plan.filter((x) => x.id !== planAuswahl); planAuswahl = null; }, 'Element gelöscht');
+AKT.plan3D = () => { plan3D = !plan3D; render(); };
+AKT.planInListe = (d) => {
+  const p = projekt(d.id);
+  aendern((s) => p.plan.forEach((e) => s.einkauf.push({ id: uid(), n: e.n, menge: 1, einheit: 'Stück', hinweis: e.hint || '', projekt: p.id, erledigt: false })), 'Planer → Einkauf');
+  toast(p.plan.length + ' Elemente in die Einkaufsliste');
+};
+
+function box3D(e, sk, farbe) {
+  const w = e.w * sk, d = e.d * sk, h = Math.max(2, e.h * sk);
+  const f = (stil, hell) => `<div class="f" style="${stil};background:${farbe};filter:brightness(${hell})"></div>`;
+  return f(`width:${w}px;height:${d}px;transform:translateZ(${h}px)`, 1.08) +
+    f(`width:${w}px;height:${h}px;top:${d}px;transform-origin:top;transform:rotateX(-90deg)`, 0.8) +
+    f(`width:${w}px;height:${h}px;top:0;transform-origin:top;transform:rotateX(-90deg)`, 0.7) +
+    f(`width:${h}px;height:${d}px;left:${w}px;transform-origin:left;transform:rotateY(-90deg)`, 0.62) +
+    f(`width:${h}px;height:${d}px;left:0;transform-origin:left;transform:rotateY(-90deg)`, 0.75);
+}
+
+route('planer', (id) => {
+  const p = projekt(id);
+  if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  const kat = katalogFuer(p);
+  const gruppen = [...new Set(kat.map((k) => k[1]))];
+  if (!planGruppe || !gruppen.includes(planGruppe)) planGruppe = gruppen[0];
+  const breitePx = 340, sk = breitePx / p.breite, hoehePx = p.tiefe * sk;
+  const stil = STILE.find((s) => s.id === p.stil);
+  const sel = p.plan.find((x) => x.id === planAuswahl);
+  const elemente = p.plan.map((e) => {
+    const rot = e.rot % 180 !== 0;
+    const w = (rot ? e.d : e.w) * sk, d = (rot ? e.w : e.d) * sk;
+    const farbe = stil && e.g === 'Möbel' ? stil.moebel : (GRUPPEN_FARBE[e.g] || '#aaa');
+    const eff = Object.assign({}, e, { w: rot ? e.d : e.w, d: rot ? e.w : e.d });
+    return `<div class="pl-el ${e.id === planAuswahl ? 'gewaehlt' : ''}" data-pid="${e.id}" style="left:${e.x * sk}px;top:${e.y * sk}px;width:${w}px;height:${d}px;${plan3D ? '' : 'background:' + farbe}">
+      ${plan3D ? box3D(eff, sk, farbe) : `<span>${esc(e.n)}</span>`}</div>`;
+  }).join('');
+  return kopf('Gestalten', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
+    <div class="segment"><button class="${plan3D ? '' : 'an'}" data-akt="plan3D">2D-Grundriss</button><button class="${plan3D ? 'an' : ''}" data-akt="plan3D">3D-Ansicht</button></div>
+    <div class="plan-buehne ${plan3D ? 'drei' : ''}" style="height:${plan3D ? hoehePx * 0.75 + 120 : hoehePx + 4}px">
+      <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${stil ? stil.boden : '#1a1a1a'};border-color:${stil ? stil.wand : '#555'}">${elemente}</div>
+    </div>
+    <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen</div>
+    ${sel ? `<div class="karte werkzeug"><b>${esc(sel.n)}</b> <span class="klein">${sel.w}×${sel.d}×${sel.h} cm</span>
+      <div class="zeile"><button class="btn klein-btn" data-akt="planDreh" data-id="${p.id}">Drehen 90°</button><button class="btn klein-btn" data-akt="planDoppel" data-id="${p.id}">Kopieren</button><button class="btn klein-btn rot-text" data-akt="planWeg" data-id="${p.id}">Löschen</button></div>
+      ${sel.hint ? `<div class="hinweis gelb klein">${esc(sel.hint)}</div>` : ''}</div>` : ''}
+    <h3>Katalog</h3>
+    <div class="chips">${gruppen.map((g) => `<button class="chip ${g === planGruppe ? 'an' : ''}" data-akt="planGruppe" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
+    <div class="raster2">${kat.map((k, i) => k[1] === planGruppe ? `<button class="kat-btn" data-akt="planAdd" data-id="${p.id}" data-i="${i}"><span class="farbpunkt" style="background:${GRUPPEN_FARBE[k[1]] || '#aaa'}"></span>${esc(k[0])}</button>` : '').join('')}</div>
+    <div class="zeile" style="margin-top:12px"><a class="btn" href="#/ideen/${p.id}">KI-Ideen & Stile</a><button class="btn hell" data-akt="planInListe" data-id="${p.id}">In Einkaufsliste</button></div>
+  </div>`;
+});
+
+/* Ziehen der Elemente im Grundriss (Zeiger-Ereignisse) */
+document.addEventListener('pointerdown', (e) => {
+  const el = e.target.closest('.pl-el');
+  const boden = document.getElementById('planBoden');
+  if (!boden) return;
+  if (!el) { if (e.target === boden) { planAuswahl = null; render(); } return; }
+  const p = projekt(boden.dataset.pid), sk = parseFloat(boden.dataset.sk);
+  const obj = p.plan.find((x) => x.id === el.dataset.pid);
+  if (!obj) return;
+  if (planAuswahl !== obj.id) { planAuswahl = obj.id; render(); }
+  if (plan3D) return;
+  const neu = document.querySelector(`.pl-el[data-pid="${obj.id}"]`);
+  const sx = e.clientX, sy = e.clientY, ox = obj.x, oy = obj.y;
+  const rot = obj.rot % 180 !== 0, w = rot ? obj.d : obj.w, d = rot ? obj.w : obj.d;
+  let bewegt = false;
+  const move = (ev) => {
+    bewegt = true;
+    obj.x = Math.min(Math.max(0, ox + (ev.clientX - sx) / sk), Math.max(0, p.breite - w));
+    obj.y = Math.min(Math.max(0, oy + (ev.clientY - sy) / sk), Math.max(0, p.tiefe - d));
+    neu.style.left = obj.x * sk + 'px'; neu.style.top = obj.y * sk + 'px';
+  };
+  const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); if (bewegt) speichern(); };
+  document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
+  e.preventDefault();
+});
+
+/* ---------- KI-Ideen ---------- */
+const STILE = [
+  { id: 'hell', name: 'Modern Hell', wand: '#e8e6e1', boden: '#cdbfa8', moebel: '#f2f2f2', akzent: '#2f6f8f', text: 'Weiß/Greige, helles Eichenholz, schwarze Akzente, indirektes Licht.' },
+  { id: 'skandi', name: 'Skandinavisch', wand: '#f1efe9', boden: '#d8c7a6', moebel: '#c9c3b8', akzent: '#8aa39b', text: 'Helles Holz, Textilien, Salbeigrün, viel Tageslicht.' },
+  { id: 'industrial', name: 'Industrial', wand: '#6e6a66', boden: '#4a4440', moebel: '#3b3b3b', akzent: '#b5652f', text: 'Sichtbeton-Optik, Metall, Leder, Edison-Leuchten.' },
+  { id: 'japandi', name: 'Japandi', wand: '#e4ddd1', boden: '#a68b6a', moebel: '#5c4a3a', akzent: '#3f3f3a', text: 'Ruhig, niedrig, natürliche Materialien, wenig Deko.' },
+  { id: 'landhaus', name: 'Landhaus', wand: '#f3ece0', boden: '#9a7650', moebel: '#e7dcc8', akzent: '#6b8a5a', text: 'Massivholz, Kassettentüren, Leinen, warme Töne.' },
+  { id: 'luxus', name: 'Luxus / Art déco', wand: '#1f2a2e', boden: '#3a2e26', moebel: '#244b45', akzent: '#c9a64a', text: 'Samt, Messing, dunkle Wände, Spiegel und Marmor.' },
+  { id: 'familie', name: 'Familienfreundlich', wand: '#f4f1ea', boden: '#b79c7a', moebel: '#7fa7c9', akzent: '#e0a040', text: 'Abwaschbare Farben, robuster Boden, abgerundete Kanten, viel Stauraum.' },
+  { id: 'spar', name: 'Spar-Variante', wand: '#ececec', boden: '#b8a58a', moebel: '#dcdcdc', akzent: '#5a7a9a', text: 'Streichen statt umbauen, Möbel umstellen, Licht ergänzen – geringe Kosten.' }
+];
+const STICHWORTE = [[/licht|led|indirekt/i, 'Indirektes Licht (LED-Profil)'], [/lampe|leuchte/i, 'Stehleuchte'], [/\btv\b|fernseh/i, 'Fernseher an Wand'], [/bild/i, 'Bild / Rahmen'], [/spiegel/i, 'Spiegel'], [/sofa|couch/i, 'Sofa 3-Sitzer'], [/sessel/i, 'Sessel'], [/bett/i, 'Doppelbett 180'], [/schreibtisch/i, 'Schreibtisch höhenverstellbar'], [/esstisch|tisch/i, 'Esstisch'], [/regal/i, 'Regal hoch'], [/schrank/i, 'Kleiderschrank'], [/pflanze/i, 'Pflanze groß'], [/teppich/i, 'Teppich'], [/kamin|ofen/i, 'Kamin / Kaminofen'], [/vorhang|gardine/i, 'Vorhang / Gardine'], [/steckdose/i, 'Steckdose (zusätzlich)'], [/rauchmelder/i, 'Rauchmelder']];
+let ideenErkannt = [];
+
+EIN.ideenNotiz = (v, d) => { projekt(d.id).skizzeNotiz = v; speichern(); ideenErkennen(projekt(d.id)); render(); };
+function ideenErkennen(p) {
+  const alle = kat(katalogFuer(p), BASIS.licht, BASIS.deko, BASIS.technik, RAEUME[0].katalog);
+  ideenErkannt = (p.skizzeNotiz || '').split(/[,;\n]+/).map((t) => t.trim()).filter(Boolean).map((wort) => {
+    const m = STICHWORTE.find(([re]) => re.test(wort));
+    const k = m && alle.find((x) => x[0] === m[1]);
+    return { wort, k, unsicher: /\?/.test(wort), ok: !/\?/.test(wort) && !!k };
+  });
+}
+AKT.ideeOk = (d) => { ideenErkannt[+d.i].ok = !ideenErkannt[+d.i].ok; render(); };
+AKT.ideenDiktat = (d) => diktieren((t) => { const p = projekt(d.id); p.skizzeNotiz = ((p.skizzeNotiz || '') + ', ' + t).replace(/^, /, ''); speichern(); ideenErkennen(p); render(); });
+AKT.ideenUebernehmen = (d) => {
+  const p = projekt(d.id);
+  const neu = ideenErkannt.filter((x) => x.ok && x.k);
+  aendern(() => neu.forEach((x, i) => { const k = x.k; p.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: Math.min(p.breite - k[2], 20 + i * 30), y: Math.min(p.tiefe - k[3], 20 + i * 25), rot: 0 }); }), 'Ideen übernommen');
+  toast(neu.length + ' Elemente in den Planer übernommen');
+  location.hash = '#/planer/' + p.id;
+};
+AKT.stil = (d) => aendern(() => { projekt(d.id).stil = d.s; }, 'Stil gewählt');
+AKT.fotoreal = () => alert('Fotorealistische Bilder brauchen ein KI-Bildmodell auf dem Server (Kosten pro Bild). Das wird mit dem Server-Modul freigeschaltet – z. B. begrenzt im Abo.');
+AKT.skizzeFoto = (d) => document.getElementById('skizzeFoto').click();
+EIN.skizzeFoto = (v, d, el) => {
+  const f = el.files[0]; if (!f) return;
+  bildVerkleinern(f, 900, (url) => { projekt(d.id).skizze = url; speichern(); render(); toast('Skizze gespeichert. Notizen bitte unten eintippen oder diktieren.'); });
+};
+
+route('ideen', (id) => {
+  const p = projekt(id);
+  if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  if (!ideenErkannt.length && p.skizzeNotiz) ideenErkennen(p);
+  return kopf('KI-Ideen', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
+    <h3>Aus Skizze oder Notizen</h3>
+    ${p.skizze ? `<img class="skizze" src="${p.skizze}" alt="Skizze">` : ''}
+    <input type="file" accept="image/*" capture="environment" id="skizzeFoto" hidden data-ein="skizzeFoto" data-id="${p.id}">
+    <div class="zeile"><button class="btn" data-akt="skizzeFoto" data-id="${p.id}">${p.skizze ? 'Neue Skizze' : 'Skizze/Foto aufnehmen'}</button><button class="btn" data-akt="ideenDiktat" data-id="${p.id}">${ICON.mikro} Diktieren</button></div>
+    <label class="feld">Notizen aus der Skizze (mit Komma trennen, „?“ = unsicher)<textarea rows="2" placeholder="z. B. Licht Decke, TV, Bild?, Sofa" data-ein="ideenNotiz" data-id="${p.id}">${esc(p.skizzeNotiz || '')}</textarea></label>
+    ${ideenErkannt.length ? `<div class="karte">${ideenErkannt.map((x, i) => `<div class="kat-zeile zeile"><span style="flex:1">„${esc(x.wort)}“ → ${x.k ? '<b>' + esc(x.k[0]) + '</b>' : '<span class="klein">nicht erkannt</span>'}${x.unsicher ? ' <span class="badge gelb">bestätigen?</span>' : ''}</span>${x.k ? `<button class="chip ${x.ok ? 'an' : ''}" data-akt="ideeOk" data-i="${i}">${x.ok ? '✓ übernehmen' : 'übernehmen?'}</button>` : ''}</div>`).join('')}
+      <button class="btn hell voll" data-akt="ideenUebernehmen" data-id="${p.id}">Im Planer anpassen</button></div>` : ''}
+    <p class="klein">Echte Handschrift-Erkennung aus dem Foto folgt mit dem KI-Server-Modul; bis dahin Notizen eintippen oder diktieren.</p>
+    <h3>8 Stil-Vorschläge</h3>
+    <div class="stile">${STILE.map((s) => `<button class="stil ${p.stil === s.id ? 'an' : ''}" data-akt="stil" data-id="${p.id}" data-s="${s.id}">
+      <div class="paletten">${[s.wand, s.boden, s.moebel, s.akzent].map((c) => `<span style="background:${c}"></span>`).join('')}</div>
+      <b>${esc(s.name)}</b><span class="klein">${esc(s.text)}</span></button>`).join('')}</div>
+    <div class="zeile"><button class="btn" data-akt="fotoreal">Fotorealistisch</button><a class="btn hell" href="#/planer/${p.id}">Im Planer anpassen</a></div>
+  </div>`;
+});
+
+function bildVerkleinern(datei, max, fertig) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const f = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = img.width * f; c.height = img.height * f;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      fertig(c.toDataURL('image/jpeg', 0.7));
+    };
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(datei);
+}
+
+/* ---------- Anleitung ---------- */
+AKT.schritt = (d) => aendern(() => { const p = projekt(d.p); p.schritte[d.i] = !p.schritte[d.i]; }, null);
+AKT.anlMaterial = (d) => {
+  if (d.p) { AKT.materialInListe({ id: d.p }); return; }
+  const a = ANLEITUNGEN[d.anl];
+  aendern((s) => a.material.forEach(([n, je, e, h]) => s.einkauf.push({ id: uid(), n, menge: je, einheit: e + ' je ' + a.einheit, hinweis: h, erledigt: false })));
+  toast('Material (je ' + a.einheit + ') in der Liste'); location.hash = '#/einkauf';
+};
+
+route('anleitung', (id, q) => {
+  const a = ANLEITUNGEN[id];
+  if (!a) return kopf('Anleitung nicht gefunden', '', '#/projekte');
+  const p = q.p ? projekt(q.p) : null;
+  const menge = p ? p.menge || 1 : 1;
+  const schichten = a.schichten ? `<div class="schichten" role="img" aria-label="Schichtaufbau">${a.schichten.map((s, i) => `<div class="schicht" style="--c:${s[2] ? s[1] : s[1]};animation-delay:${i * 0.35}s"><span class="farbe" style="background:${s[1]}"></span><b>${esc(s[0])}</b><span class="klein">${esc(s[2])}</span></div>`).join('')}</div>` : '';
+  return kopf(a.t, p ? p.name : 'Fach-Anleitung', p ? '#/projekt/' + p.id : '#/projekte') + `<div class="inhalt">
+    <div class="zeile">${werBadge(a.wer)}<span class="klein">${esc(a.dauer)}</span><span class="klein">Richtwert ${euro(a.kosten[0])}–${euro(a.kosten[1])} je ${a.einheit}</span></div>
+    ${a.warn.length ? `<div class="hinweis rot">${a.warn.map(esc).join('<br>')}</div>` : ''}
+    ${schichten}
+    <h3>Schritte${p ? ' · ' + fortschritt(p) + ' %' : ''}</h3>
+    ${a.schritte.map((s, i) => `<${p ? 'button data-akt="schritt" data-p="' + p.id + '" data-i="' + i + '"' : 'div'} class="schritt ${p && p.schritte[i] ? 'fertig' : ''}">
+      <span class="nr">${p && p.schritte[i] ? '✓' : i + 1}</span><span><b>${esc(s[0])}</b>${s[1] ? `<span class="klein block">${esc(s[1])}</span>` : ''}</span></${p ? 'button' : 'div'}>`).join('')}
+    ${a.material.length ? `<h3>Material${p ? ' für ' + zahl(menge) + ' ' + a.einheit : ' je ' + a.einheit}</h3><div class="karte">${a.material.map(([n, je, e, h]) => `<div class="kat-zeile zeile"><span style="flex:1">${esc(n)}${h ? `<span class="klein block">${esc(h)}</span>` : ''}</span><b>${zahl(Math.ceil(je * menge * 10) / 10, 1)} ${esc(e)}</b></div>`).join('')}</div>` : ''}
+    ${a.tipps.length ? `<div class="hinweis"><b>Profi-Tipps</b><ul>${a.tipps.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
+    <div class="zeile">
+      ${a.material.length ? `<button class="btn hell" data-akt="anlMaterial" data-anl="${id}" data-p="${p ? p.id : ''}">Material in Liste</button>` : ''}
+      ${p ? `<a class="btn" href="#/markt?p=${p.id}">Profi anfragen</a>` : `<button class="btn" data-akt="neuesProjekt" data-raum="${RAEUME.find((r) => r.projekte.includes(id)) ? RAEUME.find((r) => r.projekte.includes(id)).id : 'fassade'}" data-anl="${id}">Als Projekt starten</button>`}
+    </div>
+    <p class="klein">Fachinhalte sind allgemeine Hinweise und ersetzen keine Fachplanung. Herstellerangaben und aktuelle Vorschriften haben Vorrang.</p>
+  </div>`;
+});

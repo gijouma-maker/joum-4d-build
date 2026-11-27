@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#000"/>
+  <path d="M256 92 L408 178 L408 346 L256 432 L104 346 L104 178 Z" fill="none" stroke="#e9e9e9" stroke-width="22" stroke-linejoin="round"/>
+  <path d="M256 432 V262 M408 178 L256 262 L104 178" fill="none" stroke="#e9e9e9" stroke-width="22" stroke-linejoin="round"/>
+  <text x="256" y="236" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-weight="600" font-size="78" fill="#ffd27a">4D</text>
+</svg>
