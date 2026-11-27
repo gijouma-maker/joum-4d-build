@@ -171,8 +171,8 @@ function svgZonen(rh) {
 /* ---------- Bildschirm ---------- */
 route('installation', (_, q) => {
   const I = inst();
-  if (q.tab && render.letzte !== location.hash) I.tab = q.tab;
-  const tabs = [['abwasser', 'Abwasser'], ['wasser', 'Trinkwasser'], ['elektro', 'Elektro'], ['werkzeug', 'Werkzeug']];
+  if (q.tab && render.letzte !== PFAD) I.tab = q.tab;
+  const tabs = [['abwasser', 'Abwasser'], ['wasser', 'Wasser'], ['elektro', 'Elektro'], ['teile', 'Teile 3D'], ['werkzeug', 'Werkzeug']];
   const zurueck = q.raum ? '#/raum/' + q.raum : '#/mehr';
   let x = '';
   if (I.tab === 'abwasser') {
@@ -184,6 +184,7 @@ route('installation', (_, q) => {
         <div class="raster2"><label class="feld">Länge (m)<input inputmode="decimal" value="${zahl(o.l)}" data-ein="iObj" data-i="${i}" data-k="l"></label><label class="feld">Richtungsänderungen<input inputmode="numeric" value="${o.boegen}" data-ein="iObj" data-i="${i}" data-k="boegen"></label></div>
         <div class="klein">Gefälle 2 % → Höhenunterschied <b>${zahl(hoehe * 100, 1)} cm</b> · Bögen: ${o.boegen ? o.boegen + ' × 2 Stück 45°' : 'keine'} · Abfluss-Höhe ${esc(obj.ab)}</div>
         <div class="klein">Siphon: ${esc(obj.siphon)}</div>
+        <div class="zeile"><button class="btn hell klein-btn" data-akt="leitung3D" data-i="${i}">${ICON.wuerfel} Leitung in 3D</button>${teileFuer(o.typ).map(([id, n]) => `<button class="chip" data-akt="teil3D" data-t="${id}" data-dn="${obj.dn}">${esc(n)}</button>`).join('')}</div>
         ${warn.map((w) => `<div class="hinweis rot klein">${esc(w)}</div>`).join('')}</div>`).join('')}
       <div class="chips">${SAN_OBJEKTE.map((o) => `<button class="chip" data-akt="iObjPlus" data-typ="${o.id}">+ ${esc(o.n)}</button>`).join('')}</div>
       <section class="karte summe"><div><span class="klein">Summe DU</span><b>${zahl(p.sumDu, 1)} l/s</b></div><div><span class="klein">Sammelleitung</span><b>DN ${p.sammelDn}</b></div><div><span class="klein">Fallleitung</span><b>DN 100</b></div></section>
@@ -231,6 +232,9 @@ route('installation', (_, q) => {
         <li>Lage aller Leitungen vor dem Verputzen fotografieren und im Projekt speichern.</li></ul></div>
       <div class="zeile"><button class="btn hell" data-akt="iInListe" data-was="elektro">Material in Liste</button><a class="btn" target="_blank" rel="noopener" href="${linkVideo('Installationszonen Elektro DIN 18015-3 erklärt')}">Videos ansehen</a></div>
       <a class="btn voll" href="#/markt">Elektrofachkraft anfragen</a>`;
+  } else if (I.tab === 'teile') {
+    const gruppen = [['Abwasser', ['ht_rohr', 'bogen45', 'bogen15', 'bogen87', 'abzweig45', 'abzweig87', 'reduzierung', 'wc_bogen', 'siphon', 'flaschensiphon', 'rohrschelle', 'belueft', 'kg_rohr']], ['Trinkwasser', ['eckventil', 'flexschlauch', 'mv_rohr', 'pressfitting']], ['Elektro', ['nym', 'up_dose', 'leerrohr']]];
+    x = '<p class="klein">Tippe ein Teil an: Du siehst es in 3D zum Drehen, wie es im Baumarkt heißt, und kannst echte Fotos öffnen.</p>' + gruppen.map(([g, ids]) => `<h3>${g}</h3><div class="raster2">${ids.map((id) => `<button class="kat-btn" data-akt="teil3D" data-t="${id}">${ICON.wuerfel}<span>${esc(J4D_TEILE[id].n)}</span></button>`).join('')}</div>`).join('');
   } else {
     x = Object.entries(WERKZEUG).map(([k, liste]) => `<h3>${{ abwasser: 'Abwasser', wasser: 'Trinkwasser', elektro: 'Elektro' }[k]}</h3><div class="karte">${liste.map(([n, wofuer, art, preis]) => `<div class="kat-zeile"><div class="zeile"><b style="flex:1">${esc(n)}</b><span class="badge ${art === 'leihen' ? 'gelb' : 'gruen'}">${art}</span></div>
       <div class="klein">${esc(wofuer)} · ${esc(preis)}</div>
@@ -241,3 +245,16 @@ route('installation', (_, q) => {
     <div class="segment">${tabs.map(([k, n]) => `<button class="${I.tab === k ? 'an' : ''}" data-akt="iTab" data-t="${k}">${n}</button>`).join('')}</div>${x}
     <p class="klein">Richtwerte nach DIN EN 12056 / DIN 1986-100 und DIN 18015-3, ohne Gewähr. Planung und Abnahme im Zweifel durch Fachbetrieb.</p></div>`;
 });
+
+/* 3D-Ansichten */
+function teileFuer(typ) {
+  const l = [['ht_rohr', 'HT-Rohr'], ['bogen45', '45°-Bogen'], ['abzweig45', 'Abzweig 45°'], ['rohrschelle', 'Rohrschelle']];
+  if (typ === 'wc') l.unshift(['wc_bogen', 'WC-Anschluss']); else if (['waschtisch', 'handwaschbecken', 'spuele'].includes(typ)) l.unshift(['siphon', 'Siphon']);
+  return l;
+}
+AKT.leitung3D = (d) => { const o = inst().objekte[+d.i]; zeigeLeitung(o, SAN_OBJEKTE.find((x) => x.id === o.typ)); };
+AKT.teil3D = (d) => zeigeTeil(d.t, d.dn ? +d.dn : undefined);
+function teilFuerName(n) {
+  const m = [[/WC-Anschluss/, 'wc_bogen'], [/Bogen.*45/, 'bogen45'], [/Abzweig 45/, 'abzweig45'], [/Abzweig 87|T-Stück 87/, 'abzweig87'], [/HT-Rohr/, 'ht_rohr'], [/KG-Rohr/, 'kg_rohr'], [/Rohrschelle/, 'rohrschelle'], [/Siphon/, 'siphon'], [/belüft/i, 'belueft'], [/Eckventil/, 'eckventil'], [/Flexschlauch|Anschlussschl/, 'flexschlauch'], [/Mehrschicht/, 'mv_rohr'], [/Pressfitting|Press-T/, 'pressfitting'], [/dose 68|Unterputz/, 'up_dose'], [/NYM/, 'nym'], [/Leerrohr/, 'leerrohr'], [/Reduzier/, 'reduzierung']].find(([re]) => re.test(n));
+  return m ? m[1] : null;
+}

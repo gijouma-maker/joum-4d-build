@@ -13,7 +13,7 @@ AKT.gPlay = () => {
   if (G.timer) { clearInterval(G.timer); G.timer = null; render(); return; }
   G.j = 0; G.s = 0;
   G.timer = setInterval(() => {
-    if (location.hash.indexOf('#/garten') !== 0) { clearInterval(G.timer); G.timer = null; return; }
+    if (PFAD.indexOf('#/garten') !== 0) { clearInterval(G.timer); G.timer = null; return; }
     G.s++; if (G.s > 3) { G.s = 0; G.j++; }
     if (G.j > 3) { G.j = 3; G.s = 1; clearInterval(G.timer); G.timer = null; }
     render();
@@ -25,7 +25,7 @@ AKT.gProjekt = () => {
   const summe = v.kosten.reduce((s, k) => s + k[1], 0);
   const p = projektAnlegen('garten', null, { name: 'Garten – ' + v.name, garten: v.id, notizen: v.kosten.map((k) => k[0] + ': ca. ' + euro(k[1])).join('\n') + '\nSumme ca. ' + euro(summe) });
   aendern((s) => v.kosten.forEach((k) => s.einkauf.push({ id: uid(), n: k[0], menge: 1, einheit: 'Pos.', hinweis: 'Richtwert ' + euro(k[1]), projekt: p.id, erledigt: false })), 'Garten übernommen');
-  toast('Gartenprojekt angelegt'); location.hash = '#/projekt/' + p.id;
+  toast('Gartenprojekt angelegt'); geh('#/projekt/' + p.id);
 };
 
 function gartenSVG(v) {
@@ -158,6 +158,7 @@ route('einkauf', () => {
       <button class="haken" aria-label="Erledigt" data-akt="ekToggle" data-id="${e.id}">${e.erledigt ? '✓' : ''}</button>
       <span style="flex:1">${esc(e.n)}${e.hinweis ? `<span class="klein block">${esc(e.hinweis)}</span>` : ''}</span>
       <input class="anz" inputmode="decimal" aria-label="Menge" value="${zahl(e.menge, 1)}" data-ein="ekMenge" data-id="${e.id}"><span class="klein">${esc(e.einheit)}</span>
+      ${teilFuerName(e.n) ? `<button class="chip" data-akt="teil3D" data-t="${teilFuerName(e.n)}" data-dn="${(e.n.match(/DN (\d+)/) || [])[1] || ''}">3D</button>` : ''}
       <a class="klein" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=shop&q=${encodeURIComponent(e.n)}">Preise</a>
       <button class="x" aria-label="Löschen" data-akt="ekWeg" data-id="${e.id}">×</button></div>`).join('')}</div>`).join('') : '<p class="klein">Noch leer. Material kommt aus Anleitungen, Planer oder Gartenplaner.</p>'}
     <h3>Händler anfragen</h3>

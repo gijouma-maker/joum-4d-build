@@ -167,8 +167,16 @@ const NACH_RENDER = [];
 function route(name, fn) { ROUTEN[name] = fn; }
 function nachRender(fn) { NACH_RENDER.push(fn); }
 
+/* Eigener Router: funktioniert als Web-App UND eingebettet (Vorschau-Seiten blockieren #/pfad-Adressen) */
+const EINGEBETTET = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+let PFAD = /^#\//.test(location.hash) ? location.hash : '#/';
+function geh(ziel) {
+  PFAD = ziel || '#/';
+  if (!EINGEBETTET) { try { if (location.hash !== PFAD) { history.pushState(null, '', PFAD); } } catch (e) {} }
+  render();
+}
 function aktuelleRoute() {
-  const h = location.hash.replace(/^#\/?/, '');
+  const h = PFAD.replace(/^#\/?/, '');
   const [pfad, query] = h.split('?');
   const teile = pfad.split('/').filter(Boolean);
   const q = Object.fromEntries(new URLSearchParams(query || ''));
@@ -180,10 +188,11 @@ function render() {
   const fn = ROUTEN[r.name] || ROUTEN.start;
   NACH_RENDER.length = 0;
   const main = document.getElementById('main');
-  const scroll = render.letzte === location.hash ? main.scrollTop : 0;
+  const gleich = render.letzte === PFAD, scroll = window.scrollY;
+  if (window.drei3DAufraeumen) window.drei3DAufraeumen();
   main.innerHTML = fn(r.arg, r.q);
-  main.scrollTop = scroll;
-  render.letzte = location.hash;
+  window.scrollTo(0, gleich ? scroll : 0);
+  render.letzte = PFAD;
   document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('aktiv', a.dataset.nav === navGruppe(r.name)));
   document.body.classList.toggle('gross', !!S.einstellungen.gross);
   document.body.classList.toggle('kontrast', !!S.einstellungen.kontrast);
@@ -219,7 +228,14 @@ document.addEventListener('click', (e) => {
   f(el.type === 'checkbox' ? el.checked : el.value, el.dataset, el);
 }));
 
-window.addEventListener('hashchange', render);
+/* Links innerhalb der App abfangen */
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a || e.defaultPrevented) return;
+  e.preventDefault(); geh(a.getAttribute('href'));
+});
+window.addEventListener('popstate', () => { PFAD = /^#\//.test(location.hash) ? location.hash : '#/'; render(); });
+window.addEventListener('hashchange', () => { if (location.hash !== PFAD && /^#\//.test(location.hash)) { PFAD = location.hash; render(); } });
 window.addEventListener('DOMContentLoaded', () => {
   render();
   if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});

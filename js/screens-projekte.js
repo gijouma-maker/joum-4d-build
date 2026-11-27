@@ -38,15 +38,15 @@ function projektAnlegen(raumId, anlId, extra) {
 
 AKT.neuesProjekt = (d) => {
   const a = ANLEITUNGEN[d.anl];
-  if (a && a.route) { location.hash = a.route; return; }
+  if (a && a.route) { geh(a.route); return; }
   const p = projektAnlegen(d.raum, d.anl);
-  location.hash = '#/projekt/' + p.id;
+  geh('#/projekt/' + p.id);
 };
-AKT.aktiv = (d) => { S.aktivId = d.id; speichern(); location.hash = '#/projekt/' + d.id; };
+AKT.aktiv = (d) => { S.aktivId = d.id; speichern(); geh('#/projekt/' + d.id); };
 AKT.projektLoeschen = (d) => {
   frage('Projekt in den Papierkorb legen? (30 Tage wiederherstellbar)', () => {
     aendern((s) => { const p = projekt(d.id); inPapierkorb('projekt', p); s.projekte = s.projekte.filter((x) => x.id !== d.id); if (s.aktivId === d.id) s.aktivId = null; }, 'Projekt gelöscht');
-    location.hash = '#/projekte';
+    geh('#/projekte');
   });
 };
 
@@ -169,7 +169,7 @@ AKT.materialInListe = (d) => {
     });
   }, 'Material in Liste');
   toast(a.material.length + ' Positionen in der Einkaufsliste');
-  location.hash = '#/einkauf';
+  geh('#/einkauf');
 };
 
 /* ---------- Messen ---------- */
@@ -231,7 +231,8 @@ function katalogFuer(p) {
 AKT.planGruppe = (d) => { planGruppe = d.g; render(); };
 AKT.planAdd = (d) => {
   const p = projekt(d.id), k = katalogFuer(p)[+d.i];
-  const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: Math.max(0, (p.breite - k[2]) / 2), y: Math.max(0, (p.tiefe - k[3]) / 2), rot: 0 };
+  const platz = freierPlatz(p, k[2], Math.max(k[3], 4));
+  const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: platz[0], y: platz[1], rot: 0 };
   planAuswahl = el.id;
   aendern(() => p.plan.push(el), 'Element hinzugefügt');
 };
@@ -255,9 +256,26 @@ function box3D(e, sk, farbe) {
     f(`width:${h}px;height:${d}px;left:0;transform-origin:left;transform:rotateY(-90deg)`, 0.75);
 }
 
+/* Freien Platz suchen: zuerst an den Wänden, sonst Mitte */
+function freierPlatz(p, w, d) {
+  const frei = (x, y) => x >= 0 && y >= 0 && x + w <= p.breite && y + d <= p.tiefe && !p.plan.some((e) => { const r = e.rot % 180 !== 0, ew = r ? e.d : e.w, ed = r ? e.w : e.d; return x < e.x + ew && x + w > e.x && y < e.y + ed && y + d > e.y; });
+  for (let y = 0; y <= p.tiefe - d; y += 10) for (let x = 0; x <= p.breite - w; x += 10) { if ((y === 0 || x === 0 || x + w >= p.breite - 10 || y + d >= p.tiefe - 10) && frei(x, y)) return [x, y]; }
+  for (let y = 0; y <= p.tiefe - d; y += 10) for (let x = 0; x <= p.breite - w; x += 10) if (frei(x, y)) return [x, y];
+  return [Math.max(0, (p.breite - w) / 2), Math.max(0, (p.tiefe - d) / 2)];
+}
+window.GRUPPEN_FARBE_3D = null;
+function planer3D(p) {
+  const box = document.getElementById('raum3d');
+  if (!box || !window.zeigeRaum3D) return;
+  window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
+  try { zeigeRaum3D(box, p, STILE.find((s) => s.id === p.stil), planAuswahl, (id) => { planAuswahl = id; render(); }); }
+  catch (e) { box.innerHTML = '<p class="klein" style="padding:12px">3D-Ansicht wird von diesem Gerät nicht unterstützt (WebGL).</p>'; console.error(e); }
+}
+
 route('planer', (id) => {
   const p = projekt(id);
   if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  nachRender(() => planer3D(p));
   const kat = katalogFuer(p);
   const gruppen = [...new Set(kat.map((k) => k[1]))];
   if (!planGruppe || !gruppen.includes(planGruppe)) planGruppe = gruppen[0];
@@ -273,8 +291,10 @@ route('planer', (id) => {
       ${plan3D ? box3D(eff, sk, farbe) : `<span>${esc(e.n)}</span>`}</div>`;
   }).join('');
   return kopf('Gestalten', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
-    <div class="segment"><button class="${plan3D ? '' : 'an'}" data-akt="plan3D">2D-Grundriss</button><button class="${plan3D ? 'an' : ''}" data-akt="plan3D">3D-Ansicht</button></div>
-    <div class="plan-buehne ${plan3D ? 'drei' : ''}" style="height:${plan3D ? hoehePx * 0.75 + 120 : hoehePx + 4}px">
+    <div class="raum3d" id="raum3d" data-pid="${p.id}" aria-label="3D-Ansicht des Raums"></div>
+    <div class="klein mitte">3D: mit dem Finger drehen, zwei Finger zoomen, Möbel antippen zum Auswählen</div>
+    <h3>Grundriss – hier verschieben</h3>
+    <div class="plan-buehne" style="height:${hoehePx + 4}px">
       <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${stil ? stil.boden : '#1a1a1a'};border-color:${stil ? stil.wand : '#555'}">${elemente}</div>
     </div>
     <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen</div>
@@ -298,7 +318,6 @@ document.addEventListener('pointerdown', (e) => {
   const obj = p.plan.find((x) => x.id === el.dataset.pid);
   if (!obj) return;
   if (planAuswahl !== obj.id) { planAuswahl = obj.id; render(); }
-  if (plan3D) return;
   const neu = document.querySelector(`.pl-el[data-pid="${obj.id}"]`);
   const sx = e.clientX, sy = e.clientY, ox = obj.x, oy = obj.y;
   const rot = obj.rot % 180 !== 0, w = rot ? obj.d : obj.w, d = rot ? obj.w : obj.d;
@@ -308,6 +327,7 @@ document.addEventListener('pointerdown', (e) => {
     obj.x = Math.min(Math.max(0, ox + (ev.clientX - sx) / sk), Math.max(0, p.breite - w));
     obj.y = Math.min(Math.max(0, oy + (ev.clientY - sy) / sk), Math.max(0, p.tiefe - d));
     neu.style.left = obj.x * sk + 'px'; neu.style.top = obj.y * sk + 'px';
+    if (window.raum3DViewer && window.raum3DViewer.bewegen) window.raum3DViewer.bewegen(obj);
   };
   const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); if (bewegt) speichern(); };
   document.addEventListener('pointermove', move); document.addEventListener('pointerup', up);
@@ -344,7 +364,7 @@ AKT.ideenUebernehmen = (d) => {
   const neu = ideenErkannt.filter((x) => x.ok && x.k);
   aendern(() => neu.forEach((x, i) => { const k = x.k; p.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: Math.min(p.breite - k[2], 20 + i * 30), y: Math.min(p.tiefe - k[3], 20 + i * 25), rot: 0 }); }), 'Ideen übernommen');
   toast(neu.length + ' Elemente in den Planer übernommen');
-  location.hash = '#/planer/' + p.id;
+  geh('#/planer/' + p.id);
 };
 AKT.stil = (d) => aendern(() => { projekt(d.id).stil = d.s; }, 'Stil gewählt');
 AKT.fotoreal = () => info('Fotorealistische Bilder brauchen ein KI-Bildmodell auf dem Server (Kosten pro Bild). Das wird mit dem Server-Modul freigeschaltet – z. B. begrenzt im Abo.');
@@ -396,7 +416,7 @@ AKT.anlMaterial = (d) => {
   if (d.p) { AKT.materialInListe({ id: d.p }); return; }
   const a = ANLEITUNGEN[d.anl];
   aendern((s) => a.material.forEach(([n, je, e, h]) => s.einkauf.push({ id: uid(), n, menge: je, einheit: e + ' je ' + a.einheit, hinweis: h, erledigt: false })));
-  toast('Material (je ' + a.einheit + ') in der Liste'); location.hash = '#/einkauf';
+  toast('Material (je ' + a.einheit + ') in der Liste'); geh('#/einkauf');
 };
 
 route('anleitung', (id, q) => {

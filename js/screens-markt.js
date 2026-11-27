@@ -248,7 +248,7 @@ AKT.ticketAnlegen = () => {
   if (!TK.nr || !TK.objekt) { toast('Ticket-Nr. und Objekt eintragen'); return; }
   const p = projektAnlegen(TK.raum, TK.anl, { ticket: { nr: TK.nr, objekt: TK.objekt, einheit: TK.einheit }, notizen: TK.text });
   p.name = (ANLEITUNGEN[TK.anl] ? ANLEITUNGEN[TK.anl].t : 'Renovierung') + ' – ' + TK.objekt + (TK.einheit ? ' ' + TK.einheit : '');
-  speichern('Aus JoumHome-Ticket'); location.hash = '#/projekt/' + p.id;
+  speichern('Aus JoumHome-Ticket'); geh('#/projekt/' + p.id);
 };
 route('ticket', (_, q) => {
   ['nr', 'objekt', 'einheit', 'raum', 'text'].forEach((k) => { if (q[k]) TK[k] = q[k]; });
