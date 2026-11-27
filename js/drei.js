@@ -455,4 +455,35 @@
       } catch (e) { info.textContent = 'Aufnahme nicht möglich: ' + e.message; }
     };
   };
+
+  /* ---------- 3D-Raum als Bild (für Kino-Tour) ---------- */
+  window.raumBild = function (p, stil) {
+    const Wb = 900, Hb = 1200;
+    const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(Wb, Hb); renderer.setPixelRatio(1); renderer.outputEncoding = T.sRGBEncoding;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setClearColor(0x15130f);
+    const sc = new T.Scene(), B = p.breite / 100, D = p.tiefe / 100, gr = Math.max(B, D);
+    sc.add(new T.HemisphereLight(0xffffff, 0x3a3a3a, 0.8));
+    const so = new T.DirectionalLight(0xfff4e0, 0.9); so.position.set(3, 7, 4); so.castShadow = true; so.shadow.mapSize.set(2048, 2048);
+    Object.assign(so.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr }); sc.add(so);
+    const lampe = new T.PointLight(0xffe2b8, 0.45, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
+    const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
+    const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
+    const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 })); boden.rotation.x = -Math.PI / 2; sc.add(boden);
+    const wf = stil ? stil.wand : '#ece8e1';
+    [[B, 0, -D / 2, 0], [B, 0, D / 2, Math.PI], [D, -B / 2, 0, Math.PI / 2], [D, B / 2, 0, -Math.PI / 2]].forEach(([w, x, z, ry]) => { const m = mesh(new T.PlaneGeometry(w, 2.5), mat(wf, { roughness: 0.95 })); m.position.set(x, 1.25, z); m.rotation.y = ry; sc.add(m); });
+    const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen);
+    (p.plan || []).forEach((e) => {
+      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
+      const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
+      g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; sc.add(g);
+    });
+    const cam = new T.PerspectiveCamera(50, Wb / Hb, 0.05, 100);
+    cam.position.set(B * 0.55, gr * 1.15 + 0.9, D * 0.5 + gr * 1.3); cam.lookAt(0, 0.6, 0);
+    renderer.render(sc, cam);
+    const url = renderer.domElement.toDataURL('image/jpeg', 0.88);
+    renderer.dispose();
+    return url;
+  };
 })();
