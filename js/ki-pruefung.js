@@ -75,6 +75,7 @@ function platzieren(p, k) {
     const f = fussabdruck(cand);
     if (f.x < 0 || f.y < 0 || f.x + f.w > p.breite || f.y + f.h > p.tiefe) return false;
     if (andere.some((e) => schneidet(f, fussabdruck(e)))) return false;
+    if (typeof fensterKonflikt === 'function' && fensterKonflikt(p, f, n, k[4], eb)) return false; // nichts Hohes/keine Dusche vors Fenster
     if (eb === 'decke') return true;
     if (eb === 'wand') return !(f.x < 15 && Math.abs(f.y + f.h / 2 - p.tiefe / 2) < 60); // nicht über/in der Tür
     if (schneidet(f, tz)) return false;
@@ -120,6 +121,7 @@ function platzieren(p, k) {
     }
   }
   let reihen = wandReihenfolge(n);
+  if (p._wandDreh) reihen = reihen.map((w) => (w + p._wandDreh) % 4).concat(reihen.filter((w) => !reihen.map((x) => (x + p._wandDreh) % 4).includes(w)));
   const sofa = p.plan.find((e) => /Sofa/.test(e.n));
   if (/TV-Board|Fernseher/.test(n) && sofa) { const ws = [0, 90, 180, 270].indexOf(((sofa.rot || 0) % 360 + 360) % 360); reihen = [(ws + 2) % 4].concat(reihen.filter((x) => x !== (ws + 2) % 4)); }
   for (const wand of reihen) {
@@ -145,6 +147,7 @@ function pruefen(p) {
   const boden = plan.filter((e) => ebene(e.n) === 'boden' && !e.gruppe);
   for (let i = 0; i < boden.length; i++) for (let j = i + 1; j < boden.length; j++) if (schneidet(fussabdruck(boden[i]), fussabdruck(boden[j]))) add('fehler', `„${boden[i].n}“ und „${boden[j].n}“ stehen übereinander.`);
   boden.forEach((e) => { if (schneidet(fussabdruck(e), tuerZone(p))) add('fehler', `„${e.n}“ blockiert die Tür (Tür links in der Mitte).`); });
+  if (p.fensterPos && typeof fensterKonflikt === 'function') plan.forEach((e) => { if (!e.gruppe && fensterKonflikt(p, fussabdruck(e), e.n, e.h, ebene(e.n))) add('warnung', `„${e.n}“ steht vor dem Fenster – ${fensterGrund(e.n, e.h, ebene(e.n))}. Besser an eine andere Wand stellen.`); });
   boden.forEach((e) => { const v = vorneZone(e); const im = v.x >= -1 && v.y >= -1 && v.x + v.w <= p.breite + 1 && v.y + v.h <= p.tiefe + 1; const zu = boden.find((o) => o !== e && schneidet(v, fussabdruck(o)) && !FREI_IM_RAUM.test(o.n)); if (!im || zu) add('warnung', `Vor „${e.n}“ fehlen ${vorne(e.n)} cm Bewegungsfläche${zu ? ' (' + zu.n + ' im Weg)' : ' (zu nah an der Wand gegenüber)'}.`); });
   if (NASS.includes(p.raum) || p.raum === 'waschraum') {
     const luefter = plan.find((e) => /Lüfter/.test(e.n));

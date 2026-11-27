@@ -296,3 +296,33 @@ div.schritt { cursor: default; }
 #google-knopf-platz { display: flex; justify-content: center; min-height: 0; }
 #google-knopf-platz:empty { display: none; }
 .konto-bild { width: 52px; height: 52px; border-radius: 50%; margin-right: 12px; }
+
+/* Geführter Start */
+.los-leiste { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 4px 0 14px; }
+.los-stufe { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #777; text-decoration: none; font-size: 12px; }
+.los-stufe b { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; border: 1px solid #444; font-size: 14px; }
+.los-stufe.an { color: #fff; } .los-stufe.an b { background: #fff; color: #000; border-color: #fff; }
+.los-stufe.fertig b { background: #1f3a26; border-color: #3c7a4c; color: #9fe0ae; }
+.los-karten { display: grid; gap: 10px; margin: 12px 0 16px; }
+.los-karte, .los-karte-knopf { display: grid !important; grid-template-columns: 34px 1fr; gap: 2px 12px; align-items: center; text-align: left !important; padding: 14px 16px !important; border-radius: 18px !important; border: 1px solid #333; background: #111; color: #fff; text-decoration: none; min-height: 64px; height: auto !important; white-space: normal !important; justify-content: start !important; }
+.los-karte svg, .los-karte-knopf svg { grid-row: span 2; width: 28px; height: 28px; }
+.los-karte b { font-size: 16px; } .los-karte span { grid-column: 2; color: #aaa; font-size: 13px; }
+.los-karte-knopf span { font-weight: 600; font-size: 16px; }
+.los .datei-gruppe { display: block; }
+.los .datei-gruppe .einfuegen { margin-top: 6px; width: 100%; }
+.los-bilder { display: flex; gap: 8px; overflow-x: auto; margin: 8px 0; }
+.los-bilder figure { margin: 0; flex: none; } .los-bilder img { width: 96px; height: 72px; object-fit: cover; border-radius: 10px; border: 1px solid #333; }
+.los-bilder figcaption { font-size: 11px; color: #999; text-align: center; }
+.los-vorbild { width: 110px; height: 82px; object-fit: cover; border-radius: 10px; margin-right: 12px; }
+.los-svg { width: 100%; max-width: 420px; display: block; margin: 10px auto; background: #0b0b0b; border-radius: 12px; }
+.los-pruef { list-style: none; padding: 0; margin: 8px 0; font-size: 14px; }
+.los-pruef li { padding: 5px 0; border-bottom: 1px solid #222; }
+.los-pruef .ok { color: #cfe9d5; } .los-pruef .gelb { color: #ffd27a; } .los-pruef .nein { color: #ff9a8a; }
+.los-kosten { background: #0e0e0e; border: 1px solid #2a2a2a; border-radius: 14px; padding: 10px 12px; margin: 8px 0; display: grid; gap: 4px; }
+.los-material { list-style: none; padding: 0; } .los-material li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid #1e1e1e; }
+.los-variante.empfohlen { border-color: #3c7a4c; }
+.badge.gruen { background: #1f3a26; color: #9fe0ae; padding: 3px 10px; border-radius: 999px; font-size: 12px; }
+.los-einstieg { display: grid; gap: 4px; text-decoration: none; color: #fff; border: 1px solid #ffd27a; }
+.skizze-flaeche { width: 100%; aspect-ratio: 1; border-radius: 12px; touch-action: none; margin: 10px 0; background: #fff; }
+.raster3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.zeile.wrap { flex-wrap: wrap; }
