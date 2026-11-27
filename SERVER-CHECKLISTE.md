@@ -40,7 +40,14 @@
 
 ## 4. Benutzerkonten & Sicherheit
 - ☐ Rollen: Kunde, Handwerker, Mitarbeiter, Admin
-- ☐ Passwörter nur gehasht (z. B. Argon2/scrypt), Mindestlänge, Sperre nach Fehlversuchen
+- ◐ **Anmeldung ohne Passwort** (Seite in der App fertig, Knöpfe warten auf Server): Google, Facebook, Apple, Telefonnummer per SMS-Code, E-Mail-Link mit beliebiger Adresse; Passwort nur freiwillig. Gilt für ALLE Apps (Joum 4D Build, JoumHome, WN) mit einem gemeinsamen Konto
+  - ☐ Anbieter wählen: z. B. Firebase Authentication oder Supabase Auth (EU-Region) – beide können Google, Facebook, Apple, Telefon und E-Mail-Link
+  - ☐ Google Cloud: OAuth-Client anlegen (App-Name, Logo, Datenschutz-Link, Domains)
+  - ☐ Meta for Developers: Facebook-App anlegen, Prüfung durch Meta bestehen
+  - ☐ Apple Developer (99 €/Jahr): „Mit Apple anmelden“ ist im App Store Pflicht, sobald Google/Facebook angeboten werden
+  - ☐ SMS-Codes kosten Geld je SMS (ca. 5–10 Cent) → Limit + Schutz vor SMS-Missbrauch (Captcha/App-Check)
+  - ☐ Konten verknüpfen: gleiche E-Mail bei Google und E-Mail-Link = ein Konto; später weitere Anmeldewege hinzufügen
+- ☐ Freiwillige Passwörter nur gehasht (z. B. Argon2/scrypt), Mindestlänge 10, Sperre nach Fehlversuchen
 - ☐ Zwei-Faktor-Anmeldung optional für Kunden, Pflicht für Admin/Handwerker
 - ☐ E-Mail-Bestätigung, „Passwort vergessen“, Sitzungen mit Ablauf, Abmelden auf allen Geräten
 - ☐ Gemeinsamer Login JoumHome ↔ Joum 4D Build (Kunden brauchen KEIN zusätzliches Konto bei Drittanbietern)

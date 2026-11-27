@@ -20,6 +20,7 @@ function absicht(text) {
   if (/hilfe|was kann ich sagen|befehle/.test(t)) return { sag: 'Du kannst zum Beispiel sagen: Ich will mein Bad fliesen. Quittung speichern. Wie geht es weiter? Raum messen. Garten planen. Einkaufsliste. Handwerker finden. Bauablauf zeigen.' };
   if (/wie geht es weiter|was jetzt|nächste[rn]? schritt|was muss ich (jetzt )?machen|weiter machen/.test(t)) { if (!p) return absicht('projekt anlegen'); const w = wasJetzt(p); return { route: '#/projekt/' + p.id, ziel: '.was-jetzt .btn', sag: w.text + ' Tippe auf den blinkenden Knopf.' }; }
   if (/vorlesen|lies vor/.test(t)) return { aktion: () => AKT.vorlesen() };
+  if (/anmeld|einlogg|login|konto|registrier/.test(t)) return { route: '#/anmelden', ziel: '.anm-google', sag: 'Hier meldest du dich an – ohne Passwort, mit Google, Facebook, Apple, Telefonnummer oder E-Mail.' };
   if (/startseite|anfang|home|hauptseite/.test(t)) return { route: '#/', sag: 'Hier ist die Startseite.' };
   if (/quittung|beleg|kassenbon|rechnung (speichern|fotograf)/.test(t)) return { route: '#/finanzen', ziel: 'label.datei-knopf', sag: 'Tippe auf den blinkenden Knopf und fotografiere die Quittung.' };
   if (/steuer|finanz|ausgaben/.test(t)) return { route: '#/finanzen', sag: 'Hier siehst du deine Ausgaben und was du absetzen kannst.' };

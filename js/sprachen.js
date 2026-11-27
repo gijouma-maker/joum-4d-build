@@ -295,6 +295,7 @@ const BEFEHL_WOERTER = [
   [/attic|loft|çatı katı|poddasz|чердак|мансард|горищ|mansardă|علية/i, 'dachboden']
 ];
 BEFEHL_WOERTER.push(
+  [/log ?in|sign ?in|account|giriş|hesap|zaloguj|konto|войти|аккаунт|увійти|conect|connexion|accedi|iniciar sesión|entrar|logga in|kirjaudu|přihlás|prihlás|bejelentkez|σύνδεση|prijav|hyr|ورود|تسجيل الدخول/i, 'anmelden'],
   [/hulp|\baide\b|aiuto|ayuda|ajuda|hjälp|hjælp|hjelp|apua|nápověda|pomoc|segítség|βοήθεια|pomoć|ndihmë|کمک/i, 'hilfe'],
   [/wat nu|et maintenant|e adesso|y ahora|e agora|vad nu|hvad nu|hva nå|mitä nyt|co teď|čo teraz|most mi|τι τώρα|što sada|po tani|حالا چه|volgende stap|prochaine étape|prossimo passo|siguiente paso|próximo passo/i, 'wie geht es weiter'],
   [/accueil|inicio|início|startsida|forside|etusivu|domů|domov|kezdőlap|αρχική|početna|\bkreu\b|خانه/i, 'startseite'],
