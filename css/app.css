@@ -194,3 +194,19 @@ div.schritt { cursor: default; }
 .tour-vorschau { width: min(100%, 360px); margin: 10px auto; border-radius: 18px; overflow: hidden; border: 1px solid var(--linie); background: #0a0a0a; display: flex; align-items: center; justify-content: center; }
 .tour-vorschau canvas { width: 100%; height: 100%; display: block; }
 .tour-name { flex: 1; min-width: 0; min-height: 40px; padding: 6px 10px; border-radius: 10px; border: 1px solid #3a3a3a; background: #111; }
+
+.bau-phasen { display: flex; gap: 6px; overflow-x: auto; padding: 6px 0; }
+.bau-phasen .chip { flex: none; }
+
+/* KI-Raumprüfung */
+.ki-karte { border-color: #3a3a3a; }
+.ki-zeile { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #1d1d1d; font-size: .9em; line-height: 1.4; }
+.ki-zeile:last-of-type { border-bottom: none; }
+.ki-sym { width: 24px; height: 24px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: #222; }
+.ki-zeile.fehler .ki-sym { background: #3a1612; color: var(--rot); }
+.ki-zeile.warnung .ki-sym { background: #3a2a12; color: var(--gelb); }
+.ki-zeile.ok .ki-sym { background: #0f1f0f; color: var(--gruen); }
+.ki-zeile.frage .ki-sym { background: #121a24; color: var(--blau); }
+.ki-zeile .zeile { margin-top: 6px; gap: 6px; }
+.ki-zeile .chip { margin-top: 6px; }
+.pl-tuer { position: absolute; left: -3px; border-left: 4px solid #e9e9e9; border-top: 2px dashed #888; border-radius: 0 100% 0 0; pointer-events: none; background: rgba(255,255,255,.04); }

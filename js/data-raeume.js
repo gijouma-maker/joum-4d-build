@@ -85,13 +85,13 @@ const RAEUME = [
       ['Lüfter', 'Technik', 15, 10, 15, 'Innenbad ohne Fenster braucht Lüftung.'],
       ['Waschmaschine', 'Technik', 60, 60, 85, 'Aquastop, FI-Schutz.']
     ], BASIS.licht, [BASIS.deko[1]], BASIS.bau),
-    projekte: ['bad_abdichten', 'fliesen', 'silikon', 'installation'],
+    projekte: ['bad_abdichten', 'fliesen', 'silikon', 'bad_luefter', 'tuer_lueftung', 'installation'],
     sicherheit: ['Abdichtung vor dem Fliesen ist Pflicht (DIN 18534).', 'Elektrik im Bad: Schutzbereiche 0–2, nur Elektrofachkraft.', 'Wasser vor Arbeiten abstellen.'],
     tipps: ['Erst abdichten, dann fliesen.', 'Große Fliesen und durchgehender Boden lassen kleine Bäder größer wirken.'] },
 
   { id: 'gaestewc', name: 'Gäste-WC', bereich: 'innen', w: 120, d: 180,
     katalog: kat([['WC wandhängend', 'Sanitär', 38, 55, 40, ''], ['Handwaschbecken', 'Sanitär', 45, 25, 85, ''], ['Spiegel', 'Deko', 40, 3, 60, ''], ['Lüfter', 'Technik', 15, 10, 15, 'Ohne Fenster Lüftung einplanen.']], BASIS.licht),
-    projekte: ['fliesen', 'streichen', 'silikon', 'installation'], sicherheit: ['Elektrik nach Schutzbereichen.'], tipps: ['Wandhängendes WC spart optisch Platz.'] },
+    projekte: ['fliesen', 'streichen', 'silikon', 'bad_luefter', 'tuer_lueftung', 'installation'], sicherheit: ['Elektrik nach Schutzbereichen.'], tipps: ['Wandhängendes WC spart optisch Platz.'] },
 
   { id: 'schlafzimmer', name: 'Schlafzimmer', bereich: 'innen', w: 420, d: 380,
     katalog: kat([['Doppelbett 180', 'Möbel', 180, 210, 45, 'Rund ums Bett ca. 60–70 cm Platz.'], ['Nachttisch', 'Möbel', 45, 40, 50, ''], ['Kleiderschrank', 'Möbel', 250, 60, 230, 'Hohe Schränke kippsicher an Wand befestigen.'], ['Kommode', 'Möbel', 120, 50, 85, 'Kippschutz.'], ['Leselampe', 'Licht', 15, 15, 30, '']], BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau),

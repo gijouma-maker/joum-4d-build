@@ -62,7 +62,7 @@ route('start', () => {
     haupt = `<section class="karte gross-karte">
       <div class="zeile">${ring(fortschritt(p))}<div style="flex:1"><div class="unter">Aktives Projekt</div><h2>${esc(p.name)}</h2>${a ? werBadge(a.wer) : ''}</div></div>
       ${naechster >= 0 ? `<a class="naechster" href="#/anleitung/${p.anleitung}?p=${p.id}"><div class="unter">Nächster Schritt</div><b>${esc(a.schritte[naechster][0])}</b><div class="klein">${esc(a.schritte[naechster][1])}</div></a>` : (a && a.schritte.length ? '<div class="hinweis gruen">Alle Schritte erledigt – jetzt Abnahme/Fotos.</div>' : '')}
-      <div class="zeile"><a class="btn hell" href="#/projekt/${p.id}">Projekt öffnen</a><button class="btn" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher</button></div></section>`;
+      <div class="zeile"><a class="btn hell" href="#/projekt/${p.id}">Projekt öffnen</a><button class="btn" data-akt="bau4D" data-id="${p.id}">▶ 4D-Bauablauf</button></div></section>`;
   } else {
     haupt = `<section class="karte gross-karte"><h2>Willkommen bei Joum 4D Build</h2><p class="klein">Plan. Bau. Fertig. – Wähle einen Raum, Haus außen oder Garten und leg dein erstes Projekt an.</p><a class="btn hell voll" href="#/projekte">Projekt starten</a></section>`;
   }
@@ -143,6 +143,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/messen/${p.id}">${ICON.messen}<span>Messen</span></a>
       <a class="kachel" href="#/planer/${p.id}">${ICON.wuerfel}<span>Gestalten</span></a>
       <a class="kachel" href="#/ideen/${p.id}">${ICON.funke}<span>KI-Ideen</span></a>
+      <button class="kachel" data-akt="bau4D" data-id="${p.id}">${ICON.wuerfel}<span>4D-Bauablauf</span></button>
       <button class="kachel" data-akt="film" data-id="${p.id}">${ICON.film}<span>Vorher/Nachher</span></button>
       <a class="kachel" href="#/tour">${ICON.kamera}<span>Kino-Tour</span></a>
       ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
@@ -151,6 +152,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/installation?raum=${p.raum}">${ICON.tropfen}<span>Wasser & Elektro</span></a>
       <a class="kachel" href="#/finanzen?p=${p.id}">${ICON.beleg}<span>Quittung</span></a>
     </div>
+    ${kiKarte(p)}
     ${r.sicherheit && r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${a && a.warn.length ? `<div class="hinweis gelb">${a.warn.map(esc).join('<br>')}</div>` : ''}
     ${p.ticket ? `<div class="hinweis">Verknüpft mit JoumHome-Ticket <b>${esc(p.ticket.nr)}</b> · ${esc(p.ticket.objekt)}</div>` : ''}
@@ -205,6 +207,8 @@ route('messen', (id) => {
       <button class="kachel" data-akt="lidar">${ICON.kamera}<span>Foto + Zollstock</span></button>
       <button class="kachel" data-akt="diktatWand" data-id="${p.id}">${ICON.mikro}<span>Diktieren</span></button>
     </div>
+    ${grundrissKnoepfe(p)}
+    ${p.grundriss ? `<img class="skizze" src="${p.grundriss}" alt="Grundriss">` : ''}
     <h3>Grundfläche</h3>
     <div class="mess-zeile"><span style="flex:1">Breite × Tiefe (m)</span>
       <input inputmode="decimal" aria-label="Breite in m" value="${zahl(p.breite / 100)}" data-ein="raumMass" data-id="${p.id}" data-feld="breite"><span>×</span>
@@ -228,13 +232,14 @@ let planAuswahl = null, plan3D = false, planGruppe = null;
 
 function katalogFuer(p) {
   const r = raum(p.raum);
-  return r && r.katalog.length ? r.katalog : kat(BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau);
+  return (r && r.katalog.length ? r.katalog : kat(BASIS.licht, BASIS.deko, BASIS.technik, BASIS.bau)).filter((k) => passt(p.raum, k[0]).ok);
 }
 AKT.planGruppe = (d) => { planGruppe = d.g; render(); };
 AKT.planAdd = (d) => {
   const p = projekt(d.id), k = katalogFuer(p)[+d.i];
-  const platz = freierPlatz(p, k[2], Math.max(k[3], 4));
-  const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: platz[0], y: platz[1], rot: 0 };
+  const platz = platzieren(p, k);
+  const el = { id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: platz.x, y: platz.y, rot: platz.rot };
+  if (platz.eng) toast('Kein passender Platz frei – bitte im Grundriss verschieben');
   planAuswahl = el.id;
   aendern(() => p.plan.push(el), 'Element hinzugefügt');
 };
@@ -270,16 +275,37 @@ window.GRUPPEN_FARBE_3D = null;
 AKT.film = (d) => {
   const p = projekt(d.id); if (!p) return;
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
-  let vorschau = p;
-  if (!p.plan.length) {
-    vorschau = JSON.parse(JSON.stringify(p));
-    const kat = katalogFuer(p).filter((k) => ['Möbel', 'Sanitär', 'Küche'].includes(k[1]) && k[2] <= p.breite && k[3] <= p.tiefe).slice(0, 6)
-      .concat(katalogFuer(p).filter((k) => /Teppich|Pflanze|Stehleuchte|Deckenleuchte|Spiegel/.test(k[0])).slice(0, 3));
-    kat.forEach((k) => { const pl = freierPlatz(vorschau, k[2], Math.max(k[3], 4)); vorschau.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], x: pl[0], y: pl[1], rot: 0 }); });
-    toast('Beispiel-Einrichtung – im Planer kannst du deine eigene zusammenstellen');
-  }
+  const vorschau = beispielEinrichtung(p);
+  if (!p.plan.length) toast('Beispiel-Einrichtung – im Planer kannst du deine eigene zusammenstellen');
   try { zeigeFilm(vorschau, STILE.find((s) => s.id === p.stil)); } catch (e) { info('Der Film braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
 };
+
+/* 4D-Bauablauf: automatisch aus Raum + Einrichtung (leer → typische Einrichtung des Raums) */
+function beispielEinrichtung(p) {
+  const v = JSON.parse(JSON.stringify(p));
+  if (v.plan.length) return v;
+  const klein = p.breite * p.tiefe < 70000; // unter 7 m²
+  const muster = { bad: ['WC wandhängend', 'Waschtisch', 'Spiegelschrank', 'Dusche bodengleich'].concat(klein ? [] : ['Badewanne']).concat(['Handtuchheizkörper', 'Deckenleuchte']), gaestewc: ['WC wandhängend', 'Handwaschbecken', 'Spiegel', 'Deckenleuchte'], kueche: ['Kühlschrank', 'Spüle mit Unterschrank', 'Geschirrspüler', 'Unterschrank 60', 'Herd / Kochfeld', 'Hängeschrank 60', 'Deckenleuchte'], waschraum: ['Waschmaschine', 'Trockner', 'Ausgussbecken', 'Regal', 'Deckenleuchte'], wohnzimmer: ['Sofa 3-Sitzer', 'TV-Board', 'Couchtisch', 'Fernseher an Wand', 'Indirektes Licht (LED-Profil)', 'Stehleuchte', 'Pflanze groß', 'Teppich', 'Rauchmelder'], schlafzimmer: ['Doppelbett 180', 'Nachttisch', 'Nachttisch', 'Kleiderschrank', 'Deckenleuchte', 'Rauchmelder'], kinderzimmer: ['Kinderbett', 'Schreibtisch höhenverstellbar', 'Spielzeugregal', 'Kleiderschrank Kind', 'Spielecke / Teppich', 'Rauchmelder'], buero: ['Schreibtisch höhenverstellbar', 'Bürostuhl', 'Aktenschrank', 'Deckenleuchte'], flur: ['Garderobe', 'Schuhschrank', 'Spiegel groß', 'Rauchmelder'] }[p.raum];
+  const kat = katalogFuer(p);
+  const liste = muster ? muster.map((n) => kat.find((k) => k[0] === n)).filter(Boolean) : kat.filter((k) => ['Möbel', 'Sanitär', 'Küche', 'Lager'].includes(k[1])).slice(0, 5);
+  liste.forEach((k) => { if (k[2] > v.breite && k[3] > v.breite) return; const pl = platzieren(v, k); if (pl.eng) return; v.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }); });
+  if (NASS.includes(p.raum) && p.fenster !== true) { const ziel = v.plan.find((e) => /Dusche/.test(e.n)) || v.plan.find((e) => /^WC/.test(e.n)); let y = v.tiefe * 0.25; if (ziel) { const f = fussabdruck(ziel); y = f.y + f.h / 2; } v.plan.push({ id: uid(), n: 'Lüfter', g: 'Technik', w: 15, d: 10, h: 15, x: v.breite - 10, y: Math.min(v.tiefe - 20, Math.max(5, Math.min(y, v.tiefe / 2 - 70 > 5 ? y : 5))), rot: 90 }); }
+  return v;
+}
+AKT.bau4D = (d) => {
+  const p = projekt(d.id); if (!p) return;
+  window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
+  const v = beispielEinrichtung(p);
+  if (!p.plan.length) toast('Beispiel-Einrichtung – im Planer kannst du deine eigene festlegen');
+  try { zeigeBau4D(v, STILE.find((s) => s.id === p.stil), p.grundriss); } catch (e) { console.error(e); info('Der 4D-Bauablauf braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
+};
+AKT.grundrissHoch = (d) => { document.getElementById('grundrissDatei').click(); };
+EIN.grundrissDatei = (v, d, el) => { const f = el.files[0]; if (!f) return; bildVerkleinern(f, 1200, (url) => { aendern(() => { projekt(d.id).grundriss = url; }, 'Grundriss hochgeladen'); toast('Grundriss gespeichert – erscheint im Planer und im 4D-Bauablauf'); }); };
+AKT.grundrissWeg = (d) => aendern(() => { delete projekt(d.id).grundriss; });
+function grundrissKnoepfe(p) {
+  return `<input type="file" accept="image/*" capture="environment" hidden id="grundrissDatei" data-ein="grundrissDatei" data-id="${p.id}">
+    <div class="zeile"><button class="btn" data-akt="grundrissHoch" data-id="${p.id}">${ICON.kamera} ${p.grundriss ? 'Grundriss ändern' : 'Grundriss hochladen'}</button>${p.grundriss ? `<button class="btn klein-btn rot-text" data-akt="grundrissWeg" data-id="${p.id}">Entfernen</button>` : ''}</div>`;
+}
 
 function planer3D(p) {
   const box = document.getElementById('raum3d');
@@ -310,11 +336,13 @@ route('planer', (id) => {
   return kopf('Gestalten', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
     <div class="raum3d" id="raum3d" data-pid="${p.id}" aria-label="3D-Ansicht des Raums"></div>
     <div class="klein mitte">3D: mit dem Finger drehen, zwei Finger zoomen, Möbel antippen zum Auswählen</div>
-    <button class="btn hell voll" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher-Film</button>
+    <div class="zeile"><button class="btn hell" data-akt="bau4D" data-id="${p.id}">▶ 4D-Bauablauf</button><button class="btn" data-akt="film" data-id="${p.id}">▶ Vorher/Nachher</button></div>
+    ${grundrissKnoepfe(p)}
     <h3>Grundriss – hier verschieben</h3>
     <div class="plan-buehne" style="height:${hoehePx + 4}px">
-      <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${stil ? stil.boden : '#1a1a1a'};border-color:${stil ? stil.wand : '#555'}">${elemente}</div>
+      <div class="plan-boden" id="planBoden" data-pid="${p.id}" data-sk="${sk}" style="width:${breitePx}px;height:${hoehePx}px;background:${p.grundriss ? `url(${p.grundriss}) center/100% 100% no-repeat` : (stil ? stil.boden : '#1a1a1a')};border-color:${stil ? stil.wand : '#555'}"><div class="pl-tuer" style="top:${(p.tiefe / 2 - 45) * sk}px;height:${90 * sk}px;width:${90 * sk}px" aria-hidden="true"></div>${elemente}</div>
     </div>
+    ${kiKarte(p)}
     <div class="klein mitte">${zahl(p.breite / 100)} × ${zahl(p.tiefe / 100)} m · ${p.plan.length} Elemente ${stil ? '· Stil ' + esc(stil.name) : ''} · Element antippen und ziehen</div>
     ${sel ? `<div class="karte werkzeug"><b>${esc(sel.n)}</b> <span class="klein">${sel.w}×${sel.d}×${sel.h} cm</span>
       <div class="zeile"><button class="btn klein-btn" data-akt="planDreh" data-id="${p.id}">Drehen 90°</button><button class="btn klein-btn" data-akt="planDoppel" data-id="${p.id}">Kopieren</button><button class="btn klein-btn rot-text" data-akt="planWeg" data-id="${p.id}">Löschen</button></div>
@@ -368,11 +396,12 @@ let ideenErkannt = [];
 
 EIN.ideenNotiz = (v, d) => { projekt(d.id).skizzeNotiz = v; speichern(); ideenErkennen(projekt(d.id)); render(); };
 function ideenErkennen(p) {
-  const alle = kat(katalogFuer(p), BASIS.licht, BASIS.deko, BASIS.technik, RAEUME[0].katalog);
+  const alle = kat(katalogFuer(p), BASIS.licht, BASIS.deko, BASIS.technik, RAEUME[0].katalog, RAEUME.find((r) => r.id === 'schlafzimmer').katalog);
   ideenErkannt = (p.skizzeNotiz || '').split(/[,;\n]+/).map((t) => t.trim()).filter(Boolean).map((wort) => {
     const m = STICHWORTE.find(([re]) => re.test(wort));
     const k = m && alle.find((x) => x[0] === m[1]);
-    return { wort, k, unsicher: /\?/.test(wort), ok: !/\?/.test(wort) && !!k };
+    const pa = k ? passt(p.raum, k[0]) : { ok: true };
+    return { wort, k: pa.ok ? k : null, falsch: pa.ok ? '' : pa.grund, unsicher: /\?/.test(wort), ok: !/\?/.test(wort) && !!k && pa.ok };
   });
 }
 AKT.ideeOk = (d) => { ideenErkannt[+d.i].ok = !ideenErkannt[+d.i].ok; render(); };
@@ -380,7 +409,7 @@ AKT.ideenDiktat = (d) => diktieren((t) => { const p = projekt(d.id); p.skizzeNot
 AKT.ideenUebernehmen = (d) => {
   const p = projekt(d.id);
   const neu = ideenErkannt.filter((x) => x.ok && x.k);
-  aendern(() => neu.forEach((x, i) => { const k = x.k; p.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: Math.min(p.breite - k[2], 20 + i * 30), y: Math.min(p.tiefe - k[3], 20 + i * 25), rot: 0 }); }), 'Ideen übernommen');
+  aendern(() => neu.forEach((x) => { const k = x.k, pl = platzieren(p, k); p.plan.push({ id: uid(), n: k[0], g: k[1], w: k[2], d: Math.max(k[3], 4), h: k[4], hint: k[5], x: pl.x, y: pl.y, rot: pl.rot }); }), 'Ideen übernommen');
   toast(neu.length + ' Elemente in den Planer übernommen');
   geh('#/planer/' + p.id);
 };
@@ -402,7 +431,7 @@ route('ideen', (id) => {
     <input type="file" accept="image/*" capture="environment" id="skizzeFoto" hidden data-ein="skizzeFoto" data-id="${p.id}">
     <div class="zeile"><button class="btn" data-akt="skizzeFoto" data-id="${p.id}">${p.skizze ? 'Neue Skizze' : 'Skizze/Foto aufnehmen'}</button><button class="btn" data-akt="ideenDiktat" data-id="${p.id}">${ICON.mikro} Diktieren</button></div>
     <label class="feld">Notizen aus der Skizze (mit Komma trennen, „?“ = unsicher)<textarea rows="2" placeholder="z. B. Licht Decke, TV, Bild?, Sofa" data-ein="ideenNotiz" data-id="${p.id}">${esc(p.skizzeNotiz || '')}</textarea></label>
-    ${ideenErkannt.length ? `<div class="karte">${ideenErkannt.map((x, i) => `<div class="kat-zeile zeile"><span style="flex:1">„${esc(x.wort)}“ → ${x.k ? '<b>' + esc(x.k[0]) + '</b>' : '<span class="klein">nicht erkannt</span>'}${x.unsicher ? ' <span class="badge gelb">bestätigen?</span>' : ''}</span>${x.k ? `<button class="chip ${x.ok ? 'an' : ''}" data-akt="ideeOk" data-i="${i}">${x.ok ? '✓ übernehmen' : 'übernehmen?'}</button>` : ''}</div>`).join('')}
+    ${ideenErkannt.length ? `<div class="karte">${ideenErkannt.map((x, i) => `<div class="kat-zeile zeile"><span style="flex:1">„${esc(x.wort)}“ → ${x.k ? '<b>' + esc(x.k[0]) + '</b>' : x.falsch ? '<span class="rot-text klein">' + esc(x.falsch) + '</span>' : '<span class="klein">nicht erkannt</span>'}${x.unsicher ? ' <span class="badge gelb">bestätigen?</span>' : ''}</span>${x.k ? `<button class="chip ${x.ok ? 'an' : ''}" data-akt="ideeOk" data-i="${i}">${x.ok ? '✓ übernehmen' : 'übernehmen?'}</button>` : ''}</div>`).join('')}
       <button class="btn hell voll" data-akt="ideenUebernehmen" data-id="${p.id}">Im Planer anpassen</button></div>` : ''}
     <p class="klein">Echte Handschrift-Erkennung aus dem Foto folgt mit dem KI-Server-Modul; bis dahin Notizen eintippen oder diktieren.</p>
     <h3>8 Stil-Vorschläge</h3>

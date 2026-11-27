@@ -292,6 +292,19 @@
     return g;
   }
 
+  /* Tür an der linken Wand (Mitte); im Bad mit Lüftungsgitter */
+  function tuerGruppe(p, B) {
+    const g = new T.Group();
+    g.add(kiste(0.9, 2.05, 0.04, '#f0ece4', 0, 1.025, 0)); g.add(kiste(0.12, 0.02, 0.05, '#888', 0.32, 1.05, 0.04, { metalness: 0.8 }));
+    g.add(kiste(1.0, 0.06, 0.08, '#e6e1d8', 0, 2.08, 0));
+    const nass = ['bad', 'gaestewc', 'waschraum'].includes(p.raum);
+    if (nass && p.tuer !== 'keine') { [-0.2, 0.2].forEach((x) => { g.add(kiste(0.3, 0.1, 0.046, '#555', x, 0.18, 0)); for (let i = 0; i < 4; i++) g.add(kiste(0.28, 0.008, 0.05, '#222', x, 0.145 + i * 0.022, 0)); }); }
+    g.position.set(-B / 2 + 0.03, 0, 0); g.rotation.y = Math.PI / 2;
+    g.traverse((c) => { c.userData.tuer = true; });
+    return g;
+  }
+  window.J4D_TUER = tuerGruppe;
+
   let raumKamera = null;
   window.zeigeRaum3D = function (box, p, stil, auswahlId, beiAuswahl) {
     const B = p.breite / 100, D = p.tiefe / 100, H = 2.5;
@@ -305,7 +318,8 @@
     const wand = (w, x, z, ry) => { const m = mesh(new T.PlaneGeometry(w, H), mat(wf, { roughness: 0.95, side: T.FrontSide })); m.position.set(x, H / 2, z); m.rotation.y = ry; sc.add(m); const sockel = mesh(new T.PlaneGeometry(w, 0.07), mat('#fafafa')); sockel.position.set(x, 0.035, z); sockel.rotation.y = ry; sockel.translateZ(0.003); sc.add(sockel); };
     wand(B, 0, -D / 2, 0); wand(B, 0, D / 2, Math.PI); wand(D, -B / 2, 0, Math.PI / 2); wand(D, B / 2, 0, -Math.PI / 2);
     // Fenster an der Rückwand (Lichtschein)
-    const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.6 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen);
+    if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.6 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
+    sc.add(tuerGruppe(p, B));
     const raumLicht = new T.PointLight(0xfff1dd, 0.35, 10); raumLicht.position.set(0, 2.3, 0); sc.add(raumLicht);
     const objekte = [];
     (p.plan || []).forEach((e) => {
@@ -381,7 +395,8 @@
     const wandMat = new T.MeshStandardMaterial({ color: rohWand.clone(), roughness: 0.95 });
     const wand = (w, x, z, ry) => { const me = mesh(new T.PlaneGeometry(w, Hh), wandMat); me.position.set(x, Hh / 2, z); me.rotation.y = ry; sc.add(me); };
     wand(B, 0, -D / 2, 0); wand(B, 0, D / 2, Math.PI); wand(D, -B / 2, 0, Math.PI / 2); wand(D, B / 2, 0, -Math.PI / 2);
-    const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen);
+    if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
+    sc.add(tuerGruppe(p, B));
     const lampe = new T.PointLight(0xffe2b8, 0, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
     // Möbel
     const teile = (p.plan || []).map((e) => {
@@ -472,7 +487,8 @@
     const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 })); boden.rotation.x = -Math.PI / 2; sc.add(boden);
     const wf = stil ? stil.wand : '#ece8e1';
     [[B, 0, -D / 2, 0], [B, 0, D / 2, Math.PI], [D, -B / 2, 0, Math.PI / 2], [D, B / 2, 0, -Math.PI / 2]].forEach(([w, x, z, ry]) => { const m = mesh(new T.PlaneGeometry(w, 2.5), mat(wf, { roughness: 0.95 })); m.position.set(x, 1.25, z); m.rotation.y = ry; sc.add(m); });
-    const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen);
+    if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
+    sc.add(tuerGruppe(p, B));
     (p.plan || []).forEach((e) => {
       const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
@@ -485,5 +501,281 @@
     const url = renderer.domElement.toDataURL('image/jpeg', 0.88);
     renderer.dispose();
     return url;
+  };
+
+  /* ---------- 4D-Bauablauf: Grundriss → Durchbruch → Leitungen → Trockenbau → Montage ---------- */
+  window.zeigeBau4D = function (p, stil, grundrissUrl) {
+    if (film) film.stopp();
+    let m = document.getElementById('film-modal');
+    if (!m) { m = document.createElement('div'); m.id = 'film-modal'; m.className = 'film-modal'; document.body.appendChild(m); }
+    m.innerHTML = `<div class="film-box"><div class="zeile"><b style="flex:1">4D-Bauablauf</b><button class="x" id="film-zu" aria-label="Schließen">×</button></div>
+      <div class="film-buehne" id="film-buehne"></div>
+      <div class="zeile"><button class="btn" id="film-pause">Pause</button><button class="btn" id="film-neu">Von vorn</button><button class="btn hell" id="film-rec">Als Video</button></div>
+      <div class="bau-phasen" id="bau-phasen"></div>
+      <div class="klein" id="film-info">Automatisch geplant aus deinem Raum und deiner Einrichtung. Antippen eines Schritts springt dorthin.</div></div>`;
+    m.classList.add('an');
+    const buehne = document.getElementById('film-buehne');
+    const H = Math.min(Math.floor(window.innerHeight * 0.58), 640), W2 = Math.floor(H * 9 / 16);
+    const pr = Math.min(2, window.devicePixelRatio || 1);
+    const renderer = new T.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(pr); renderer.setSize(W2, H); renderer.outputEncoding = T.sRGBEncoding;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setClearColor(0x0a0a0a);
+    const aus = document.createElement('canvas'); aus.width = W2 * pr; aus.height = H * pr; aus.style.width = W2 + 'px'; aus.style.height = H + 'px';
+    const ctx = aus.getContext('2d'); buehne.appendChild(aus);
+    const sc = new T.Scene(), cam = new T.PerspectiveCamera(50, W2 / H, 0.05, 100);
+    const hemi = new T.HemisphereLight(0xffffff, 0x333333, 0.55); sc.add(hemi);
+    const B = p.breite / 100, D = p.tiefe / 100, HW = 2.5, gr = Math.max(B, D), P = 2 * (B + D);
+    const so = new T.DirectionalLight(0xffffff, 0.75); so.position.set(3, 8, 5); so.castShadow = true; so.shadow.mapSize.set(1024, 1024);
+    Object.assign(so.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr }); sc.add(so);
+    const raumLicht = new T.PointLight(0xffe2b8, 0, 10); raumLicht.position.set(0, 2.2, 0); sc.add(raumLicht);
+
+    /* Umfang-Koordinaten: s läuft im Uhrzeigersinn ab hinterer linker Ecke */
+    function umfang(s, ab) {
+      s = ((s % P) + P) % P; ab = ab || 0;
+      if (s <= B) return v3(-B / 2 + s, 0, -D / 2 + ab);
+      if (s <= B + D) return v3(B / 2 - ab, 0, -D / 2 + (s - B));
+      if (s <= 2 * B + D) return v3(B / 2 - (s - B - D), 0, D / 2 - ab);
+      return v3(-B / 2 + ab, 0, D / 2 - (s - 2 * B - D));
+    }
+    function sVon(cx, cz) {
+      const d = [cz + D / 2, B / 2 - cx, D / 2 - cz, cx + B / 2], w = d.indexOf(Math.min(...d));
+      return [cx + B / 2, B + cz + D / 2, B + D + B / 2 - cx, 2 * B + D + D / 2 - cz][w];
+    }
+    const ecken = [0, B, B + D, 2 * B + D];
+    function weg(s1, s2, y1, y2, ab) { // Punkte entlang der Wand von s1 nach s2 (kürzester Weg), Höhe linear
+      let ds = ((s2 - s1) % P + P) % P; let rich = 1; if (ds > P / 2) { ds = P - ds; rich = -1; }
+      const pts = [[0]]; ecken.concat(ecken.map((e) => e + P)).forEach((e) => { const t = rich > 0 ? ((e - s1) % P + P) % P : ((s1 - e) % P + P) % P; if (t > 0.001 && t < ds - 0.001) pts.push([t]); });
+      pts.push([ds]); pts.sort((a, b) => a[0] - b[0]);
+      return pts.map(([t]) => { const q = umfang(s1 + rich * t, ab); q.y = y1 + (y2 - y1) * (ds ? t / ds : 0); return q; });
+    }
+    /* wachsende Leitung aus Segmenten */
+    const leitungen = [];
+    function leitung(pts, r, farbe, phase, label) {
+      const segs = []; let gesamt = 0;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1], len = a.distanceTo(b); if (len < 0.001) continue;
+        const geo = new T.CylinderGeometry(r, r, len, 14); geo.translate(0, len / 2, 0);
+        const me = mesh(geo, mat(farbe, { roughness: 0.4 })); me.position.copy(a);
+        me.quaternion.setFromUnitVectors(v3(0, 1, 0), b.clone().sub(a).normalize()); me.scale.y = 0.0001; me.visible = false;
+        sc.add(me); segs.push({ me, von: gesamt, len }); gesamt += len;
+        if (i > 0) { const k = mesh(new T.SphereGeometry(r * 1.25, 10, 8), mat(farbe)); k.position.copy(a); k.visible = false; sc.add(k); segs.push({ me: k, von: gesamt - len, len: 0.0001, knoten: true }); }
+      }
+      leitungen.push({ segs, gesamt, phase, label }); return gesamt;
+    }
+
+    /* Boden mit Grundriss */
+    const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ color: 0xd8d4cc, roughness: 1 })); boden.rotation.x = -Math.PI / 2; sc.add(boden);
+    if (grundrissUrl) { const img = new Image(); img.onload = () => { const tx = new T.Texture(img); tx.encoding = T.sRGBEncoding; tx.needsUpdate = true; boden.material.map = tx; boden.material.color.set(0xffffff); boden.material.needsUpdate = true; }; img.src = grundrissUrl; }
+    else { const g = new T.GridHelper(Math.max(B, D), Math.round(Math.max(B, D) * 2), 0x888888, 0xbbbbbb); g.position.y = 0.002; sc.add(g); }
+    const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
+    const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
+    const belag = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 })); belag.rotation.x = -Math.PI / 2; belag.position.y = 0.01; belag.scale.set(0.0001, 1, 1); sc.add(belag);
+
+    /* Wände (wachsen hoch); linke Wand mit Durchbruch */
+    const wandMat = new T.MeshStandardMaterial({ color: new T.Color('#a39e97'), roughness: 0.95 });
+    const zielWand = new T.Color(stil ? stil.wand : (nass ? '#f2f2f0' : '#ece8e1'));
+    const waende = [];
+    const wb = (w, h, d, x, y, z) => { const me = mesh(new T.BoxGeometry(w, h, d), wandMat); me.position.set(x, y, z); me.userData.n = Math.abs(x) > Math.abs(z) * (B / D) ? v3(Math.sign(x), 0, 0) : v3(0, 0, Math.sign(z)); sc.add(me); waende.push(me); return me; };
+    const dk = 0.12;
+    wb(B + 2 * dk, HW, dk, 0, HW / 2, -D / 2 - dk / 2); wb(dk, HW, D, B / 2 + dk / 2, HW / 2, 0); wb(B + 2 * dk, HW, dk, 0, HW / 2, D / 2 + dk / 2);
+    const tz = 0, tb = Math.min(0.9, D * 0.35), th = 2.05;
+    wb(dk, HW, D / 2 - tb / 2, -B / 2 - dk / 2, HW / 2, -D / 4 - tb / 4); wb(dk, HW, D / 2 - tb / 2, -B / 2 - dk / 2, HW / 2, D / 4 + tb / 4); wb(dk, HW - th, tb, -B / 2 - dk / 2, th + (HW - th) / 2, tz);
+    const stopfen = mesh(new T.BoxGeometry(dk, th, tb), mat('#8f8a83')); stopfen.position.set(-B / 2 - dk / 2, th / 2, tz); sc.add(stopfen);
+    const staub = []; for (let i = 0; i < 40; i++) { const st = mesh(new T.BoxGeometry(0.05, 0.05, 0.05), mat('#9a948c')); st.visible = false; st.userData.v = v3(Math.random() * 0.8 + 0.2, Math.random() * 1.5, (Math.random() - 0.5) * 1.2); st.userData.p0 = v3(-B / 2, Math.random() * th, tz + (Math.random() - 0.5) * tb); sc.add(st); staub.push(st); }
+
+    /* Einrichtung analysieren */
+    const plan = p.plan || [];
+    const mitte = (e) => { const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100; return [e.x / 100 + ew / 2 - B / 2, e.y / 100 + ed / 2 - D / 2]; };
+    const SAN = /WC|Waschtisch|Handwaschbecken|Dusche|Badewanne|Spüle|Waschmaschine|Geschirrspüler|Ausgussbecken|Bodenablauf|Wasch-Trocken/;
+    const AB_H = (n) => /WC/.test(n) ? 0.23 : /Dusche|Bodenablauf/.test(n) ? 0.06 : /Badewanne/.test(n) ? 0.12 : /Spüle|Geschirr/.test(n) ? 0.47 : /Waschmaschine|Wasch-Trocken/.test(n) ? 0.75 : 0.55;
+    const DN = (n) => /WC/.test(n) ? 100 : /Waschtisch|Handwasch|Geschirr/.test(n) ? 40 : 50;
+    const STROM = /Steckdose|Waschmaschine|Trockner|Geschirrspüler|Herd|Kochfeld|Backofen|Kühlschrank|Fernseher|TV-Board|Spiegelschrank|Lüfter|Handtuchheizkörper|Stehleuchte|Wallbox|Dunstabzug|Beamer|WLAN|Schreibtisch|Wasch-Trocken|Indirektes Licht|Deckenleuchte|Pendelleuchte|Wandleuchte/;
+    const E_H = (n) => /Spiegelschrank/.test(n) ? 1.9 : /Fernseher/.test(n) ? 1.05 : /Lüfter|Deckenleuchte|Pendelleuchte|Indirektes/.test(n) ? 2.3 : /Herd|Kochfeld|Backofen/.test(n) ? 0.6 : /Wandleuchte/.test(n) ? 1.8 : /Handtuch/.test(n) ? 0.4 : /Dunstabzug/.test(n) ? 2.1 : 0.3;
+    const san = plan.filter((e) => SAN.test(e.n)), strom = plan.filter((e) => STROM.test(e.n));
+    // Fallrohr in der Ecke nächst dem WC / ersten Sanitärobjekt
+    let sFall = 0;
+    if (san.length) { const ref = san.find((e) => /WC/.test(e.n)) || san[0]; const sr = sVon(...mitte(ref)); sFall = ecken.reduce((b, e) => { const d = Math.min(Math.abs(e - sr), P - Math.abs(e - sr)); return d < b[0] ? [d, e] : b; }, [1e9, 0])[1]; }
+    const fallPos = umfang(sFall + 0.12, 0.12);
+    const infoAb = [];
+    if (san.length) {
+      leitung([v3(fallPos.x, -0.3, fallPos.z), v3(fallPos.x, HW, fallPos.z)], 0.055, '#9ea3a8', 'abwasser');
+      san.forEach((e) => {
+        const [cx, cz] = mitte(e), s = sVon(cx, cz), h0 = AB_H(e.n), r = DN(e.n) / 2000 * 1.2;
+        const wegP = weg(s, sFall + 0.12, h0, h0, 0.07); const lenW = wegP.reduce((a, q, i) => i ? a + q.distanceTo(wegP[i - 1]) : 0, 0);
+        wegP.forEach((q, i) => { q.y = h0 - 0.02 * lenW * (i / Math.max(1, wegP.length - 1)); });
+        const start = umfang(s, 0.25); start.y = h0;
+        leitung([start].concat(wegP), r, '#9ea3a8', 'abwasser');
+        infoAb.push(e.n.split(' ')[0] + ' DN ' + DN(e.n));
+        if (!/Bodenablauf/.test(e.n)) {
+          const hv = /WC/.test(e.n) ? 0.9 : /Dusche/.test(e.n) ? 1.1 : /Badewanne/.test(e.n) ? 0.7 : /Waschmaschine|Wasch-Trocken/.test(e.n) ? 1.05 : 0.55;
+          const kw = weg(sFall + 0.35, s - 0.08, 0.3, 0.3, 0.05); kw.push(v3(kw[kw.length - 1].x, hv, kw[kw.length - 1].z));
+          leitung(kw, 0.012, '#2f7fe0', 'wasser');
+          if (!/WC|Waschmaschine|Geschirr/.test(e.n)) { const ww = weg(sFall + 0.42, s + 0.08, 0.38, 0.38, 0.05); ww.push(v3(ww[ww.length - 1].x, hv, ww[ww.length - 1].z)); leitung(ww, 0.012, '#e0452f', 'wasser'); }
+        }
+      });
+    }
+    // Elektro: Verteiler/Schalter neben der Tür, Kabel in der oberen Installationszone
+    const sTuer = 2 * B + D + D / 2 - tz, sSchalter = sTuer + tb / 2 + 0.2;
+    const dosen = [];
+    const dose = (q, h) => { const d = mesh(new T.CylinderGeometry(0.034, 0.034, 0.02, 16), mat('#6b8a5a')); d.position.set(q.x, h, q.z); d.visible = false; sc.add(d); dosen.push(d); };
+    const ks = weg(sSchalter, sSchalter, 2.2, 1.05, 0.02); ks.unshift(umfang(sSchalter, 0.02).setY(2.2)); leitung([umfang(sSchalter, 0.02).setY(2.2), umfang(sSchalter, 0.02).setY(1.05)], 0.008, '#d9d9d9', 'elektro'); dose(umfang(sSchalter, 0.025), 1.05);
+    strom.forEach((e, i) => {
+      const [cx, cz] = mitte(e), s = sVon(cx, cz) + (i % 2 ? 0.15 : -0.15), h = E_H(e.n);
+      const w = weg(sSchalter, s, 2.2, 2.2, 0.02); w.push(umfang(s, 0.02).setY(h));
+      leitung(w, 0.008, '#d9d9d9', 'elektro'); dose(umfang(s, 0.025), h);
+    });
+
+    /* Lüftung: Lüfter gegenüber der Tür, Abluft DN 100 nach draußen */
+    const luefter = plan.find((e) => /Lüfter/.test(e.n));
+    let lPos = null;
+    if (luefter) {
+      const [lx, lz] = mitte(luefter); lPos = v3(lx, 2.15, lz);
+      const aussen = lx > 0 ? 1 : -1, xw = aussen * (B / 2 + dk + 0.45);
+      leitung([v3(lx - aussen * 0.02, 2.15, lz), v3(aussen * (B / 2 + dk + 0.05), 2.13, lz), v3(xw, 2.1, lz)], 0.05, '#eeeeee', 'lueftung');
+      const mk = mesh(new T.BoxGeometry(0.06, 0.2, 0.2), mat('#cfcfcf')); mk.position.set(xw + aussen * 0.03, 2.1, lz); mk.visible = false; sc.add(mk); leitungen.push({ segs: [{ me: mk, von: 0.99, len: 0.0001, knoten: true }], gesamt: 1, phase: 'lueftung' });
+      const lg = mesh(new T.BoxGeometry(0.04, 0.2, 0.2), mat('#f4f4f4')); lg.position.copy(lPos); lg.position.x -= aussen * 0.03; lg.visible = false; sc.add(lg); leitungen.push({ segs: [{ me: lg, von: 0, len: 0.0001, knoten: true }], gesamt: 1, phase: 'lueftung' });
+    }
+
+    /* Trockenbau: Vorwand vor Sanitär-Wänden, TV-Kasten, Decken-Voute bei indirektem Licht */
+    const trocken = [];
+    const gk = mat('#e4e2dc', { roughness: 0.9 }), cw = mat('#b9bec4', { metalness: 0.7, roughness: 0.35 });
+    function vorwand(s1, s2, h, tiefe) {
+      const a = Math.min(s1, s2), b = Math.max(s1, s2);
+      for (let s = a; s <= b + 0.001; s += 0.625) { const q = umfang(s, tiefe / 2); const st = mesh(new T.BoxGeometry(0.05, h, 0.05), cw); st.position.set(q.x, h / 2, q.z); st.visible = false; sc.add(st); trocken.push({ me: st, art: 'profil' }); }
+      // Platten je Wandabschnitt
+      const teile = weg(a, b, 0, 0, tiefe);
+      for (let i = 0; i < teile.length - 1; i++) {
+        const q1 = teile[i], q2 = teile[i + 1], len = q1.distanceTo(q2); if (len < 0.05) continue;
+        const pl = mesh(new T.BoxGeometry(len, h, 0.0125), gk); pl.position.set((q1.x + q2.x) / 2, h / 2, (q1.z + q2.z) / 2);
+        pl.rotation.y = Math.abs(q1.x - q2.x) > Math.abs(q1.z - q2.z) ? 0 : Math.PI / 2; pl.visible = false; sc.add(pl); trocken.push({ me: pl, art: 'platte' });
+      }
+    }
+    if (san.length) {
+      const ss = san.map((e) => sVon(...mitte(e))).concat([sFall + 0.12]);
+      const hoch = san.some((e) => /WC/.test(e.n)) ? 1.15 : 1.0;
+      let a = Math.min(...ss) - 0.3, b = Math.max(...ss) + 0.3; if (b - a > P / 2) { a = Math.max(...ss) - 0.3; b = Math.min(...ss) + P + 0.3; }
+      vorwand(a, b, hoch, 0.16);
+    }
+    const leds = [];
+    const tv = plan.find((e) => /Fernseher/.test(e.n));
+    if (tv) { // TV-Kasten aus Trockenbau mit LED-Rahmen
+      const [cx, cz] = mitte(tv), s = sVon(cx, cz), q = umfang(s, 0.07), w = tv.w / 100 + 0.6, h = tv.h / 100 + 0.55, y0 = 0.95;
+      const dreh = (s > B && s < B + D) || s > 2 * B + D ? Math.PI / 2 : 0;
+      [[w, 0.08, 0, y0 + h], [w, 0.08, 0, y0 - 0.04], [0.08, h, -w / 2, y0 + h / 2], [0.08, h, w / 2, y0 + h / 2]].forEach(([bw, bh, ox, oy]) => {
+        const g = mesh(new T.BoxGeometry(bw, bh, 0.12), gk); g.position.set(q.x + (dreh ? 0 : ox), oy, q.z + (dreh ? ox : 0)); g.rotation.y = dreh; g.visible = false; sc.add(g); trocken.push({ me: g, art: 'platte' });
+      });
+      const led = mesh(new T.BoxGeometry(w - 0.2, h - 0.2, 0.01), mat('#ffd27a', { emissive: new T.Color('#ffb84a'), emissiveIntensity: 0 })); led.position.set(q.x, y0 + h / 2 - 0.02, q.z); led.rotation.y = dreh; led.translateZ(-0.03); sc.add(led); leds.push(led);
+    }
+    if (plan.some((e) => /Indirektes Licht|LED-Profil/.test(e.n))) { // umlaufende Voute
+      const vs = mat('#efede8', { roughness: 0.9 });
+      [[B, 0.3, 0, -D / 2 + 0.15, 0], [B, 0.3, 0, D / 2 - 0.15, 0], [D, 0.3, -B / 2 + 0.15, 0, 1], [D, 0.3, B / 2 - 0.15, 0, 1]].forEach(([l, b, x, z, r]) => {
+        const v = mesh(new T.BoxGeometry(r ? b : l, 0.12, r ? l : b), vs); v.position.set(x, HW - 0.2, z); v.visible = false; sc.add(v); trocken.push({ me: v, art: 'platte' });
+        const led = mesh(new T.BoxGeometry(r ? 0.02 : l * 0.95, 0.02, r ? l * 0.95 : 0.02), mat('#ffd27a', { emissive: new T.Color('#ffb84a'), emissiveIntensity: 0 }));
+        led.position.set(x + (r ? (x < 0 ? 0.16 : -0.16) : 0), HW - 0.13, z + (r ? 0 : (z < 0 ? 0.16 : -0.16))); sc.add(led); leds.push(led);
+      });
+    }
+
+    /* Möbel/Objekte für die Montage */
+    const objekte = plan.map((e) => {
+      const farbe = stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa');
+      const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8'); const [cx, cz] = mitte(e);
+      g.position.set(cx, 3, cz); g.rotation.y = -(e.rot || 0) * Math.PI / 180; g.visible = false; sc.add(g); return { g, n: e.n };
+    });
+
+    { const tg = tuerGruppe(p, B); tg.position.y = 3; tg.visible = false; sc.add(tg); objekte.unshift({ g: tg, n: ['bad', 'gaestewc', 'waschraum'].includes(p.raum) && p.tuer !== 'keine' ? 'Tür mit Lüftungsgitter' : 'Tür', tuer: true }); }
+    /* Zeitplan */
+    const PH = [
+      { id: 'grundriss', n: 'Grundriss', d: 3.5, txt: grundrissUrl ? 'Dein Grundriss' : 'Grundriss ' + zahl(B) + ' × ' + zahl(D) + ' m' },
+      { id: 'durchbruch', n: 'Durchbruch', d: 3, txt: 'Durchbruch ' + Math.round(tb * 100) + ' × ' + Math.round(th * 100) + ' cm – Statik prüfen!' },
+      { id: 'abwasser', n: 'Abwasser', d: san.length ? 4.5 : 0, txt: 'Abwasser: ' + infoAb.slice(0, 3).join(', ') + ' · 2 % Gefälle' },
+      { id: 'wasser', n: 'Wasser', d: san.length ? 3.2 : 0, txt: 'Kalt- und Warmwasser bis zu den Eckventilen' },
+      { id: 'elektro', n: 'Elektro', d: 3.8, txt: 'Kabel in der Zone oben, senkrecht zu ' + (dosen.length) + ' Dosen' },
+      { id: 'lueftung', n: 'Lüftung', d: luefter ? 3.2 : 0, txt: 'Lüfter gegenüber der Tür · Abluft DN 100 nach draußen' + (['bad', 'gaestewc', 'waschraum'].includes(p.raum) ? ' · Tür mit Lüftungsgitter' : '') },
+      { id: 'trocken', n: 'Trockenbau', d: trocken.length ? 4.5 : 0, txt: (san.length ? 'Vorwand' : '') + (tv ? (san.length ? ', ' : '') + 'TV-Kasten' : '') + (leds.length > 1 ? ', Decken-Voute' : '') + ': erst Profile, dann Platten' },
+      { id: 'putz', n: nass ? 'Fliesen' : 'Wände & Boden', d: 3.5, txt: nass ? 'Abdichten, fliesen, Boden verlegen' : 'Verputzen, streichen, Boden verlegen' },
+      { id: 'montage', n: 'Montage', d: Math.max(2, objekte.length * 0.55 + 0.8), txt: 'Einbauen' },
+      { id: 'fertig', n: 'Fertig', d: 5, txt: 'Fertig – so sieht es aus' }
+    ].filter((x) => x.d > 0);
+    let t0 = 0; PH.forEach((x) => { x.a = t0; t0 += x.d; x.e = t0; }); const GES = t0;
+    const ph = (id) => PH.find((x) => x.id === id) || { a: -1, e: -1, d: 1 };
+    const k = (id, t) => { const x = ph(id); return x.a < 0 ? 1 : Math.max(0, Math.min(1, (t - x.a) / x.d)); };
+    document.getElementById('bau-phasen').innerHTML = PH.map((x, i) => `<button class="chip" data-i="${i}">${i + 1}. ${x.n}</button>`).join('');
+
+    /* Kamera je Phase */
+    const ziel = { grundriss: [v3(0.01, gr * 1.9, 0.6), v3(0, 0, 0)], durchbruch: [v3(B * 0.35, 1.6, D * 0.35), v3(-B / 2, 1.0, tz)],
+      abwasser: [v3(-fallPos.x * 0.35, 1.5, -fallPos.z * 0.35), v3(fallPos.x * 0.85, 0.4, fallPos.z * 0.85)], wasser: [v3(-fallPos.x * 0.3, 1.3, -fallPos.z * 0.3), v3(fallPos.x * 0.8, 0.5, fallPos.z * 0.8)],
+      elektro: [v3(B * 0.3, 1.8, D * 0.4), v3(-B / 2, 1.6, -0.3)], lueftung: lPos ? [v3(-B * 0.25, 1.75, lPos.z * 0.5), v3(B / 2, 2.0, lPos.z)] : [v3(0, 2, 0), v3(0, 1, 0)], trocken: [v3(-fallPos.x * 0.3 + 0.2, 1.6, -fallPos.z * 0.3 + 0.2), tv ? umfang(sVon(...mitte(tv)), 0).setY(1.3) : v3(fallPos.x * 0.7, 0.8, fallPos.z * 0.7)],
+      putz: [v3(B * 0.9, gr * 1.2, D * 1.1), v3(0, 0.6, 0)], montage: [v3(B * 0.8, gr * 1.15, D * 1.2), v3(0, 0.7, 0)], fertig: [v3(B * 0.9, gr * 1.1, D * 1.25), v3(0, 0.8, 0)] };
+    const camPos = v3(B, gr * 2, D * 1.5), camZiel = v3(0, 0, 0);
+
+    let start = performance.now(), pause = false, pauseT = 0, laeuft = true, rec = null;
+    function zeit() { return pause ? pauseT : (performance.now() - start) / 1000; }
+    function schrift(text, y, groesse, farbe, fett) {
+      ctx.font = (fett ? '600 ' : '500 ') + groesse * pr + 'px Jost, Arial, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const w = Math.min(aus.width - 16 * pr, ctx.measureText(text).width + 26 * pr), hh = groesse * pr * 1.75, x = aus.width / 2 - w / 2, yy = y * pr - hh / 2, r = hh / 2;
+      ctx.fillStyle = 'rgba(0,0,0,0.62)'; ctx.beginPath(); ctx.moveTo(x + r, yy); ctx.arcTo(x + w, yy, x + w, yy + hh, r); ctx.arcTo(x + w, yy + hh, x, yy + hh, r); ctx.arcTo(x, yy + hh, x, yy, r); ctx.arcTo(x, yy, x + w, yy, r); ctx.fill();
+      ctx.fillStyle = farbe || '#fff'; ctx.fillText(text, aus.width / 2, y * pr + 1, aus.width - 30 * pr);
+    }
+    let aktIdx = -1;
+    function frame() {
+      if (!laeuft || !aus.isConnected) { laeuft = false; return; }
+      let t = zeit(); if (t > GES + 1.5) { if (rec && rec.state === 'recording') rec.stop(); start = performance.now(); t = 0; }
+      const akt = PH.find((x) => t >= x.a && t < x.e) || PH[PH.length - 1];
+      const ai = PH.indexOf(akt);
+      if (ai !== aktIdx) { aktIdx = ai; document.querySelectorAll('#bau-phasen .chip').forEach((c, i) => c.classList.toggle('an', i === ai)); }
+      // Wände wachsen hoch
+      const kw = leicht((t - 1.2) / 2.2); waende.forEach((w) => { w.scale.y = Math.max(0.001, kw); w.position.y = HW * kw / 2; }); stopfen.scale.y = Math.max(0.001, kw); stopfen.position.y = th * kw / 2;
+      // Durchbruch
+      const kd = k('durchbruch', t);
+      if (t >= ph('durchbruch').a) { stopfen.visible = kd < 0.55; stopfen.position.x = -B / 2 - dk / 2 + leicht(kd / 0.5) * 0.25; stopfen.material.opacity = 1;
+        staub.forEach((st) => { const tt = (t - ph('durchbruch').a) - 0.6; st.visible = tt > 0 && tt < 1.8; if (st.visible) { st.position.copy(st.userData.p0).add(st.userData.v.clone().multiplyScalar(tt)); st.position.y -= 2.5 * tt * tt; st.position.y = Math.max(0.03, st.position.y); } }); }
+      else stopfen.visible = true;
+      // Leitungen wachsen
+      leitungen.forEach((l) => { const kk = k(l.phase, t), lauf = kk * l.gesamt; l.segs.forEach((sg) => { if (sg.knoten) { sg.me.visible = lauf >= sg.von; return; } const f = Math.max(0, Math.min(1, (lauf - sg.von) / sg.len)); sg.me.visible = f > 0; sg.me.scale.y = Math.max(0.0001, f); }); });
+      dosen.forEach((d, i) => { d.visible = k('elektro', t) > (i + 1) / (dosen.length + 1); });
+      // Trockenbau: Profile, dann Platten
+      const kt = k('trocken', t), profile = trocken.filter((x) => x.art === 'profil'), platten = trocken.filter((x) => x.art === 'platte');
+      profile.forEach((x, i) => { x.me.visible = kt > (i / Math.max(1, profile.length)) * 0.45; });
+      platten.forEach((x, i) => { x.me.visible = kt > 0.5 + (i / Math.max(1, platten.length)) * 0.45; });
+      // Putz/Fliesen/Boden
+      const kp = k('putz', t); wandMat.color.set('#a39e97').lerp(zielWand, leicht(kp)); belag.scale.x = Math.max(0.0001, leicht(kp)); belag.position.x = -B / 2 + B * leicht(kp) / 2;
+      leitungen.forEach((l) => { if (l.phase === 'elektro' && kp > 0.4) l.segs.forEach((sg) => { sg.me.visible = false; }); });
+      // Montage
+      const pm = ph('montage');
+      objekte.forEach((o, i) => { const kk = (t - pm.a - i * 0.55) / 0.7; o.g.visible = kk > 0; o.g.position.y = 3 * (1 - huepfen(kk)); });
+      // Licht
+      const kl = k('fertig', t); leds.forEach((l) => { l.visible = kl > 0; l.material.emissiveIntensity = 1.3 * leicht(kl / 0.4); }); raumLicht.intensity = 0.5 * leicht(kl / 0.5); hemi.intensity = 0.55 + 0.2 * kl;
+      // Kamera
+      const zz = ziel[akt.id] || ziel.fertig; let zp = zz[0].clone();
+      if (akt.id === 'fertig' || akt.id === 'montage') { const a = (t - akt.a) * 0.25 + 0.7, rr = Math.hypot(zp.x, zp.z); zp = v3(Math.sin(a) * rr, zp.y, Math.cos(a) * rr); }
+      camPos.lerp(zp, 0.035); camZiel.lerp(zz[1], 0.05); cam.position.copy(camPos); cam.lookAt(camZiel);
+      // Puppenhaus-Schnitt: Wände zwischen Kamera und Raum ausblenden
+      waende.forEach((w) => { const nn = w.userData.n, rand = nn.x ? B / 2 : D / 2; w.visible = (nn.x ? camPos.x * nn.x : camPos.z * nn.z) < rand + 0.05; });
+      stopfen.visible = stopfen.visible && camPos.x > -B / 2 - 0.05;
+      trocken.forEach((x) => { const q = x.me.position; if (x.me.visible && ((camPos.x > B / 2 && q.x > B / 2 - 0.3) || (camPos.x < -B / 2 && q.x < -B / 2 + 0.3) || (camPos.z > D / 2 && q.z > D / 2 - 0.3) || (camPos.z < -D / 2 && q.z < -D / 2 + 0.3))) x.me.visible = false; });
+      renderer.render(sc, cam);
+      ctx.drawImage(renderer.domElement, 0, 0, aus.width, aus.height);
+      schrift((ai + 1) + '/' + PH.length + ' · ' + akt.n, 26, 12, '#ffd27a', true);
+      let txt = akt.txt; if (akt.id === 'montage') { const o = objekte.filter((o, i) => t - pm.a - i * 0.55 > 0).pop(); if (o) txt = 'Einbauen: ' + o.n; }
+      schrift(txt, H - 34, 13.5, akt.id === 'fertig' ? '#9fd69f' : '#fff', true);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(14 * pr, 46 * pr, aus.width - 28 * pr, 3 * pr);
+      ctx.fillStyle = '#fff'; ctx.fillRect(14 * pr, 46 * pr, (aus.width - 28 * pr) * Math.min(1, t / GES), 3 * pr);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+    film = { stopp() { laeuft = false; renderer.dispose(); } };
+    document.getElementById('film-zu').onclick = () => { m.classList.remove('an'); film.stopp(); film = null; };
+    document.getElementById('film-neu').onclick = () => { start = performance.now(); pause = false; document.getElementById('film-pause').textContent = 'Pause'; };
+    document.getElementById('film-pause').onclick = (e) => { if (pause) { start = performance.now() - pauseT * 1000; pause = false; e.target.textContent = 'Pause'; } else { pauseT = zeit(); pause = true; e.target.textContent = 'Weiter'; } };
+    document.getElementById('bau-phasen').onclick = (e) => { const c = e.target.closest('[data-i]'); if (!c) return; const x = PH[+c.dataset.i]; start = performance.now() - (x.a + 0.01) * 1000; if (pause) pauseT = x.a + x.d * 0.9; };
+    document.getElementById('film-rec').onclick = () => {
+      const info = document.getElementById('film-info');
+      if (!aus.captureStream || !window.MediaRecorder) { info.textContent = 'Video speichern kann dieser Browser nicht. Tipp: Bildschirmaufnahme.'; return; }
+      const typ = ['video/mp4', 'video/webm;codecs=vp9', 'video/webm'].find((x) => MediaRecorder.isTypeSupported(x)) || '';
+      const st = []; rec = new MediaRecorder(aus.captureStream(30), typ ? { mimeType: typ, videoBitsPerSecond: 6e6 } : undefined);
+      rec.ondataavailable = (ev) => ev.data.size && st.push(ev.data);
+      rec.onstop = () => { const blob = new Blob(st, { type: rec.mimeType || 'video/webm' }); rec = null; const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'joum4d-bauablauf.' + (/mp4/.test(blob.type) ? 'mp4' : 'webm'); document.body.appendChild(a); a.click(); a.remove(); info.textContent = 'Video fertig. Falls kein Download startet: Bildschirmaufnahme nutzen.'; };
+      start = performance.now(); pause = false; rec.start(); info.textContent = 'Aufnahme läuft … ' + Math.round(GES) + ' Sekunden';
+    };
   };
 })();
