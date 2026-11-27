@@ -191,7 +191,57 @@ AKT.diktatWand = (d) => diktieren((t) => {
   aendern(() => { const p = projekt(d.id); p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: z[0], h: z[1] }); }, 'Wand diktiert');
   toast('Wand ' + zahl(z[0]) + ' × ' + zahl(z[1]) + ' m hinzugefügt');
 });
-AKT.lidar = () => info('LiDAR-Scan und Messen per Foto + Zollstock sind für die Store-App (iOS/Android) vorgesehen. In dieser Web-Version bitte Maße eintippen oder diktieren (Mikrofon).');
+AKT.lidar = () => info('Der LiDAR-Scan (3D-Scanner im iPhone Pro/iPad Pro) kommt mit der Store-App. Bis dahin: „Foto + Zollstock“ nutzen, Maße eintippen oder diktieren.');
+
+/* ---------- Messen per Foto + Zollstock ----------
+   1. Foto mit Zollstock (oder bekanntem Maß) auf derselben Wand/Ebene
+   2. Enden des Zollstocks antippen + dessen Länge angeben → Maßstab
+   3. Anfang und Ende der Strecke antippen → Länge */
+const FM = { url: null, w: 0, h: 0, ref: [], refLen: 1, strecke: [], ergebnisse: [] };
+EIN.fmFoto = (v, d, el) => { const f = el.files[0]; if (!f) return; bildVerkleinern(f, 1400, (url) => { const img = new Image(); img.onload = () => { Object.assign(FM, { url, w: img.width, h: img.height, ref: [], strecke: [], ergebnisse: [] }); render(); }; img.src = url; }); };
+EIN.fmRefLen = (v) => { FM.refLen = parseZahl(v) || 1; render(); };
+AKT.fmTipp = (d, el, e) => {
+  const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * FM.w, y = (e.clientY - r.top) / r.height * FM.h;
+  if (FM.ref.length < 2) FM.ref.push([x, y]); else { if (FM.strecke.length >= 2) FM.strecke = []; FM.strecke.push([x, y]); }
+  render();
+};
+AKT.fmNeu = (d) => { if (d.was === 'ref') { FM.ref = []; FM.strecke = []; } else FM.strecke = []; render(); };
+function fmLaenge() { if (FM.ref.length < 2 || FM.strecke.length < 2) return null; const pxRef = Math.hypot(FM.ref[1][0] - FM.ref[0][0], FM.ref[1][1] - FM.ref[0][1]); if (pxRef < 5) return null; return Math.hypot(FM.strecke[1][0] - FM.strecke[0][0], FM.strecke[1][1] - FM.strecke[0][1]) / pxRef * FM.refLen; }
+AKT.fmUebernehmen = (d) => {
+  const l = fmLaenge(); if (!l) return; const p = projekt(d.id);
+  aendern(() => {
+    if (d.als === 'wand') p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: Math.round(l * 100) / 100, h: p.waende[0] ? p.waende[0].h : 2.5 });
+    else if (d.als === 'hoehe') p.waende.forEach((w) => { w.h = Math.round(l * 100) / 100; });
+    else if (d.als === 'breite') p.breite = Math.round(l * 100);
+    else if (d.als === 'tiefe') p.tiefe = Math.round(l * 100);
+    else p.aussparungen.push({ n: 'Öffnung', b: Math.round(l * 100) / 100, h: 1, anz: 1 });
+  }, 'Foto-Messung übernommen');
+  FM.ergebnisse.push(zahl(l) + ' m → ' + { wand: 'neue Wand', hoehe: 'Raumhöhe', breite: 'Raumbreite', tiefe: 'Raumtiefe', oeffnung: 'Öffnung' }[d.als]);
+  FM.strecke = []; toast('Übernommen: ' + zahl(l) + ' m'); render();
+};
+route('fotomessen', (id) => {
+  const p = projekt(id);
+  if (!p) return kopf('Kein Projekt', '', '#/projekte');
+  const l = fmLaenge(), schritt = !FM.url ? 0 : FM.ref.length < 2 ? 1 : FM.strecke.length < 2 ? 2 : 3;
+  const punkt = ([x, y], f) => `<circle cx="${x}" cy="${y}" r="${FM.w / 70}" fill="${f}" stroke="#000" stroke-width="${FM.w / 400}"/>`;
+  const linie = (a, f) => a.length === 2 ? `<line x1="${a[0][0]}" y1="${a[0][1]}" x2="${a[1][0]}" y2="${a[1][1]}" stroke="${f}" stroke-width="${FM.w / 180}" stroke-linecap="round"/>` : '';
+  const text = ['Foto mit Zollstock aufnehmen oder auswählen', 'Tippe auf Anfang und Ende des Zollstocks (gelb)', 'Tippe auf Anfang und Ende der Strecke, die du messen willst (blau)', 'Fertig – übernehmen oder neue Strecke antippen'][schritt];
+  return kopf('Foto + Zollstock', p.name, '#/messen/' + p.id) + `<div class="inhalt">
+    <div class="hinweis klein"><b>So geht’s:</b> Zollstock (oder ein bekanntes Maß, z. B. Türbreite) flach an dieselbe Wand halten, die du messen willst, und gerade von vorn fotografieren. Je gerader das Foto, desto genauer.</div>
+    ${dateiKnopf(FM.url ? 'Anderes Foto' : 'Foto aufnehmen oder auswählen', 'fmFoto', {}, { icon: ICON.kamera, klasse: FM.url ? '' : 'hell voll' })}
+    ${FM.url ? `<div class="karte"><b>Schritt ${schritt}/3:</b> ${text}</div>
+      <div class="fm-buehne" data-akt="fmTipp"><img src="${FM.url}" alt="Foto zum Messen" draggable="false">
+        <svg viewBox="0 0 ${FM.w} ${FM.h}" aria-hidden="true">${linie(FM.ref, '#ffd27a')}${FM.ref.map((q) => punkt(q, '#ffd27a')).join('')}${linie(FM.strecke, '#7ab8ff')}${FM.strecke.map((q) => punkt(q, '#7ab8ff')).join('')}</svg></div>
+      <label class="feld">Länge des Zollstock-Stücks / bekannten Maßes (m)<input inputmode="decimal" value="${zahl(FM.refLen)}" data-ein="fmRefLen"></label>
+      ${l ? `<section class="karte summe"><div><span class="klein">Gemessen</span><b>${zahl(l)} m</b></div><div><span class="klein">in cm</span><b>${Math.round(l * 100)}</b></div><div><span class="klein">Genauigkeit</span><b>± ca. 3 %</b></div></section>
+        <div class="klein">Übernehmen als …</div>
+        <div class="chips" style="flex-wrap:wrap">${[['wand', 'Neue Wand'], ['hoehe', 'Raumhöhe'], ['breite', 'Raumbreite'], ['tiefe', 'Raumtiefe'], ['oeffnung', 'Tür/Fenster-Breite']].map(([a, n]) => `<button class="chip" data-akt="fmUebernehmen" data-id="${p.id}" data-als="${a}">${n}</button>`).join('')}</div>` : ''}
+      <div class="zeile"><button class="btn klein-btn" data-akt="fmNeu" data-was="strecke">Strecke neu</button><button class="btn klein-btn" data-akt="fmNeu" data-was="ref">Zollstock neu</button></div>
+      ${FM.ergebnisse.length ? `<div class="karte klein">${FM.ergebnisse.map(esc).join('<br>')}</div>` : ''}` : ''}
+    <a class="btn voll" href="#/messen/${p.id}">Zurück zu den Maßen</a>
+    <p class="klein">Genauigkeit hängt vom Foto ab: Zollstock und Strecke müssen auf derselben Ebene liegen, das Foto möglichst gerade. Für Bestellmaße (Fenster, Küche) immer zusätzlich mit dem Zollstock nachmessen.</p>
+  </div>`;
+});
 
 route('messen', (id) => {
   const p = projekt(id);
@@ -207,7 +257,7 @@ route('messen', (id) => {
   return kopf('Messen', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
     <div class="raster3">
       <button class="kachel" data-akt="lidar">${ICON.scan}<span>LiDAR-Scan</span></button>
-      <button class="kachel" data-akt="lidar">${ICON.kamera}<span>Foto + Zollstock</span></button>
+      <a class="kachel" href="#/fotomessen/${p.id}">${ICON.kamera}<span>Foto + Zollstock</span></a>
       <button class="kachel" data-akt="diktatWand" data-id="${p.id}">${ICON.mikro}<span>Diktieren</span></button>
     </div>
     ${grundrissKnoepfe(p)}
@@ -309,12 +359,10 @@ AKT.bau4D = (d) => {
   if (!p.plan.length) toast('Beispiel-Einrichtung – im Planer kannst du deine eigene festlegen');
   try { zeigeBau4D(v, STILE.find((s) => s.id === p.stil), p.grundriss); } catch (e) { console.error(e); info('Der 4D-Bauablauf braucht WebGL – auf diesem Gerät nicht verfügbar.'); }
 };
-AKT.grundrissHoch = (d) => { document.getElementById('grundrissDatei').click(); };
 EIN.grundrissDatei = (v, d, el) => { const f = el.files[0]; if (!f) return; bildVerkleinern(f, 1200, (url) => { aendern(() => { projekt(d.id).grundriss = url; }, 'Grundriss hochgeladen'); toast('Grundriss gespeichert – erscheint im Planer und im 4D-Bauablauf'); }); };
 AKT.grundrissWeg = (d) => aendern(() => { delete projekt(d.id).grundriss; });
 function grundrissKnoepfe(p) {
-  return `<input type="file" accept="image/*" capture="environment" hidden id="grundrissDatei" data-ein="grundrissDatei" data-id="${p.id}">
-    <div class="zeile"><button class="btn" data-akt="grundrissHoch" data-id="${p.id}">${ICON.kamera} ${p.grundriss ? 'Grundriss ändern' : 'Grundriss hochladen'}</button>${p.grundriss ? `<button class="btn klein-btn rot-text" data-akt="grundrissWeg" data-id="${p.id}">Entfernen</button>` : ''}</div>`;
+  return `<div class="zeile">${dateiKnopf(p.grundriss ? 'Grundriss ändern' : 'Grundriss hochladen', 'grundrissDatei', { id: p.id }, { icon: ICON.kamera })}${p.grundriss ? `<button class="btn klein-btn rot-text" data-akt="grundrissWeg" data-id="${p.id}">Entfernen</button>` : ''}</div>`;
 }
 
 function planer3D(p) {
@@ -429,7 +477,6 @@ AKT.ideenUebernehmen = (d) => {
 };
 AKT.stil = (d) => aendern(() => { projekt(d.id).stil = d.s; }, 'Stil gewählt');
 AKT.fotoreal = () => info('Fotorealistische Bilder brauchen ein KI-Bildmodell auf dem Server (Kosten pro Bild). Das wird mit dem Server-Modul freigeschaltet – z. B. begrenzt im Abo.');
-AKT.skizzeFoto = (d) => document.getElementById('skizzeFoto').click();
 EIN.skizzeFoto = (v, d, el) => {
   const f = el.files[0]; if (!f) return;
   bildVerkleinern(f, 900, (url) => { projekt(d.id).skizze = url; speichern(); render(); toast('Skizze gespeichert. Notizen bitte unten eintippen oder diktieren.'); });
@@ -442,8 +489,7 @@ route('ideen', (id) => {
   return kopf('KI-Ideen', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
     <h3>Aus Skizze oder Notizen</h3>
     ${p.skizze ? `<img class="skizze" src="${p.skizze}" alt="Skizze">` : ''}
-    <input type="file" accept="image/*" capture="environment" id="skizzeFoto" hidden data-ein="skizzeFoto" data-id="${p.id}">
-    <div class="zeile"><button class="btn" data-akt="skizzeFoto" data-id="${p.id}">${p.skizze ? 'Neue Skizze' : 'Skizze/Foto aufnehmen'}</button><button class="btn" data-akt="ideenDiktat" data-id="${p.id}">${ICON.mikro} Diktieren</button></div>
+    <div class="zeile">${dateiKnopf(p.skizze ? 'Neue Skizze' : 'Skizze/Foto aufnehmen', 'skizzeFoto', { id: p.id }, { icon: ICON.kamera })}<button class="btn" data-akt="ideenDiktat" data-id="${p.id}">${ICON.mikro} Diktieren</button></div>
     <label class="feld">Notizen aus der Skizze (mit Komma trennen, „?“ = unsicher)<textarea rows="2" placeholder="z. B. Licht Decke, TV, Bild?, Sofa" data-ein="ideenNotiz" data-id="${p.id}">${esc(p.skizzeNotiz || '')}</textarea></label>
     ${ideenErkannt.length ? `<div class="karte">${ideenErkannt.map((x, i) => `<div class="kat-zeile zeile"><span style="flex:1">„${esc(x.wort)}“ → ${x.k ? '<b>' + esc(x.k[0]) + '</b>' : x.falsch ? '<span class="rot-text klein">' + esc(x.falsch) + '</span>' : '<span class="klein">nicht erkannt</span>'}${x.unsicher ? ' <span class="badge gelb">bestätigen?</span>' : ''}</span>${x.k ? `<button class="chip ${x.ok ? 'an' : ''}" data-akt="ideeOk" data-i="${i}">${x.ok ? '✓ übernehmen' : 'übernehmen?'}</button>` : ''}</div>`).join('')}
       <button class="btn hell voll" data-akt="ideenUebernehmen" data-id="${p.id}">Im Planer anpassen</button></div>` : ''}

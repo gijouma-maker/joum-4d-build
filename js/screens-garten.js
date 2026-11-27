@@ -183,7 +183,6 @@ route('einkauf', () => {
 /* ---------- Finanzen ---------- */
 const FQ = { betrag: '', haendler: '', datum: new Date().toISOString().slice(0, 10), kategorie: 'Material', lohn: '', zahlung: 'Überweisung', nutzung: 'selbst', projekt: '', foto: null };
 EIN.fq = (v, d) => { FQ[d.k] = v; if (d.k === 'kategorie' || d.k === 'nutzung') render(); };
-AKT.fqFoto = () => document.getElementById('fqFoto').click();
 EIN.fqFotoDatei = (v, d, el) => { const f = el.files[0]; if (f) bildVerkleinern(f, 900, (u) => { FQ.foto = u; render(); toast('Beleg fotografiert – Betrag und Händler bitte prüfen/eintragen.'); }); };
 AKT.fqSpeichern = () => {
   if (!parseZahl(FQ.betrag)) { toast('Bitte Betrag eintragen'); return; }
@@ -210,9 +209,8 @@ route('finanzen', (_, q) => {
   return kopf('Finanzen', 'Quittungen & Steuer ' + jahr, '#/') + `<div class="inhalt">
     <section class="karte summe"><div><span class="klein">Ausgaben ${jahr}</span><b>${euro(summe)}</b></div><div><span class="klein">§ 35a ca.</span><b>${euro(erm)}</b></div><div><span class="klein">Werbungskosten</span><b>${euro(wk)}</b></div></section>
     <h3>Quittung erfassen</h3>
-    <input type="file" accept="image/*" capture="environment" id="fqFoto" hidden data-ein="fqFotoDatei">
     ${FQ.foto ? `<img class="skizze" src="${FQ.foto}" alt="Beleg">` : ''}
-    <button class="btn voll" data-akt="fqFoto">${ICON.kamera} Beleg fotografieren</button>
+    ${dateiKnopf('Beleg fotografieren oder auswählen', 'fqFotoDatei', {}, { icon: ICON.kamera, klasse: 'voll' })}
     <div class="raster2">
       <label class="feld">Betrag (€)<input inputmode="decimal" value="${esc(FQ.betrag)}" data-ein="fq" data-k="betrag"></label>
       <label class="feld">Datum<input type="date" value="${esc(FQ.datum)}" data-ein="fq" data-k="datum"></label>

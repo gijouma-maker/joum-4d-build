@@ -151,6 +151,14 @@ function kopf(titel, unter, zurueck) {
     <div><div class="unter">${esc(unter || '')}</div><h1>${esc(titel)}</h1></div></header>`;
 }
 
+/* Foto-/Datei-Knopf: echtes Auswahlfeld im Knopf (funktioniert auch in eingebetteten Vorschauen und Handy-Browsern).
+   Ohne capture → das Handy bietet „Kamera oder Galerie“ an. */
+function dateiKnopf(text, ein, daten, opt) {
+  opt = opt || {};
+  const attr = Object.entries(daten || {}).map(([k, v]) => `data-${k}="${esc(v)}"`).join(' ');
+  return `<label class="btn datei-knopf ${opt.klasse || ''}">${opt.icon || ''}<span>${esc(text)}</span><input type="file" class="datei-versteckt" accept="${opt.accept || 'image/*'}" ${opt.mehrere ? 'multiple' : ''} data-ein="${ein}" ${attr}></label>`;
+}
+
 /* Spracheingabe (Web Speech API, wo verfügbar) */
 function diktieren(ziel) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -202,6 +210,7 @@ function render() {
 
 function navGruppe(n) {
   if (['start'].includes(n)) return 'start';
+  if (n === 'fotomessen') return 'projekte';
   if (['projekte', 'raum', 'projekt', 'messen', 'planer', 'ideen', 'anleitung', 'einkauf'].includes(n)) return 'projekte';
   if (['garten'].includes(n)) return 'garten';
   if (['markt', 'handwerker'].includes(n)) return 'markt';

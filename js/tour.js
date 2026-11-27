@@ -5,7 +5,6 @@
 const TOUR = { bilder: [], titel: 'Unser Projekt', format: '9:16', dauer: 15, laeuft: null, rec: null };
 const TOUR_NAMEN = ['Außen', 'Eingang', 'Wohnzimmer', 'Küche', 'Bad', 'Schlafzimmer', 'Flur', 'Garten', 'Kinderzimmer', 'Büro'];
 
-AKT.tourFotos = () => document.getElementById('tourDatei').click();
 EIN.tourDatei = (v, d, el) => {
   const dateien = [...el.files].slice(0, 20 - TOUR.bilder.length);
   let offen = dateien.length;
@@ -149,8 +148,7 @@ route('tour', () => {
   nachRender(() => { const c = document.getElementById('tourLeinwand'); if (c && TOUR.bilder.length) { c.width = W; c.height = H; tourZeichnen(c.getContext('2d'), W, H, 1.3, TOUR.bilder, TOUR.titel, Math.max(TOUR.dauer, TOUR.bilder.length * 1.4 + 2.8)); } });
   return kopf('Kino-Tour', 'Aus Fotos ein 15-Sekunden-Video', '#/mehr') + `<div class="inhalt">
     <p class="klein">Fotos vom Haus und den Räumen auswählen (z. B. außen → Eingang → innen → Schlafzimmer → Flur → Küche). Die App macht daraus Kamerafahrten mit Übergängen in Fahrtrichtung, Beschriftung und Abschlusskarte – wie bei Immobilien-Reels.</p>
-    <input type="file" accept="image/*" multiple hidden id="tourDatei" data-ein="tourDatei">
-    <div class="zeile"><button class="btn hell" data-akt="tourFotos">${ICON.kamera} Fotos auswählen</button>${mitPlan.length ? '<button class="btn" data-akt="tourBeispiel">3D-Räume als Bilder</button>' : ''}</div>
+    <div class="zeile">${dateiKnopf('Fotos auswählen', 'tourDatei', {}, { icon: ICON.kamera, klasse: 'hell', mehrere: true })}${mitPlan.length ? '<button class="btn" data-akt="tourBeispiel">3D-Räume als Bilder</button>' : ''}</div>
     ${mitPlan.length ? `<div class="chips">${mitPlan.map((p) => `<button class="chip" data-akt="tour3D" data-id="${p.id}">+ 3D ${esc((raum(p.raum) || {}).name || p.name)}</button>`).join('')}</div>` : ''}
     <div class="tour-vorschau" style="aspect-ratio:${W}/${H}">${TOUR.bilder.length ? `<canvas id="tourLeinwand" aria-label="Vorschau der Kino-Tour"></canvas>` : '<div class="klein mitte" style="padding:40px 16px">Noch keine Bilder. Füge Fotos hinzu – oder Bilder aus deinen 3D-Räumen.</div>'}</div>
     ${TOUR.bilder.length ? `<div class="zeile"><button class="btn hell" data-akt="tourAbspielen">▶ Abspielen</button><button class="btn" data-akt="tourVideo">Als Video speichern</button></div>` : ''}

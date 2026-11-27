@@ -159,13 +159,14 @@ route('handwerker', () => {
 /* ---------- Produkt-Preisvergleich ---------- */
 const PV = { name: '', ziel: '' };
 EIN.pv = (v, d) => { PV[d.k] = v; render(); };
-AKT.pvFoto = () => info('Produkterkennung aus Fotos braucht das KI-Server-Modul. Bitte Produktname oder Modellnummer eintippen.');
+EIN.pvFotoDatei = (v, d, el) => { const f = el.files[0]; if (!f) return; bildVerkleinern(f, 900, (url) => { PV.foto = url; render(); toast('Foto gespeichert – bitte Name oder Modellnummer vom Etikett eintippen'); }); };
 AKT.wecker = () => { if (!PV.name || !parseZahl(PV.ziel)) { toast('Produkt und Zielpreis eintragen'); return; } aendern((s) => s.preiswecker.push({ id: uid(), n: PV.name, ziel: parseZahl(PV.ziel), zeit: new Date().toISOString() })); toast('Preiswecker gespeichert'); };
 AKT.weckerWeg = (d) => aendern((s) => { s.preiswecker = s.preiswecker.filter((x) => x.id !== d.id); });
 route('preise', () => {
   const q = encodeURIComponent(PV.name);
   return kopf('Produkt-Preisvergleich', 'Gesamtpreis inkl. Versand', '#/einkauf') + `<div class="inhalt">
-    <button class="btn voll" data-akt="pvFoto">${ICON.kamera} Produkt fotografieren</button>
+    ${dateiKnopf(PV.foto ? 'Anderes Foto' : 'Produkt fotografieren', 'pvFotoDatei', {}, { icon: ICON.kamera, klasse: 'voll' })}
+    ${PV.foto ? `<img class="skizze" src="${PV.foto}" alt="Produktfoto"><p class="klein">Automatische Erkennung aus dem Foto kommt mit dem KI-Server – bis dahin Name oder Modellnummer vom Etikett eintippen.</p>` : ''}
     <label class="feld">Produkt / Modell<input value="${esc(PV.name)}" placeholder="z. B. Bosch Akkuschrauber GSR 18V" data-ein="pv" data-k="name"></label>
     ${PV.name ? `<div class="karte"><a class="liste-zeile" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=shop&q=${q}">Preise vergleichen (Google Shopping) ›</a>
       <a class="liste-zeile" target="_blank" rel="noopener" href="https://www.idealo.de/preisvergleich/MainSearchProductCategory.html?q=${q}">Preise vergleichen (idealo) ›</a>
@@ -212,7 +213,6 @@ AKT.pkHerstellen = (d) => aendern((s) => {
   s.papierkorb = s.papierkorb.filter((x) => x.id !== d.id);
 }, 'Aus Papierkorb wiederhergestellt');
 AKT.exportJson = () => ausgeben('joum4d-sicherung-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ app: 'Joum 4D Build', export: new Date().toISOString(), daten: S }, null, 1), 'application/json');
-AKT.importJson = () => document.getElementById('importDatei').click();
 EIN.importDatei = (v, d, el) => {
   const f = el.files[0]; if (!f) return;
   const fr = new FileReader();
@@ -231,8 +231,7 @@ route('sicherung', () => {
   return kopf('Datensicherung & Versionen', 'Offline-first', '#/mehr') + `<div class="inhalt">
     <section class="karte"><div class="zeile"><span class="punkt gross-punkt"></span><div style="flex:1"><b>Auf diesem Gerät gesichert</b><div class="klein">Zuletzt: ${zeit(S.gesichert)} · belegt ca. ${zahl(groesse / 1024, 0)} KB</div></div></div>
       <div class="zeile" style="margin-top:8px"><span class="punkt grau"></span><div class="klein" style="flex:1">Cloud-Sync (EU-Server, verschlüsselt, Backups am zweiten Standort) – wird mit dem Server-Modul aktiviert.</div></div></section>
-    <div class="zeile"><button class="btn hell" data-akt="exportJson">Sicherung exportieren</button><button class="btn" data-akt="importJson">Sicherung einspielen</button></div>
-    <input type="file" accept="application/json,.json" id="importDatei" hidden data-ein="importDatei">
+    <div class="zeile"><button class="btn hell" data-akt="exportJson">Sicherung exportieren</button>${dateiKnopf('Sicherung einspielen', 'importDatei', {}, { accept: 'application/json,.json' })}</div>
     <p class="klein">Neues Handy? Hier exportieren, Datei aufs neue Gerät, dort „Sicherung einspielen“. Projekte zusätzlich als PDF über „Drucken“.</p>
     <h3>Versionsverlauf (${v.length})</h3>
     ${v.map((x, i) => `<div class="liste-zeile"><span style="flex:1">${zeit(x.zeit)}<span class="klein block">${esc(x.grund)} · ${(x.daten.projekte || []).length} Projekte</span></span><button class="chip" data-akt="versionHerstellen" data-i="${i}">Wiederherstellen</button></div>`).join('') || '<p class="klein">Noch keine Versionen.</p>'}
