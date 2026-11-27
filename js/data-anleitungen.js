@@ -173,3 +173,24 @@ const ANLEITUNGEN = {
   gartenweg: { t: 'Gartenweg anlegen', b: 'garten', wer: 'Selbst', dauer: '1–2 Tage', einheit: 'm²', kosten: [25, 90],
     schritte: [['Verlauf', 'Mit Schnur/Sand markieren, Breite 60–120 cm.'], ['Ausheben', '20–30 cm.'], ['Randsteine', 'In Beton setzen.'], ['Schotter + Splitt', 'Verdichten, abziehen.'], ['Belag', 'Pflaster, Platten oder Kies mit Wabengitter.']], material: [['Pflaster/Platten', 1.05, 'm²', ''], ['Schotter', 0.2, 'm³', ''], ['Randstein', 1.5, 'm', '']], tipps: [], warn: [] }
 };
+
+/* Zeitaufwand (Richtwerte) für FORTGESCHRITTENE Heimwerker: [feste Stunden, Stunden je Einheit]
+   Anfänger ≈ ×1,7 · Profi ≈ ×0,55 (eine Fachkraft, mit Profi-Werkzeug). Wartezeiten zusätzlich. */
+const ZEITEN = {
+  streichen: [3, 0.15], tapezieren: [2, 0.3], laminat: [2, 0.35], parkett: [3, 0.6], fliesen: [3, 1.2], bad_abdichten: [2, 0.3],
+  silikon: [0.5, 0.15], vorsatzschale: [2, 0.8], trockenbau_wand: [2, 1.0], kueche_montage: [16, 0], treppe_renovieren: [3, 1.2],
+  keller_feuchte: [4, 0.8], kellerdecke_daemmen: [2, 0.3], heizung_tausch: [24, 0], dach_daemmen_innen: [3, 0.8], oberste_decke: [2, 0.15],
+  dachfenster: [0, 8], dach: [16, 1.2], fenster: [0, 4], haustuer: [0, 8], fassade: [8, 0.6], regenrinne: [3, 0.4], vordach: [0, 4],
+  balkon_abdichten: [4, 1.0], garagentor: [0, 8], carport: [0, 20], bodenbeschichtung: [3, 0.2], terrasse: [6, 1.5], zaun: [3, 0.8],
+  hochbeet: [0, 6], teich: [6, 1.5], gartenhaus: [0, 20], bewaesserung: [3, 0.05], gartenlicht: [3, 2], gartenweg: [4, 1.2],
+  bad_luefter: [0, 6], tuer_lueftung: [0, 1.5]
+};
+/* Wartezeiten, die die Arbeit unterbrechen: [Text, Stunden] */
+const WARTEN = {
+  streichen: ['Trocknen zwischen den Anstrichen', 6], tapezieren: ['Kleister/Untergrund trocknen', 12], fliesen: ['Fliesenkleber aushärten vor dem Verfugen', 24],
+  bad_abdichten: ['Abdichtung 2× trocknen lassen', 24], vorsatzschale: ['Spachtel trocknen, zweiter Gang', 12], trockenbau_wand: ['Spachtel trocknen, zweiter Gang', 12],
+  keller_feuchte: ['Sanierputz trocknen (je cm Dicke ca. 1 Tag)', 72], bodenbeschichtung: ['Epoxid aushärten', 24], balkon_abdichten: ['Abdichtung aushärten', 24],
+  terrasse: ['Fundamente/Splittbett setzen', 24], zaun: ['Beton der Pfosten aushärten', 48], carport: ['Fundamente aushärten', 72], gartenhaus: ['Fundament aushärten', 72],
+  parkett: ['Kleber/Öl trocknen', 24], fassade: ['Putz/Anstrich trocknen', 24], laminat: ['Dielen akklimatisieren (vorher)', 48]
+};
+const NUR_PROFI = ['heizung_tausch', 'dach'];

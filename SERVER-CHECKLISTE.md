@@ -100,7 +100,7 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
-- (leer)
+- ☐ Zeitaufwand (Anfänger/Fortgeschritten/Profi): Richtwerte später mit echten Zeiten aus abgeschlossenen Aufträgen verbessern (Server sammelt anonymisiert: Arbeit, Menge, Stunden). Handwerker-Angebote können den Profi-Aufwand übernehmen.
 
 ## Erledigt in der App (ohne Server)
 - ☑ Offline-App mit allen Räumen, Anleitungen, 3D, 4D-Bauablauf, Kino-Tour, Vorher/Nachher-Film

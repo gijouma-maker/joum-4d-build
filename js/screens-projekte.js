@@ -152,6 +152,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/installation?raum=${p.raum}">${ICON.tropfen}<span>Wasser & Elektro</span></a>
       <a class="kachel" href="#/finanzen?p=${p.id}">${ICON.beleg}<span>Quittung</span></a>
     </div>
+    ${a ? zeitKarte(p.anleitung, p.menge || 1, false) : ''}
     ${kiKarte(p)}
     ${r.sicherheit && r.sicherheit.length ? `<div class="hinweis rot"><b>Sicherheit</b><ul>${r.sicherheit.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${a && a.warn.length ? `<div class="hinweis gelb">${a.warn.map(esc).join('<br>')}</div>` : ''}
@@ -458,6 +459,58 @@ function bildVerkleinern(datei, max, fertig) {
   fr.readAsDataURL(datei);
 }
 
+/* ---------- Zeitaufwand & Zeitplan ---------- */
+const STUFEN = [['anfaenger', 'Anfänger', 1.7, 5], ['fortgeschritten', 'Fortgeschritten', 1, 6], ['profi', 'Profi', 0.55, 8]]; // Faktor, Std./Arbeitstag
+function zeitSchaetzung(anlId, menge) {
+  const z = ZEITEN[anlId]; if (!z) return null;
+  const basis = z[0] + z[1] * (menge || 1);
+  return STUFEN.map(([id, n, f, tag]) => { const h = Math.max(0.5, Math.round(basis * f * 2) / 2); return { id, n, h, tage: Math.max(1, Math.ceil(h / tag - 0.15)), tag }; });
+}
+EIN.koennen = (v) => aendern((s) => { s.einstellungen.koennen = v; });
+AKT.koennen = (d) => aendern((s) => { s.einstellungen.koennen = d.v; });
+function zeitKarte(anlId, menge, mitPlan) {
+  const a = ANLEITUNGEN[anlId], z = zeitSchaetzung(anlId, menge); if (!a || !z) return '';
+  const ich = S.einstellungen.koennen || 'fortgeschritten', w = WARTEN[anlId], profiPflicht = NUR_PROFI.includes(anlId) || a.wer === 'Fachbetrieb';
+  const meine = z.find((x) => x.id === ich);
+  let plan = '';
+  if (mitPlan && a.schritte.length) {
+    // Schritte gleichmäßig auf die Arbeitstage verteilen, Wartezeit nach dem passenden Schritt
+    const tage = meine.tage, je = a.schritte.length / tage, zeilen = [];
+    let wIdx = -1; if (w) { wIdx = a.schritte.findIndex((s) => /verfug|zweite[rn]? |zweiter anstrich|q2|versiegeln|elemente montieren|wände, dach|trocknen lassen|platten legen|belag|eindecken|bepflanzen \+ füllen|wanne/i.test(s[0])); }
+    let tag = 1;
+    for (let t = 0; t < tage; t++) {
+      const von = Math.round(t * je), bis = Math.max(von + 1, Math.round((t + 1) * je));
+      const s = a.schritte.slice(von, Math.min(bis, a.schritte.length)); if (!s.length) continue;
+      // Wartezeit mitten im Tag: Tag teilen (vorher – warten – nachher)
+      if (w && w[1] >= 12 && wIdx > von && wIdx < Math.min(bis, a.schritte.length)) {
+        const wt = Math.ceil(w[1] / 24);
+        zeilen.push(`<div class="plan-tag"><b>Tag ${tag++}</b><span>${a.schritte.slice(von, wIdx).map((x) => esc(x[0])).join(' · ')}</span></div>`);
+        zeilen.push(`<div class="plan-tag warte"><b>${wt > 1 ? wt + ' Tage' : 'über Nacht'}</b><span>Warten: ${esc(w[0])}</span></div>`);
+        if (w[1] >= 24) tag += wt - 1 > 0 ? wt - 1 : 0;
+        zeilen.push(`<div class="plan-tag"><b>Tag ${tag++}</b><span>${a.schritte.slice(wIdx, Math.min(bis, a.schritte.length)).map((x) => esc(x[0])).join(' · ')}</span></div>`);
+        continue;
+      }
+      // Wartezeit kommt VOR dem Schritt, der darauf wartet (z. B. Verfugen nach dem Aushärten)
+      if (w && w[1] >= 12 && wIdx > 0 && wIdx >= von && wIdx < bis) {
+        const wt = Math.ceil(w[1] / 24);
+        zeilen.push(`<div class="plan-tag warte"><b>${wt > 1 ? wt + ' Tage' : 'über Nacht'}</b><span>Warten: ${esc(w[0])}</span></div>`);
+        if (w[1] >= 24) tag += wt - 1 > 0 ? wt - 1 : 0;
+      }
+      const txt = s.map((x, i) => esc(x[0]) + (i === 0 && von > 0 && Math.round((t - 1) * je) <= von - 1 && Math.max(Math.round((t - 1) * je) + 1, Math.round(t * je)) > von ? '' : '')).join(' · ');
+      const weiter = zeilen.length && zeilen[zeilen.length - 1].includes('>' + esc(s[0][0]));
+      zeilen.push(`<div class="plan-tag"><b>Tag ${tag++}</b><span>${txt}${weiter ? ' (weiter)' : ''}</span></div>`);
+    }
+    if (w && w[1] >= 12 && wIdx < 0) { const wt = Math.ceil(w[1] / 24); zeilen.push(`<div class="plan-tag warte"><b>${wt > 1 ? wt + ' Tage' : 'über Nacht'}</b><span>Danach warten: ${esc(w[0])}</span></div>`); }
+    plan = `<h3>Zeitplan für dich (${esc(meine.n)})</h3>${zeilen.join('')}`;
+  }
+  return `<section class="karte"><div class="zeile"><b style="flex:1">Zeitaufwand${menge ? ' für ' + zahl(menge) + ' ' + a.einheit : ''}</b><span class="klein">Richtwerte</span></div>
+    <div class="zeit-raster">${z.map((x) => `<button class="zeit-stufe ${x.id === ich ? 'an' : ''}" data-akt="koennen" data-v="${x.id}"><span class="klein">${x.n}</span><b>${zahl(x.h, 1)} Std.</b><span class="klein">${x.tage} ${x.tage === 1 ? 'Arbeitstag' : 'Arbeitstage'} à ${x.tag} Std.</span></button>`).join('')}</div>
+    ${w ? `<div class="klein">+ Wartezeit: ${esc(w[0])} (ca. ${w[1] >= 24 ? Math.round(w[1] / 24) + ' Tag(e)' : w[1] + ' Std.'})</div>` : ''}
+    ${profiPflicht ? '<div class="hinweis rot klein">Diese Arbeit gehört zum Fachbetrieb – die Anfänger-/Fortgeschrittenen-Zeit gilt nur für Vorarbeiten und Mithilfe.</div>' : ''}
+    <div class="klein">Tippe auf deine Stufe – der Zeitplan passt sich an. Profi = eine Fachkraft mit Profi-Werkzeug; Einkauf, Anfahrt und Aufräumen nicht eingerechnet.</div>
+    ${plan}</section>`;
+}
+
 /* ---------- Anleitung ---------- */
 AKT.schritt = (d) => aendern(() => { const p = projekt(d.p); p.schritte[d.i] = !p.schritte[d.i]; }, null);
 AKT.anlMaterial = (d) => {
@@ -476,6 +529,7 @@ route('anleitung', (id, q) => {
   return kopf(a.t, p ? p.name : 'Fach-Anleitung', p ? '#/projekt/' + p.id : '#/projekte') + `<div class="inhalt">
     <div class="zeile">${werBadge(a.wer)}<span class="klein">${esc(a.dauer)}</span><span class="klein">Richtwert ${euro(a.kosten[0])}–${euro(a.kosten[1])} je ${a.einheit}</span></div>
     ${a.warn.length ? `<div class="hinweis rot">${a.warn.map(esc).join('<br>')}</div>` : ''}
+    ${zeitKarte(id, p ? menge : (a.einheit === 'm²' ? 10 : a.einheit === 'm' ? 10 : 1), true)}
     ${schichten}
     <h3>Schritte${p ? ' · ' + fortschritt(p) + ' %' : ''}</h3>
     ${a.schritte.map((s, i) => `<${p ? 'button data-akt="schritt" data-p="' + p.id + '" data-i="' + i + '"' : 'div'} class="schritt ${p && p.schritte[i] ? 'fertig' : ''}">

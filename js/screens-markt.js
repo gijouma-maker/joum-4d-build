@@ -112,7 +112,7 @@ route('markt', (_, q) => {
     if (a) return kopf('Auftrag', p.name, '#/projekt/' + p.id) + `<div class="inhalt">${auftragAnsicht(a)}</div>`;
     const r = preisrahmen(p);
     return kopf('Auftrag vergeben', p.name, '#/projekt/' + p.id) + `<div class="inhalt">
-      <section class="karte"><div class="unter">KI-Preisrahmen</div><b class="gross-titel">${euro(r[0])} – ${euro(r[1])}</b><div class="klein">aus Menge ${zahl(p.menge || 1)} ${(ANLEITUNGEN[p.anleitung] || {}).einheit || ''} und regionalen Richtwerten</div></section>
+      <section class="karte"><div class="unter">KI-Preisrahmen</div><b class="gross-titel">${euro(r[0])} – ${euro(r[1])}</b><div class="klein">aus Menge ${zahl(p.menge || 1)} ${(ANLEITUNGEN[p.anleitung] || {}).einheit || ''} und regionalen Richtwerten</div>${(() => { const z = zeitSchaetzung(p.anleitung, p.menge || 1); return z ? `<div class="klein">Geschätzter Profi-Aufwand: <b>${zahl(z[2].h, 1)} Std.</b> (ca. ${z[2].tage} Arbeitstag${z[2].tage > 1 ? 'e' : ''})</div>` : ''; })()}</section>
       <label class="feld">Was soll gemacht werden?<textarea rows="3" data-ein="mv" data-k="beschr">${esc(MV.beschr)}</textarea></label>
       <label class="feld">Dein Festpreis (€)<input inputmode="decimal" placeholder="${Math.round((r[0] + r[1]) / 2)}" value="${esc(MV.preis)}" data-ein="mv" data-k="preis"></label>
       <div class="raster2"><label class="feld">Umkreis<select data-ein="mv" data-k="radius"><option ${MV.radius === '50' ? 'selected' : ''}>50</option><option ${MV.radius === '70' ? 'selected' : ''}>70</option></select></label>
@@ -271,6 +271,7 @@ EIN.einst = (v, d) => aendern((s) => { s.einstellungen[d.k] = v; });
 route('mehr', () => kopf('Mehr', 'Joum 4D Build') + `<div class="inhalt">
   ${[['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/tour', 'Kino-Tour (Video aus Fotos)'], ['#/installation', 'Wasser, Abwasser & Elektro'], ['#/installation?tab=werkzeug', 'Werkzeug kaufen & leihen'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
   <h3>Einstellungen</h3>
+  <label class="feld">Mein Können (für Zeitpläne)<select data-ein="koennen">${[['anfaenger', 'Anfänger'], ['fortgeschritten', 'Fortgeschritten'], ['profi', 'Profi / Handwerker']].map(([v, n]) => `<option value="${v}" ${(S.einstellungen.koennen || 'fortgeschritten') === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.gross ? 'checked' : ''} data-ein="einst" data-k="gross"> Großschrift</label>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.kontrast ? 'checked' : ''} data-ein="einst" data-k="kontrast"> Hoher Kontrast</label>
   <h3>Über</h3>
