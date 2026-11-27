@@ -87,6 +87,36 @@ function toast(text) {
   clearTimeout(toast.tm); toast.tm = setTimeout(() => t.classList.remove('an'), 2600);
 }
 
+/* Eigene Dialoge (statt alert/confirm – funktionieren auch in eingebetteten Vorschauen) */
+function dialog(text, knoepfe) {
+  const d = document.getElementById('dialog');
+  d.querySelector('.d-text').textContent = text;
+  const leiste = d.querySelector('.d-knoepfe'); leiste.innerHTML = '';
+  knoepfe.forEach(([name, fn, hell]) => {
+    const b = document.createElement('button');
+    b.className = 'btn' + (hell ? ' hell' : ''); b.textContent = name;
+    b.onclick = () => { d.classList.remove('an'); if (fn) fn(); };
+    leiste.appendChild(b);
+  });
+  d.classList.add('an');
+  leiste.lastChild.focus();
+}
+function info(text) { dialog(text, [['OK', null, true]]); }
+function frage(text, beiJa) { dialog(text, [['Abbrechen', null], ['Ja', beiJa, true]]); }
+
+/* Datei herunterladen; falls der Browser das blockiert, zum Kopieren anbieten */
+function ausgeben(dateiname, inhalt, typ) {
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([inhalt], { type: typ })); a.download = dateiname;
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch (e) {}
+  dialog('Falls kein Download startet: Inhalt kopieren und in eine Datei „' + dateiname + '“ einfügen.', [
+    ['Schließen', null],
+    ['Kopieren', () => { try { navigator.clipboard.writeText(inhalt).then(() => toast('Kopiert'), () => toast('Kopieren nicht erlaubt')); } catch (e) { toast('Kopieren nicht erlaubt'); } }, true]
+  ]);
+}
+
 function statusZeigen() {
   const el = document.getElementById('status');
   if (!el) return;

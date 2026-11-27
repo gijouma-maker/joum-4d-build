@@ -182,7 +182,7 @@ AKT.fqWeg = (d) => aendern((s) => { inPapierkorb('quittung', s.quittungen.find((
 AKT.fqCsv = () => {
   const zeilen = [['Datum', 'Händler', 'Projekt', 'Kategorie', 'Betrag', 'Lohnanteil', 'Zahlung', 'Nutzung']].concat(S.quittungen.map((q) => [q.datum, q.haendler, (projekt(q.projekt) || {}).name || '', q.kategorie, zahl(q.betrag), zahl(q.lohn), q.zahlung, q.nutzung]));
   const csv = zeilen.map((z) => z.map((x) => '"' + String(x == null ? '' : x).replace(/"/g, '""') + '"').join(';')).join('\n');
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'joum4d-ausgaben.csv'; a.click();
+  ausgeben('joum4d-ausgaben.csv', '\ufeff' + csv, 'text/csv');
 };
 
 route('finanzen', (_, q) => {

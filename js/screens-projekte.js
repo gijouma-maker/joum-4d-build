@@ -44,9 +44,10 @@ AKT.neuesProjekt = (d) => {
 };
 AKT.aktiv = (d) => { S.aktivId = d.id; speichern(); location.hash = '#/projekt/' + d.id; };
 AKT.projektLoeschen = (d) => {
-  if (!confirm('Projekt in den Papierkorb legen? (30 Tage wiederherstellbar)')) return;
-  aendern((s) => { const p = projekt(d.id); inPapierkorb('projekt', p); s.projekte = s.projekte.filter((x) => x.id !== d.id); if (s.aktivId === d.id) s.aktivId = null; }, 'Projekt gelöscht');
-  location.hash = '#/projekte';
+  frage('Projekt in den Papierkorb legen? (30 Tage wiederherstellbar)', () => {
+    aendern((s) => { const p = projekt(d.id); inPapierkorb('projekt', p); s.projekte = s.projekte.filter((x) => x.id !== d.id); if (s.aktivId === d.id) s.aktivId = null; }, 'Projekt gelöscht');
+    location.hash = '#/projekte';
+  });
 };
 
 /* ---------- Start ---------- */
@@ -181,7 +182,7 @@ AKT.diktatWand = (d) => diktieren((t) => {
   aendern(() => { const p = projekt(d.id); p.waende.push({ n: 'Wand ' + String.fromCharCode(65 + p.waende.length), l: z[0], h: z[1] }); }, 'Wand diktiert');
   toast('Wand ' + zahl(z[0]) + ' × ' + zahl(z[1]) + ' m hinzugefügt');
 });
-AKT.lidar = () => alert('LiDAR-Scan und Messen per Foto + Zollstock sind für die Store-App (iOS/Android) vorgesehen. In dieser Web-Version bitte Maße eintippen oder diktieren (Mikrofon).');
+AKT.lidar = () => info('LiDAR-Scan und Messen per Foto + Zollstock sind für die Store-App (iOS/Android) vorgesehen. In dieser Web-Version bitte Maße eintippen oder diktieren (Mikrofon).');
 
 route('messen', (id) => {
   const p = projekt(id);
@@ -344,7 +345,7 @@ AKT.ideenUebernehmen = (d) => {
   location.hash = '#/planer/' + p.id;
 };
 AKT.stil = (d) => aendern(() => { projekt(d.id).stil = d.s; }, 'Stil gewählt');
-AKT.fotoreal = () => alert('Fotorealistische Bilder brauchen ein KI-Bildmodell auf dem Server (Kosten pro Bild). Das wird mit dem Server-Modul freigeschaltet – z. B. begrenzt im Abo.');
+AKT.fotoreal = () => info('Fotorealistische Bilder brauchen ein KI-Bildmodell auf dem Server (Kosten pro Bild). Das wird mit dem Server-Modul freigeschaltet – z. B. begrenzt im Abo.');
 AKT.skizzeFoto = (d) => document.getElementById('skizzeFoto').click();
 EIN.skizzeFoto = (v, d, el) => {
   const f = el.files[0]; if (!f) return;

@@ -154,3 +154,9 @@ div.schritt { cursor: default; }
   .karte, .hinweis, .schritt { border-color: #999; background: #fff; color: #000; }
   .klein, h3, .unter { color: #444; }
 }
+
+/* Dialog */
+.dialog { position: fixed; inset: 0; z-index: 40; display: none; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.6); padding: 16px; }
+.dialog.an { display: flex; }
+.d-box { width: 100%; max-width: 480px; background: #151515; border: 1px solid #333; border-radius: 22px; padding: 18px; margin-bottom: env(safe-area-inset-bottom); }
+.d-text { margin: 0 0 8px; line-height: 1.45; }

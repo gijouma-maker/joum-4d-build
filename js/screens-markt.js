@@ -28,8 +28,8 @@ AKT.ausschreiben = (d) => {
   toast('Auftrag an Handwerker im Umkreis ' + MV.radius + ' km gesendet');
 };
 AKT.hwWaehlen = (d) => {
-  if (!confirm('Diesen Handwerker beauftragen? Die Vermittlungsgebühr fällt jetzt an, danach werden die Kontaktdaten freigegeben. Der Betrag geht in Etappen auf das Treuhandkonto.')) return;
-  aendern((s) => { const a = s.auftraege.find((x) => x.id === d.a); a.handwerker = d.hw; a.status = 'beauftragt'; if (d.preis) a.preis = +d.preis; }, 'Handwerker beauftragt');
+  frage('Diesen Handwerker beauftragen? Die Vermittlungsgebühr fällt jetzt an, danach werden die Kontaktdaten freigegeben. Der Betrag geht in Etappen auf das Treuhandkonto.', () =>
+    aendern((s) => { const a = s.auftraege.find((x) => x.id === d.a); a.handwerker = d.hw; a.status = 'beauftragt'; if (d.preis) a.preis = +d.preis; }, 'Handwerker beauftragt'));
 };
 const NT = { text: '', betrag: '' };
 EIN.nt = (v, d) => { NT[d.k] = v; };
@@ -52,7 +52,7 @@ AKT.etappeFrei = (d) => aendern((s) => {
   if (a.etappen.every((e) => e.frei)) a.status = 'abgeschlossen';
 }, 'Etappe freigegeben');
 AKT.bewerten = (d) => aendern((s) => { s.auftraege.find((x) => x.id === d.a).sterne = +d.n; });
-AKT.auftragWeg = (d) => { if (confirm('Auftrag zurückziehen?')) aendern((s) => { inPapierkorb('auftrag', s.auftraege.find((x) => x.id === d.a)); s.auftraege = s.auftraege.filter((x) => x.id !== d.a); }); };
+AKT.auftragWeg = (d) => { frage('Auftrag zurückziehen?', () => aendern((s) => { inPapierkorb('auftrag', s.auftraege.find((x) => x.id === d.a)); s.auftraege = s.auftraege.filter((x) => x.id !== d.a); })); };
 
 function unterschriftBinden() {
   const c = document.getElementById('unterschrift'); if (!c) return;
@@ -159,7 +159,7 @@ route('handwerker', () => {
 /* ---------- Produkt-Preisvergleich ---------- */
 const PV = { name: '', ziel: '' };
 EIN.pv = (v, d) => { PV[d.k] = v; render(); };
-AKT.pvFoto = () => alert('Produkterkennung aus Fotos braucht das KI-Server-Modul. Bitte Produktname oder Modellnummer eintippen.');
+AKT.pvFoto = () => info('Produkterkennung aus Fotos braucht das KI-Server-Modul. Bitte Produktname oder Modellnummer eintippen.');
 AKT.wecker = () => { if (!PV.name || !parseZahl(PV.ziel)) { toast('Produkt und Zielpreis eintragen'); return; } aendern((s) => s.preiswecker.push({ id: uid(), n: PV.name, ziel: parseZahl(PV.ziel), zeit: new Date().toISOString() })); toast('Preiswecker gespeichert'); };
 AKT.weckerWeg = (d) => aendern((s) => { s.preiswecker = s.preiswecker.filter((x) => x.id !== d.id); });
 route('preise', () => {
@@ -200,21 +200,18 @@ route('community', () => kopf('Community', 'Tipps & Vorschläge', '#/mehr') + `<
 /* ---------- Datensicherung & Versionen ---------- */
 AKT.versionHerstellen = (d) => {
   const v = versionenLesen()[+d.i];
-  if (!v || !confirm('Stand vom ' + zeit(v.zeit) + ' wiederherstellen? Der aktuelle Stand wird vorher als Version gesichert.')) return;
-  versionAnlegen('Vor Wiederherstellung');
-  S = migrieren(JSON.parse(JSON.stringify(v.daten))); speichern(); render(); toast('Wiederhergestellt');
+  if (!v) return;
+  frage('Stand vom ' + zeit(v.zeit) + ' wiederherstellen? Der aktuelle Stand wird vorher als Version gesichert.', () => {
+    versionAnlegen('Vor Wiederherstellung');
+    S = migrieren(JSON.parse(JSON.stringify(v.daten))); speichern(); render(); toast('Wiederhergestellt');
+  });
 };
 AKT.pkHerstellen = (d) => aendern((s) => {
   const e = s.papierkorb.find((x) => x.id === d.id); if (!e) return;
   ({ projekt: s.projekte, einkauf: s.einkauf, quittung: s.quittungen, auftrag: s.auftraege })[e.typ].unshift(e.obj);
   s.papierkorb = s.papierkorb.filter((x) => x.id !== d.id);
 }, 'Aus Papierkorb wiederhergestellt');
-AKT.exportJson = () => {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'Joum 4D Build', export: new Date().toISOString(), daten: S }, null, 1)], { type: 'application/json' }));
-  a.download = 'joum4d-sicherung-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
-  toast('Sicherung heruntergeladen');
-};
+AKT.exportJson = () => ausgeben('joum4d-sicherung-' + new Date().toISOString().slice(0, 10) + '.json', JSON.stringify({ app: 'Joum 4D Build', export: new Date().toISOString(), daten: S }, null, 1), 'application/json');
 AKT.importJson = () => document.getElementById('importDatei').click();
 EIN.importDatei = (v, d, el) => {
   const f = el.files[0]; if (!f) return;
@@ -223,9 +220,8 @@ EIN.importDatei = (v, d, el) => {
     try {
       const j = JSON.parse(fr.result); const daten = j.daten || j;
       if (!daten.projekte) throw new Error('keine Joum-Daten');
-      if (!confirm('Sicherung einspielen? Der aktuelle Stand wird vorher als Version gesichert.')) return;
-      versionAnlegen('Vor Import'); S = migrieren(daten); speichern('Import'); render(); toast('Sicherung eingespielt');
-    } catch (e) { alert('Datei konnte nicht gelesen werden: ' + e.message); }
+      frage('Sicherung einspielen? Der aktuelle Stand wird vorher als Version gesichert.', () => { versionAnlegen('Vor Import'); S = migrieren(daten); speichern('Import'); render(); toast('Sicherung eingespielt'); });
+    } catch (e) { info('Datei konnte nicht gelesen werden: ' + e.message); }
   };
   fr.readAsText(f);
 };
