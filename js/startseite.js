@@ -22,23 +22,23 @@ route('start', () => {
       <div class="zeile wrap">${['Bad renovieren', 'Wand streichen', 'Boden verlegen', 'Garten planen'].map((t) => `<button class="chip" data-akt="startBeispiel" data-t="${t}">${t}</button>`).join('')}</div>
     </section>
     <div class="drei-wege">
-      <a class="weg-karte" href="#/projekte">${ICON.wuerfel}<b>Raum planen</b><span>Foto, Skizze oder Maße → Vorschläge in 3D mit Kosten</span></a>
-      <a class="weg-karte" href="#/arbeiten">${ICON.werkzeug || ICON.hand}<b>Reparieren & Renovieren</b><span>Schritt-für-Schritt-Anleitungen mit Material und Zeit</span></a>
-      <a class="weg-karte" href="#/markt">${ICON.hand}<b>Profi holen${auftr ? ' · ' + auftr : ''}</b><span>Handwerker in der Nähe – Festpreis, sicher bezahlt</span></a>
+      <a class="weg-karte" href="#/projekte">${ICON.hausStift}<b>Raum planen</b><span>Foto, Skizze oder Maße → Vorschläge in 3D mit Kosten</span></a>
+      <a class="weg-karte" href="#/arbeiten">${ICON.hammer}<b>Reparieren & Renovieren</b><span>Schritt-für-Schritt-Anleitungen mit Material und Zeit</span></a>
+      <a class="weg-karte" href="#/markt">${ICON.urkunde}<b>Profi holen${auftr ? ' · ' + auftr : ''}</b><span>Handwerker in der Nähe – Festpreis, sicher bezahlt</span></a>
     </div>
     ${projektKarte}
     <details class="karte mehr-werkzeuge"><summary>Mehr Werkzeuge</summary>
       <div class="raster4">
-        <a class="kachel" href="#/assistent">${ICON.mikro}<span>Assistent</span></a>
+        <a class="kachel" href="#/assistent">${ICON.funkeln}<span>Assistent</span></a>
         <a class="kachel" href="#/garten">${ICON.baum}<span>Garten 4D</span></a>
-        <a class="kachel" href="#/haus">🏠<span>Haus außen</span></a>
-        <a class="kachel" href="#/wohnung">${ICON.wuerfel}<span>Ganze Wohnung</span></a>
+        <a class="kachel" href="#/haus">${ICON.haus}<span>Haus außen</span></a>
+        <a class="kachel" href="#/wohnung">${ICON.grundriss}<span>Ganze Wohnung</span></a>
         <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
         <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
-        <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>
-        <a class="kachel" href="#/bauamt">${ICON.beleg}<span>Bauamt-Check</span></a>
-        <a class="kachel" href="#/treppe">${ICON.wuerfel}<span>Treppe</span></a>
-        <a class="kachel" href="#/bauteile">${ICON.wuerfel}<span>Bauteile 3D</span></a>
+        <a class="kachel" href="#/finanzen">${ICON.euro}<span>Finanzen</span></a>
+        <a class="kachel" href="#/bauamt">${ICON.paragraf}<span>Bauamt-Check</span></a>
+        <a class="kachel" href="#/treppe">${ICON.treppe}<span>Treppe</span></a>
+        <a class="kachel" href="#/bauteile">${ICON.wuerfel3d}<span>Bauteile 3D</span></a>
         <a class="kachel" href="#/tour">${ICON.film}<span>Kino-Tour</span></a>
         <a class="kachel" href="#/installation">${ICON.tropfen}<span>Wasser & Strom</span></a>
       </div>

@@ -75,9 +75,9 @@ route('start', () => {
       <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
       <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
       <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>
-      <a class="kachel" href="#/markt">${ICON.hand}<span>Profi${auftr ? ' · ' + auftr : ''}</span></a>
+      <a class="kachel" href="#/markt">${ICON.urkunde}<span>Profi${auftr ? ' · ' + auftr : ''}</span></a>
       <a class="kachel" href="#/tour">${ICON.film}<span>Kino-Tour</span></a>
-      <a class="kachel" href="#/bauteile">${ICON.wuerfel}<span>Bauteile 3D</span></a>
+      <a class="kachel" href="#/bauteile">${ICON.wuerfel3d}<span>Bauteile 3D</span></a>
     </div>
     ${S.projekte.length > 1 ? `<h3>Weitere Projekte</h3>${S.projekte.filter((x) => x !== p).slice(0, 5).map(projektZeile).join('')}` : ''}
   </div>`;
@@ -155,7 +155,7 @@ route('projekt', (id) => {
       <a class="kachel" href="#/tour">${ICON.kamera}<span>Kino-Tour</span></a>
       ${a ? `<a class="kachel" href="#/anleitung/${p.anleitung}?p=${p.id}">${ICON.liste}<span>Anleitung</span></a>` : ''}
       ${a ? `<button class="kachel" data-akt="materialInListe" data-id="${p.id}">${ICON.korb}<span>Material</span></button>` : ''}
-      <a class="kachel" href="#/markt?p=${p.id}">${ICON.hand}<span>${auftrag ? 'Auftrag' : 'Profi anfragen'}</span></a>
+      <a class="kachel" href="#/markt?p=${p.id}">${ICON.urkunde}<span>${auftrag ? 'Auftrag' : 'Profi anfragen'}</span></a>
       <a class="kachel" href="#/installation?raum=${p.raum}">${ICON.tropfen}<span>Wasser & Elektro</span></a>
       <a class="kachel" href="#/finanzen?p=${p.id}">${ICON.beleg}<span>Quittung</span></a>
     </div>
