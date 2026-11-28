@@ -411,3 +411,9 @@ div.schritt { cursor: default; }
 .ff-schritte{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:6px}.ff-schritte li{padding-left:28px;position:relative;opacity:.55}.ff-schritte li:before{content:'○';position:absolute;left:4px}.ff-schritte li.ok,.ff-schritte li.jetzt{opacity:1}.ff-schritte li.ok:before{content:'✓';color:#2e9e5b}.ff-schritte li.jetzt:before{content:'●';color:var(--akzent,#f28c28)}
 .ff-blase{padding:12px;border-radius:14px;margin:10px 0;background:rgba(127,127,127,.12)}.ff-blase.kunde{margin-left:28px}.ff-blase.profi{margin-right:28px;background:rgba(46,158,91,.14)}.ff-blase p{margin:6px 0;white-space:pre-wrap}.ff-blase img{max-width:100%;border-radius:10px;margin-top:6px;display:block}
 .ff-konto{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.ff-konto div{background:rgba(127,127,127,.12);border-radius:12px;padding:10px;display:flex;flex-direction:column}
+
+.studio-plan{position:relative;margin:10px 0}.studio-plan svg{width:100%;height:auto;display:block}.studio-plan.stift-an{outline:3px dashed #f28c28;outline-offset:3px;border-radius:6px}
+.stift-flaeche{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.wunsch-panel{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;display:flex;align-items:flex-end}
+.wunsch-box{background:var(--karte,#1b1b1b);color:inherit;width:100%;padding:16px 16px calc(16px + env(safe-area-inset-bottom));border-radius:18px 18px 0 0;display:grid;gap:10px}
+.wunsch-box input{font:inherit;padding:12px;border-radius:12px;border:1px solid #555;background:transparent;color:inherit}
