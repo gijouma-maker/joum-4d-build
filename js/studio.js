@@ -254,6 +254,7 @@ function studioSeite(rid, q) {
       </div>
       <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
     </section>` : '<div class="hinweis">Keine Idee passt mit dieser Auswahl – Maße prüfen oder Teile entfernen.</div>'}
+    ${typeof materialKarte === 'function' ? materialKarte(o, d) : ''}
     <section class="karte studio-raum"><h3>Dein Raum</h3>
       <div class="raster3">
         <label class="feld">Breite (m)<input inputmode="decimal" data-ein="studioMass" ${d} data-k="breite" value="${zahl(o.breite / 100)}"></label>
@@ -276,9 +277,14 @@ function studioSeite(rid, q) {
 route('studio', (rid, q) => studioSeite(rid, q || {}));
 function studio3D(o, v) {
   const box = document.getElementById('studio3d'); if (!box || !window.zeigeRaum3D || !v) return;
-  const M = stilMix(o), c = JSON.parse(JSON.stringify(o)); c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}));
+  const M = stilMix(o), c = JSON.parse(JSON.stringify(o)), FT = losStatus(o).fotoTeile || {};
+  if (typeof flaechen === 'function') c.flaechen = JSON.parse(JSON.stringify(flaechen(o)));
+  c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}, FT[e.n] ? { foto: FT[e.n].foto, fotoFarbe: FT[e.n].farbe } : {}));
+  c._innen = typeof MAT !== 'undefined' && MAT.innen;
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
-  try { zeigeRaum3D(box, c, M.stil, null, () => {}); } catch (e) { box.insertAdjacentHTML('beforeend', '<p class="klein" style="padding:12px">3D braucht WebGL.</p>'); }
+  const dd = o.entwurf ? { r: o.raum } : { p: o.id };
+  box.insertAdjacentHTML('beforeend', '');
+  try { zeigeRaum3D(box, c, M.stil, null, (was) => { if (typeof studio3DAntippen === 'function') studio3DAntippen(o, dd, was); }); box.insertAdjacentHTML('beforeend', `<button class="studio-innen" data-akt="studioInnen">${c._innen ? '⤴ Von oben' : '👁 Von innen'}</button>`); } catch (e) { box.insertAdjacentHTML('beforeend', '<p class="klein" style="padding:12px">3D braucht WebGL.</p>'); }
 }
 function studioAktuell(d) { const o = studioObj(d); const { vs } = studioVarianten(o); return { o, v: vs[Math.min(losStatus(o).sel || 0, vs.length - 1)] }; }
 

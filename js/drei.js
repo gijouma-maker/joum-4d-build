@@ -321,12 +321,31 @@
     const v = viewer(box, { hg: 0x0d0d0d, schattenGroesse: Math.max(B, D), realistisch: true });
     const sc = v.scene;
     const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
-    const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
-    const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 })); boden.rotation.x = -Math.PI / 2; sc.add(boden);
+    const FL = p.flaechen, flaechenMeshes = [];
+    const musterTex = (spec, sx, sy) => {
+      const mb = window.musterBild(spec, () => { const n = window.musterBild(spec); t.image = n.c; t.needsUpdate = true; });
+      const t = new T.CanvasTexture(mb.c); t.wrapS = t.wrapT = T.RepeatWrapping; t.encoding = T.sRGBEncoding; t.anisotropy = 4; t.repeat.set(sx / mb.mx, sy / mb.my); return t;
+    };
+    let bt;
+    if (FL && FL.boden && window.musterBild) bt = musterTex(FL.boden, B, D);
+    else { bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2)); }
+    const glanz = FL && FL.boden && /f6060|f12060|marmor|f3060/.test(FL.boden.muster) && !FL.boden.foto ? 0.35 : 0.75;
+    const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: glanz })); boden.rotation.x = -Math.PI / 2; boden.userData.flaeche = 'boden'; sc.add(boden); flaechenMeshes.push(boden);
     // Wände nach innen gerichtet – von außen unsichtbar (Puppenhaus-Ansicht)
     const wf = stil ? stil.wand : '#ece8e1';
-    const wand = (w, x, z, ry) => { const m = mesh(new T.PlaneGeometry(w, H), mat(wf, { roughness: 0.95, side: T.FrontSide })); m.position.set(x, H / 2, z); m.rotation.y = ry; sc.add(m); const sockel = mesh(new T.PlaneGeometry(w, 0.07), mat('#fafafa')); sockel.position.set(x, 0.035, z); sockel.rotation.y = ry; sockel.translateZ(0.003); sc.add(sockel); };
-    wand(B, 0, -D / 2, 0); wand(B, 0, D / 2, Math.PI); wand(D, -B / 2, 0, Math.PI / 2); wand(D, B / 2, 0, -Math.PI / 2);
+    const wand = (w, x, z, ry, idx) => {
+      const WD = FL && FL.waende ? FL.waende[idx] || {} : {};
+      const m = mesh(new T.PlaneGeometry(w, H), new T.MeshStandardMaterial({ color: new T.Color(WD.farbe || wf), roughness: 0.95, side: T.FrontSide })); m.position.set(x, H / 2, z); m.rotation.y = ry; m.userData.flaeche = String(idx); sc.add(m); flaechenMeshes.push(m);
+      if (WD.fliesen && window.musterBild) { const fh = WD.fliesen.hoehe === 'voll' ? H : 1.2; const fm = mesh(new T.PlaneGeometry(w, fh), new T.MeshStandardMaterial({ map: musterTex(WD.fliesen, w, fh), roughness: WD.fliesen.foto ? 0.6 : 0.3 })); fm.position.set(x, fh / 2, z); fm.rotation.y = ry; fm.translateZ(0.004); fm.userData.flaeche = String(idx); sc.add(fm); flaechenMeshes.push(fm); } const sockel = mesh(new T.PlaneGeometry(w, 0.07), mat('#fafafa')); sockel.position.set(x, 0.035, z); sockel.rotation.y = ry; sockel.translateZ(0.003); sc.add(sockel); };
+    wand(B, 0, -D / 2, 0, 0); wand(B, 0, D / 2, Math.PI, 2); wand(D, -B / 2, 0, Math.PI / 2, 3); wand(D, B / 2, 0, -Math.PI / 2, 1);
+    // Decke (nur von innen sichtbar) + Lampe
+    const DK = FL && FL.decke ? FL.decke : null;
+    const decke = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ color: new T.Color(DK ? DK.farbe : '#f7f7f5'), roughness: 0.95 })); decke.rotation.x = Math.PI / 2; decke.position.y = H; decke.userData.flaeche = 'decke'; decke.castShadow = false; sc.add(decke); flaechenMeshes.push(decke);
+    const lampe = DK ? DK.lampe : 'keine', leuchte = (farbe) => new T.MeshStandardMaterial({ color: new T.Color(farbe), emissive: new T.Color('#fff1d6'), emissiveIntensity: 1.2 });
+    if (lampe === 'pendel') { const g = new T.Group(); g.add(zyl(0.004, H - 1.95, '#222', 0, 1.95 + (H - 1.95) / 2, 0)); const schirm = mesh(new T.ConeGeometry(0.22, 0.24, 32, 1, true), mat(stil ? stil.akzent : '#333', { side: T.DoubleSide, roughness: 0.4, metalness: 0.3 }), 0, 1.86, 0); g.add(schirm); g.add(mesh(new T.SphereGeometry(0.05, 16, 12), leuchte('#fff'), 0, 1.78, 0)); const pl = new T.PointLight(0xfff0d8, 0.8, 6); pl.position.set(0, 1.75, 0); g.add(pl); sc.add(g); }
+    else if (lampe === 'spots') { const nx = Math.max(2, Math.round(B / 1.1)), nz = Math.max(2, Math.round(D / 1.1)); for (let i = 0; i < nx; i++) for (let k = 0; k < nz; k++) { const sp = mesh(new T.CylinderGeometry(0.04, 0.04, 0.01, 16), leuchte('#fff'), (i + 0.5) * B / nx - B / 2, H - 0.006, (k + 0.5) * D / nz - D / 2); sp.castShadow = false; sc.add(sp); } const pl = new T.PointLight(0xfff4e6, 0.5, 8); pl.position.set(0, H - 0.2, 0); sc.add(pl); }
+    else if (lampe === 'led') { [[B, 0, -D / 2 + 0.03, 0], [B, 0, D / 2 - 0.03, 0], [D, -B / 2 + 0.03, 0, Math.PI / 2], [D, B / 2 - 0.03, 0, Math.PI / 2]].forEach(([l, x, z, r]) => { const st = mesh(new T.BoxGeometry(l, 0.015, 0.02), leuchte('#fff'), x, H - 0.12, z); st.rotation.y = r; st.castShadow = false; sc.add(st); }); const pl = new T.PointLight(0xffe9c4, 0.45, 8); pl.position.set(0, H - 0.3, 0); sc.add(pl); }
+    else if (lampe === 'decke') { const dl = mesh(new T.CylinderGeometry(0.2, 0.2, 0.06, 32), leuchte('#fff'), 0, H - 0.03, 0); dl.castShadow = false; sc.add(dl); const pl = new T.PointLight(0xfff1dd, 0.6, 8); pl.position.set(0, H - 0.25, 0); sc.add(pl); }
     // Fenster an der Rückwand (Lichtschein)
     if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.6 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
     sc.add(tuerGruppe(p, B));
@@ -334,7 +353,8 @@
     const objekte = [];
     (p.plan || []).forEach((e) => {
       const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : (window.GRUPPEN_FARBE_3D[e.g] || '#aaa'));
-      const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
+      const g = modell(e, e.fotoFarbe || farbe, stil ? stil.akzent : '#7a9ab8');
+      if (e.foto) { const tl = new T.TextureLoader().load(e.foto); tl.encoding = T.sRGBEncoding; let groesst = null, gv = 0; g.traverse((c) => { if (c.isMesh && c.geometry) { c.geometry.computeBoundingBox(); const b = c.geometry.boundingBox, vv = (b.max.x - b.min.x) * (b.max.y - b.min.y) + (b.max.z - b.min.z) * (b.max.y - b.min.y); if (vv > gv) { gv = vv; groesst = c; } } }); if (groesst) groesst.material = new T.MeshStandardMaterial({ map: tl, roughness: 0.45 }); }
       const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
       g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2);
       g.rotation.y = -(e.rot || 0) * Math.PI / 180;
@@ -343,10 +363,12 @@
       if (e.id === auswahlId) { const bb = new T.Box3().setFromObject(g); const hl = new T.Box3Helper(bb, 0xffffff); sc.add(hl); }
       sc.add(g); objekte.push(g);
     });
-    if (raumKamera && raumKamera.raum === p.id) { v.camera.position.copy(raumKamera.pos); v.controls.target.copy(raumKamera.ziel); v.controls.autoRotate = false; }
+    if (p._innen) { v.renderer.toneMappingExposure = 0.62; v.camera.position.set(-B * 0.05, 1.6, D * 0.05); v.controls.target.set(0, 1.5, 0); v.camera.position.set(0.05, 1.55, 0.12); v.camera.fov = 70; v.camera.updateProjectionMatrix(); v.controls.autoRotate = false; v.controls.enableZoom = false; v.controls.enablePan = false; v.controls.minPolarAngle = 0.15; v.controls.maxPolarAngle = Math.PI * 0.9; v.controls.rotateSpeed = -0.4; const cx = -B / 2 + Math.min(0.6, B * 0.2); v.camera.position.set(cx, 1.55, 0.25); v.controls.target.set(cx + 0.15, 1.5, 0.2); }
+    else if (raumKamera && raumKamera.raum === p.id && !raumKamera.innen) { v.camera.position.copy(raumKamera.pos); v.controls.target.copy(raumKamera.ziel); v.controls.autoRotate = false; }
     else { const m = Math.max(B, D); v.camera.position.set(B * 0.75, m * 0.95 + 1.2, D * 0.95 + m * 0.55); v.controls.target.set(0, 0.6, 0); }
-    v.controls.maxPolarAngle = Math.PI * 0.49; v.controls.minDistance = 1; v.controls.maxDistance = 25;
-    v.controls.addEventListener('change', () => { raumKamera = { raum: p.id, pos: v.camera.position.clone(), ziel: v.controls.target.clone() }; });
+    if (!p._innen) { v.controls.maxPolarAngle = Math.PI * 0.49; v.controls.minDistance = 1; v.controls.maxDistance = 25; }
+    else { v.controls.minDistance = 0.1; v.controls.maxDistance = 0.2; }
+    v.controls.addEventListener('change', () => { raumKamera = { raum: p.id, pos: v.camera.position.clone(), ziel: v.controls.target.clone(), innen: !!p._innen }; });
     // Antippen = auswählen
     const ray = new T.Raycaster(), maus = new T.Vector2(); let down = null;
     v.renderer.domElement.addEventListener('pointerdown', (ev) => { down = [ev.clientX, ev.clientY]; });
@@ -355,8 +377,8 @@
       const r = v.renderer.domElement.getBoundingClientRect();
       maus.set(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1);
       ray.setFromCamera(maus, v.camera);
-      const hit = ray.intersectObjects(objekte, true)[0];
-      if (beiAuswahl) beiAuswahl(hit ? hit.object.userData.id : null);
+      const hit = ray.intersectObjects(objekte.concat(flaechenMeshes), true)[0];
+      if (beiAuswahl) beiAuswahl(hit ? (hit.object.userData.flaeche != null && hit.object.userData.id == null ? 'flaeche:' + hit.object.userData.flaeche : hit.object.userData.id) : null);
     });
     v.raum = { objekte, B, D };
     v.bewegen = (e) => { const g = objekte.find((o) => o.userData.id === e.id); if (!g) return; const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100; g.position.x = e.x / 100 + ew / 2 - B / 2; g.position.z = e.y / 100 + ed / 2 - D / 2; };
