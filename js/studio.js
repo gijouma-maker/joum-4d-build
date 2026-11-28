@@ -243,7 +243,7 @@ function studioSeite(rid, q) {
         <div class="zeile"><span style="flex:1">+ Montage durch Handwerker</span><b>ca. ${euro(v.kosten.montage)}</b></div>
         <div class="klein grau">Spanne ${euro(v.kosten.min)} – ${euro(v.kosten.max)} · Richtwerte</div>
       </div>
-      <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button></div>
+      <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
     </section>` : '<div class="hinweis">Keine Idee passt mit dieser Auswahl – Maße prüfen oder Teile entfernen.</div>'}
     <section class="karte studio-raum"><h3>Dein Raum</h3>
       <div class="raster3">
@@ -328,6 +328,7 @@ AKT.studioEinkauf = (d) => {
   aendern((s) => v.kosten.liste.forEach((z) => s.einkauf.push({ id: uid(), n: z.n, menge: z.anz, einheit: 'Stk', hinweis: 'ca. ' + euro(z.a) + '–' + euro(z.c) + ' je Stück', projekt: p.id, erledigt: false })), 'Vorschlag in Einkaufsliste');
   toast('In der Einkaufsliste'); geh('#/einkauf');
 };
+AKT.studioAR = (d) => { const { o, v } = studioAktuell(d); if (!v) return; arStarten(v.plan, { breite: o.breite, tiefe: o.tiefe }, v.titel); };
 HILFE.studioStil = 'Stil wählen – jeder Stil hat eigene Möbel, Farben und Grundriss-Ideen.';
 HILFE.studioWahl = 'Diesen Vorschlag ansehen.';
 HILFE.studioTeil = 'Teil ändern: entfernen oder gegen ein anderes tauschen.';

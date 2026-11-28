@@ -385,3 +385,10 @@ div.schritt { cursor: default; }
 .mehr-werkzeuge summary { font-weight: 600; cursor: pointer; padding: 4px 0; }
 .mehr-werkzeuge .raster4 { margin-top: 10px; }
 .arbeit-zeile { width: 100%; text-align: left; background: none; border: none; border-bottom: 1px solid #222; color: #fff; font: inherit; padding: 12px 0; display: flex; gap: 8px; align-items: center; cursor: pointer; }
+
+/* AR */
+.ar-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 100; display: flex; flex-direction: column; justify-content: space-between; padding: calc(16px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom)); }
+.ar-text { align-self: center; background: rgba(0,0,0,.65); color: #fff; padding: 10px 16px; border-radius: 999px; font-size: 15px; text-align: center; }
+.ar-knoepfe { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.ar-knoepfe button { pointer-events: auto; min-height: 48px; padding: 0 16px; border-radius: 999px; border: none; background: #fff; color: #000; font: inherit; font-weight: 600; }
+.ar-knopf { border-color: #ffd27a !important; }
