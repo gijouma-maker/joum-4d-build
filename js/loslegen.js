@@ -63,6 +63,7 @@ function fensterGrund(n, h, eb) {
 function fensterKonflikt(p, f, n, h, eb) {
   const z = fensterZone(p); if (!z || eb === 'decke') return false;
   if (!schneidet(f, z)) return false;
+  if (p.fensterPos && p.fensterPos.typ === 'tuer') return !/Teppich|Vorhang|Pflanze/.test(n) && eb !== 'decke';
   if (/Heizkörper|Heizung|Badewanne|Sitzbank|Teppich|Nachttisch|Couchtisch|Stuhl|Pflanze|Vorhang|Lüfter/.test(n)) return false;
   return !!fensterGrund(n, h, eb);
 }

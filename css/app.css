@@ -509,3 +509,9 @@ body.ohne-schwebe #mikro-knopf,body.ohne-schwebe #sprech-knopf{display:none}
 
 .deko-leiste{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:6px 0}.deko-leiste .chip{white-space:nowrap}.deko-leiste .klein{white-space:nowrap}
 .icon-text{display:inline-flex;align-items:center;justify-content:center;gap:8px}.icon-text svg{width:20px;height:20px;flex:none}
+.w-3d{position:relative}.w-modi{display:flex;gap:6px;margin:10px 0 6px;overflow-x:auto}
+.lauf-ort{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);color:#fff;padding:4px 10px;border-radius:999px;font-weight:700;font-size:.85em;pointer-events:none}
+.lauf-pad{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:none}.lauf-pad>div{display:flex;gap:4px}
+.lauf-pad button{width:48px;height:48px;border-radius:12px;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.55);color:#fff;font-size:18px;touch-action:none;user-select:none}
+.lauf-tipp{position:absolute;left:10px;bottom:6px;margin:0;font-size:.72em;color:#fff;background:rgba(0,0,0,.45);padding:3px 8px;border-radius:8px;pointer-events:none;max-width:55%}
+.feld.mini{max-width:110px}.mat-blatt .material{display:grid;gap:8px}

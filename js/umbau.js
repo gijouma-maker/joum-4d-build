@@ -136,3 +136,5 @@ render = function () {
   };
 };
 HILFE.stiftKnopf = 'Stift: direkt auf den Plan zeichnen, wo etwas hin soll – dann sagen oder tippen, was es ist.';
+
+AKT.studioGlastuer = (d) => aendern(() => { const o = studioObj(d); if (o.fensterPos) { o.fensterPos.typ = o.fensterPos.typ === 'tuer' ? '' : 'tuer'; if (o.fensterPos.typ === 'tuer' && o.fensterPos.b < 90) o.fensterPos.b = 90; } }, 'Glastür');

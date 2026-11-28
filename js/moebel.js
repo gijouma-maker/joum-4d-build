@@ -51,6 +51,7 @@ AKT.mkKat = (d) => { MKS.kat = d.k; moebelBlattZeigen(); };
 EIN.mkSuche = (v) => { MKS.suche = v; moebelBlattZeigen(); const i = document.querySelector('#mk-overlay .fk-suche'); if (i) { i.focus(); i.setSelectionRange(v.length, v.length); } };
 AKT.mkNehmen = (d) => {
   const o = studioObj(MKS.d), L = losStatus(o);
+  if (/Vorhänge|Gardine|Vorhang/.test(d.n) && (o.fenster === false || ['bad', 'gaestewc', 'waschraum', 'keller', 'heizungsraum'].includes(o.raum))) { info(o.fenster === false ? 'Dieser Raum hat kein Fenster und keine Glastür – Vorhänge ergeben hier keinen Sinn.' : 'Im Nassraum besser ein feuchtraumgeeignetes Rollo statt Vorhängen.'); return; }
   aendern(() => { L.wuensche = (L.wuensche || standardWuensche(o)).concat([d.n]); L.weg = (L.weg || []).filter((x) => x !== d.n); }, 'Möbel hinzugefügt');
   toast('＋ ' + d.n + ' – die App sucht den besten Platz'); moebelBlattZeigen();
 };

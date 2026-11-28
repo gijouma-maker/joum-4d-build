@@ -177,8 +177,16 @@ function materialKarte(o, d) {
       <p class="klein grau">Foto möglichst gerade von oben, eine Fliese/ein Stück füllt das Bild. Maße eintragen – dann stimmt die Größe im Raum.</p>`;
   } else if (wi >= 0) {
     const W = F.waende[wi], akt = W.farbe || stilMix(o).stil.wand;
-    inhalt += `<div class="farb-reihe">${FARBEN_WAND.map(([n, h]) => sw(h, akt === h, `data-akt="matWand" ${d} data-w="${wi}" data-f="${h}"`, n)).join('')}<label class="farb-punkt eigen" title="Eigene Farbe">＋<input type="color" data-ein="matWandEigen" ${d} data-w="${wi}" value="${akt}"></label></div>
-      <div class="zeile wrap"><button class="chip" data-akt="matAlleWaende" ${d} data-f="${akt}">Diese Farbe für alle Wände</button><button class="chip" data-akt="matFliesen" ${d} data-w="${wi}">Fliesen an diese Wand</button></div>`;
+    inhalt += `<div class="unter">Wandfarbe</div><div class="farb-reihe">${FARBEN_WAND.map(([n, h]) => sw(h, akt === h && !W.tapete, `data-akt="matWand" ${d} data-w="${wi}" data-f="${h}"`, n)).join('')}<label class="farb-punkt eigen" title="Eigene Farbe">＋<input type="color" data-ein="matWandEigen" ${d} data-w="${wi}" value="${akt}"></label></div>
+      <div class="zeile wrap"><button class="chip" data-akt="matAlleWaende" ${d} data-f="${akt}">Diese Farbe für alle Wände</button><button class="chip" data-akt="matFliesen" ${d} data-w="${wi}">Fliesen an diese Wand</button></div>
+      <div class="unter">Paneele & Vertäfelung</div>
+      <div class="muster-leiste">${PANEELE.map(([k, n]) => `<button class="muster-chip ${W.paneel && W.paneel.typ === k ? 'an' : ''}" data-akt="matPaneel" ${d} data-w="${wi}" data-t="${k}"><img src="${paneelVorschau(k, (W.paneel || {}).farbe)}" alt="">${esc(n)}</button>`).join('')}</div>
+      ${W.paneel ? `<div class="farb-reihe">${(W.paneel.typ === 'lamellen' || W.paneel.typ === 'hexagon' ? FARBEN_HOLZ.concat([['Schwarz', '#222222'], ['Salbei', '#9aab93']]) : FARBEN_WAND).map(([n, h]) => sw(h, W.paneel.farbe === h, `data-akt="matPaneelFarbe" ${d} data-w="${wi}" data-f="${h}"`, n)).join('')}</div>
+        <div class="zeile wrap">${W.paneel.typ === 'lamellen' ? `<button class="chip ${W.paneel.breite !== 'streifen' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="breite" data-v="voll">Ganze Wand</button><button class="chip ${W.paneel.breite === 'streifen' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="breite" data-v="streifen">Streifen 1,2 m</button>` : ''}${['kassetten', 'nutfeder'].includes(W.paneel.typ) ? `<button class="chip ${W.paneel.hoehe !== 'hoch' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="hoehe" data-v="90">bis 90 cm</button><button class="chip ${W.paneel.hoehe === 'hoch' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="hoehe" data-v="hoch">bis 1,20 m</button>` : ''}${W.paneel.typ === 'hexagon' ? `<button class="chip ${W.paneel.hoehe === 'halb' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="hoehe" data-v="halb">halbe Höhe</button><button class="chip ${W.paneel.hoehe !== 'halb' ? 'an' : ''}" data-akt="matPaneelOpt" ${d} data-w="${wi}" data-k="hoehe" data-v="voll">ganze Höhe</button>` : ''}<button class="chip" data-akt="matPaneelWeg" ${d} data-w="${wi}">Paneele entfernen</button></div>
+        <p class="klein grau">${esc((PANEELE.find((x) => x[0] === W.paneel.typ) || [])[2] || '')}</p>` : ''}
+      <div class="unter">Tapete / Muster</div>
+      <div class="muster-leiste">${TAPETEN.map(([k, n]) => `<button class="muster-chip ${W.tapete && W.tapete.muster === k ? 'an' : ''}" data-akt="matTapete" ${d} data-w="${wi}" data-t="${k}"><img src="${tapeteVorschau(k, (W.tapete || {}).farbe)}" alt="">${esc(n)}</button>`).join('')}${W.tapete ? `<button class="muster-chip" data-akt="matTapeteWeg" ${d} data-w="${wi}"><span class="mk-plus">✕</span>ohne Tapete</button>` : ''}</div>
+      ${W.tapete ? `<div class="farb-reihe">${FARBEN_WAND.map(([n, h]) => sw(h, W.tapete.farbe === h, `data-akt="matTapeteFarbe" ${d} data-w="${wi}" data-f="${h}"`, n)).join('')}</div>` : ''}`;
   } else if (s === 'decke') {
     inhalt += `<div class="farb-reihe">${FARBEN_WAND.map(([n, h]) => sw(h, F.decke.farbe === h, `data-akt="matDecke" ${d} data-f="${h}"`, n)).join('')}</div>
       <div class="unter">Licht an der Decke</div><div class="zeile wrap">${LAMPEN.map(([k, n]) => `<button class="chip ${F.decke.lampe === k ? 'an' : ''}" data-akt="matLampe" ${d} data-l="${k}">${n}</button>`).join('')}</div>
@@ -193,6 +201,7 @@ function materialKarte(o, d) {
     <p class="klein grau">Tipp: Im 3D einfach auf eine Wand, den Boden oder ein Möbel tippen.</p>
     <div class="mat-tabs">${tabs.map(([k, n]) => `<button class="chip ${s === k ? 'an' : ''}" data-akt="matTab" ${d} data-t="${k}">${k.startsWith('wand:') ? `<i class="mini-farbe" style="background:${F.waende[+k[5]].fliesen ? F.waende[+k[5]].fliesen.farbe : (F.waende[+k[5]].farbe || stilMix(o).stil.wand)}"></i>` : ''}${esc(n)}</button>`).join('')}</div>
     ${inhalt}
+    ${wgKarte(o, d)}
     <div class="mat-check ${K.ampel}"><b>${{ ok: '✓ Passt zusammen', gelb: '◐ Passt – mit Hinweisen', nein: '✗ Passt so eher nicht' }[K.ampel]}</b>
       <div class="farb-reihe klein-reihe">${K.farben.map((h) => `<i style="background:${h}"></i>`).join('')}</div>
       <ul>${K.punkte.map(([a, t]) => `<li class="${a}">${esc(t)}</li>`).join('')}</ul>
@@ -210,7 +219,7 @@ EIN.matFarbeEigen = (v, dd) => aendern(() => { const z = matZiel(matObj(dd), dd)
 AKT.matWand = (dd) => aendern(() => { flaechen(matObj(dd)).waende[+dd.w].farbe = dd.f; }, 'Wandfarbe');
 EIN.matWandEigen = (v, dd) => aendern(() => { flaechen(matObj(dd)).waende[+dd.w].farbe = v; }, 'Wandfarbe');
 AKT.matAlleWaende = (dd) => aendern(() => { flaechen(matObj(dd)).waende.forEach((w) => { if (!w.fliesen) w.farbe = dd.f; }); }, 'Alle Wände');
-AKT.matFliesen = (dd) => aendern(() => { const W = flaechen(matObj(dd)).waende[+dd.w]; W.fliesen = { muster: 'f3060', farbe: '#f1efea', hoehe: ['bad', 'gaestewc'].includes(matObj(dd).raum) ? 'voll' : 'halb' }; }, 'Wandfliesen');
+AKT.matFliesen = (dd) => aendern(() => { const W = flaechen(matObj(dd)).waende[+dd.w]; delete W.paneel; delete W.tapete; W.fliesen = { muster: 'f3060', farbe: '#f1efea', hoehe: ['bad', 'gaestewc'].includes(matObj(dd).raum) ? 'voll' : 'halb' }; }, 'Wandfliesen');
 AKT.matWandFarbe = (dd) => aendern(() => { delete flaechen(matObj(dd)).waende[+dd.w].fliesen; }, 'Wand ohne Fliesen');
 AKT.matFliesHoehe = (dd) => aendern(() => { flaechen(matObj(dd)).waende[+dd.w].fliesen.hoehe = dd.h; }, 'Fliesenhöhe');
 AKT.matDecke = (dd) => aendern(() => { flaechen(matObj(dd)).decke.farbe = dd.f; }, 'Deckenfarbe');
@@ -230,3 +239,77 @@ function studio3DAntippen(o, d, was) {
   const { v } = studioAktuell(d); const e = v && v.plan.find((x) => x.id === was);
   if (e) AKT.studioTeil(Object.assign({}, d, { n: e.n }));
 }
+
+/* ---------- Paneele & Tapeten ---------- */
+const PANEELE = [
+  ['lamellen', 'Akustik-Lamellen', 'Holzlamellen auf schwarzem Filz – schluckt Hall, wirkt warm. Geklebt oder geschraubt, ca. 60–120 €/m².'],
+  ['hexagon', 'Hexagon-Paneele', 'Sechseckige Filz- oder Holzpaneele – Akzent und Akustik. Einzeln geklebt, ca. 80–160 €/m².'],
+  ['kassetten', 'Englische Kassetten', 'Wandvertäfelung bis 90/120 cm mit Rahmenleisten, Abschlussleiste und hohem Sockel – wie im englischen Landhaus. MDF-Leisten geklebt + lackiert, ca. 80–200 €/m².'],
+  ['boiserie', 'Boiserie / Stuckrahmen', 'Französisch-barocke Wandrahmen aus Stuckleisten über die ganze Höhe, mit Kranzleiste – Ton in Ton gestrichen wirkt edel. Ca. 60–150 €/m².'],
+  ['nutfeder', 'Nut & Feder (Beadboard)', 'Senkrechte Profilbretter bis 90/120 cm – Landhaus- und Badstil. Ca. 40–90 €/m².']
+];
+const TAPETEN = [['streifen', 'Streifen'], ['damast', 'Barock / Damast'], ['geometrisch', 'Art déco'], ['botanisch', 'Botanisch'], ['karo', 'Karo / Tartan'], ['punkte', 'Terrazzo-Punkte']];
+function tapeteBild(spec, px) {
+  px = px || 256; const f = spec.farbe || '#d9c8b0', c = document.createElement('canvas'), x = c.getContext('2d'), hell = helligkeit(f) > 0.35, f2 = spec.farbe2 || farbVar(f, hell ? -0.22 : 0.3), R = zufall(7);
+  let mx = 0.53, my = 0.53; c.width = c.height = px; x.fillStyle = f; x.fillRect(0, 0, px, px); x.fillStyle = f2; x.strokeStyle = f2;
+  const m = spec.muster;
+  if (m === 'streifen') { mx = 0.3; for (let i = 0; i < 4; i++) x.fillRect(i * px / 4, 0, px / 10, px); }
+  else if (m === 'damast') { x.lineWidth = Math.max(2, px / 85); for (const [cx, cy] of [[px / 2, px / 2], [0, 0], [px, 0], [0, px], [px, px]]) { x.save(); x.translate(cx, cy); for (let k = 0; k < 2; k++) { x.scale(k ? -1 : 1, 1); x.beginPath(); x.moveTo(0, -px * 0.32); x.bezierCurveTo(px * 0.18, -px * 0.25, px * 0.2, -px * 0.05, px * 0.06, 0); x.bezierCurveTo(px * 0.2, px * 0.05, px * 0.18, px * 0.25, 0, px * 0.32); x.stroke(); x.beginPath(); x.arc(px * 0.1, -px * 0.12, px * 0.03, 0, 7); x.fill(); x.beginPath(); x.arc(px * 0.1, px * 0.12, px * 0.03, 0, 7); x.fill(); } x.beginPath(); x.arc(0, 0, px * 0.035, 0, 7); x.fill(); x.restore(); } }
+  else if (m === 'geometrisch') { x.lineWidth = Math.max(1.5, px / 100); for (let r = 0; r < 4; r++) for (let k = 0; k < 3; k++) { const cx = k * px / 2, cy = r * px / 2 - (k % 2 ? px / 4 : 0); for (let q = 1; q <= 4; q++) { x.beginPath(); x.arc(cx, cy, q * px / 9, Math.PI, 2 * Math.PI); x.stroke(); } } }
+  else if (m === 'botanisch') { for (let i = 0; i < 16; i++) { const a = R() * 6.3, cx = R() * px, cy = R() * px; x.save(); x.translate(cx, cy); x.rotate(a); x.beginPath(); x.ellipse(0, 0, px * 0.07, px * 0.025, 0, 0, 7); x.fill(); x.fillRect(-px * 0.09, -1, px * 0.06, 2); x.restore(); } }
+  else if (m === 'karo') { x.globalAlpha = 0.45; for (let i = 0; i < 4; i++) { x.fillRect(i * px / 4, 0, px / 12, px); x.fillRect(0, i * px / 4, px, px / 12); } x.globalAlpha = 1; x.lineWidth = 1; for (let i = 0; i < 4; i++) { x.beginPath(); x.moveTo(i * px / 4 + px / 6, 0); x.lineTo(i * px / 4 + px / 6, px); x.stroke(); } }
+  else { for (let i = 0; i < 60; i++) { x.fillStyle = [f2, farbVar(f, -0.12), farbVar(f2, 0.2)][i % 3]; x.beginPath(); x.arc(R() * px, R() * px, px / 128 + R() * px / 40, 0, 7); x.fill(); } }
+  return { c, mx, my };
+}
+window.tapeteBild = tapeteBild;
+function tapeteVorschau(m, f) { try { return tapeteBild({ muster: m, farbe: f }, 96).c.toDataURL(); } catch (e) { return ''; } }
+function paneelVorschau(t, f) {
+  const c = document.createElement('canvas'); c.width = c.height = 96; const x = c.getContext('2d'), col = f || (t === 'lamellen' || t === 'hexagon' ? '#b8916a' : '#ece6dc'), dk = farbVar(col, -0.18);
+  x.fillStyle = t === 'lamellen' ? '#1c1c1c' : '#ddd'; x.fillRect(0, 0, 96, 96); x.fillStyle = col;
+  if (t === 'lamellen') for (let i = 0; i < 12; i++) x.fillRect(4 + i * 8, 4, 5, 88);
+  else if (t === 'hexagon') { try { const mb = musterBild({ muster: 'sechseck', farbe: col }, null, 96); x.drawImage(mb.c, 0, 0, 96, 96); } catch (e) {} }
+  else { x.fillRect(0, t === 'boiserie' ? 0 : 40, 96, t === 'boiserie' ? 96 : 56); x.strokeStyle = dk; x.lineWidth = 2; if (t === 'kassetten') { [10, 56].forEach((a) => x.strokeRect(a, 52, 30, 30)); x.fillStyle = dk; x.fillRect(0, 40, 96, 3); x.fillRect(0, 88, 96, 8); } else if (t === 'boiserie') { [10, 56].forEach((a) => { x.strokeRect(a, 8, 30, 46); x.strokeRect(a, 62, 30, 24); }); } else { for (let i = 6; i < 96; i += 8) { x.beginPath(); x.moveTo(i, 44); x.lineTo(i, 92); x.stroke(); } } }
+  return c.toDataURL();
+}
+const matWand = (dd) => flaechen(matObj(dd)).waende[+dd.w];
+AKT.matPaneel = (dd) => aendern(() => { const W = matWand(dd); delete W.fliesen; const holz = ['lamellen', 'hexagon'].includes(dd.t); W.paneel = { typ: dd.t, farbe: W.paneel && W.paneel.typ === dd.t ? W.paneel.farbe : (holz ? '#b8916a' : (W.farbe || '#ece6dc')), hoehe: W.paneel ? W.paneel.hoehe : '' }; }, 'Paneele');
+AKT.matPaneelFarbe = (dd) => aendern(() => { matWand(dd).paneel.farbe = dd.f; }, 'Paneelfarbe');
+AKT.matPaneelOpt = (dd) => aendern(() => { matWand(dd).paneel[dd.k] = dd.v; }, 'Paneele');
+AKT.matPaneelWeg = (dd) => aendern(() => { delete matWand(dd).paneel; }, 'Paneele entfernt');
+AKT.matTapete = (dd) => aendern(() => { const W = matWand(dd); delete W.fliesen; W.tapete = { muster: dd.t, farbe: (W.tapete && W.tapete.farbe) || W.farbe || '#d9c8b0' }; }, 'Tapete');
+AKT.matTapeteFarbe = (dd) => aendern(() => { matWand(dd).tapete.farbe = dd.f; }, 'Tapetenfarbe');
+AKT.matTapeteWeg = (dd) => aendern(() => { delete matWand(dd).tapete; }, 'Tapete entfernt');
+const FK_ALT = flaechenKosten;
+flaechenKosten = function (o) { const k = FK_ALT(o), F = flaechen(o), H = (o.hoehe || 250) / 100, P = { lamellen: [60, 120], hexagon: [80, 160], kassetten: [80, 200], boiserie: [60, 150], nutfeder: [40, 90] };
+  F.waende.forEach((w, i) => { const l = (i % 2 ? o.tiefe : o.breite) / 100; if (w.paneel) { const h = ['kassetten', 'nutfeder'].includes(w.paneel.typ) ? (w.paneel.hoehe === 'hoch' ? 1.2 : 0.9) : (w.paneel.typ === 'hexagon' && w.paneel.hoehe === 'halb' ? 1.2 : H), b = w.paneel.typ === 'lamellen' && w.paneel.breite === 'streifen' ? Math.min(1.2, l) : l, pr = P[w.paneel.typ] || [50, 120]; k.min += Math.round(pr[0] * b * h / 10) * 10; k.max += Math.round(pr[1] * b * h / 10) * 10; } if (w.tapete) { k.min += Math.round(10 * l * H); k.max += Math.round(40 * l * H); } });
+  return k; };
+const FC_ALT = farbCheck;
+farbCheck = function (o) { const r = FC_ALT(o), F = flaechen(o), tap = F.waende.filter((w) => w.tapete && w.tapete.muster !== 'streifen').length, pan = F.waende.filter((w) => w.paneel).length;
+  if (tap > 1) r.punkte.push(['gelb', 'Gemusterte Tapete an mehreren Wänden – meist wirkt eine Akzentwand edler.']);
+  if (tap && ['fischgraet', 'chevron', 'sechseck', 'mosaik'].includes(F.boden.muster)) r.punkte.push(['gelb', 'Muster-Tapete und gemusterter Boden zusammen – eins davon ruhiger wählen.']);
+  if (pan > 2) r.punkte.push(['gelb', 'Paneele an mehr als zwei Wänden können schwer wirken – Kassetten rundum passen gut im Altbau/Landhaus.']);
+  if (r.punkte.some((x) => x[0] === 'gelb') && r.ampel === 'ok') r.ampel = 'gelb';
+  return r; };
+function wgKarte(o, d) { if (o.raum !== 'wintergarten') return ''; return `<div class="unter">Wintergarten</div><div class="zeile wrap">${[['keine', 'Rundum Glas'], ['eine', 'Eine Seite offen'], ['alle', 'Alle Seiten offen']].map(([k, t]) => `<button class="chip ${(o.wgOffen || 'keine') === k ? 'an' : ''}" data-akt="matWgOffen" ${d} data-v="${k}">${t}</button>`).join('')}</div><p class="klein grau">Wände und Dach sind im Wintergarten aus Glas.</p>`; }
+AKT.matWgOffen = (dd) => aendern(() => { matObj(dd).wgOffen = dd.v; }, 'Wintergarten');
+/* Antippen im 3D: Auswahl-Blatt direkt öffnen (Wand, Boden, Decke/Lampe); Möbel → Ändern-Dialog */
+MAT.blatt = false;
+studio3DAntippen = function (o, d, was) {
+  if (!was) return;
+  if (/^flaeche:/.test(was)) { const t = was.slice(8); MAT.sel = t === 'decke' || t === 'boden' ? t : 'wand:' + t; MAT.blatt = true; render(); return; }
+  const { v } = studioAktuell(d); const e = v && v.plan.find((x) => x.id === was);
+  if (e) AKT.studioTeil(Object.assign({}, d, { n: e.n }));
+};
+const vorMatRender = render;
+render = function () {
+  vorMatRender();
+  const ov = document.getElementById('mat-blatt'), q = document.querySelector('[data-akt="studioStift"]');
+  if (!MAT.blatt || !q) { if (ov) ov.remove(); if (!q) MAT.blatt = false; return; }
+  const dd = Object.assign({}, q.dataset), o = studioObj(dd), d = dd.p ? `data-p="${dd.p}"` : `data-r="${dd.r}"`;
+  let el = ov; if (!el) { el = document.createElement('div'); el.id = 'mat-blatt'; el.className = 'fk-overlay an mat-blatt'; el.addEventListener('click', (e) => { if (e.target === el) { MAT.blatt = false; el.remove(); } }); document.body.appendChild(el); }
+  const y = el.querySelector('.fk-blatt') ? el.querySelector('.fk-blatt').scrollTop : 0;
+  const titel = MAT.sel === 'boden' ? 'Boden' : MAT.sel === 'decke' ? 'Decke & Licht' : 'Wand ' + WAND_NAMEN[+MAT.sel.split(':')[1]];
+  el.innerHTML = `<div class="fk-blatt sheet" style="transform:none;max-height:55vh"><div class="spread"><h2>${titel}</h2><button class="btn sm ghost" data-akt="matBlattZu">Fertig</button></div>${materialKarte(o, d).replace('<section class="karte material" id="material">', '<section class="material">')}</div>`;
+  el.querySelector('.fk-blatt').scrollTop = y;
+};
+AKT.matBlattZu = () => { MAT.blatt = false; render(); };
