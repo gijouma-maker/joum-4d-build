@@ -57,7 +57,7 @@ AKT.studioTeil = (d) => {
     L.tausch = L.tausch || {}; L.tausch[n] = a[0];
     if (/Turm|Waschtrockner/.test(a[0])) { const anderes = /Trockner/.test(n) ? 'Waschmaschine' : 'Trockner'; L.weg = (L.weg || []).concat([anderes]); }
   }, 'Teil getauscht')]));
-  knoepfe.push(['✏️ Eigener Wunsch …', () => setTimeout(() => wunschFragen(o, d, null, n), 50)]);
+  knoepfe.push(['Eigener Wunsch …', () => setTimeout(() => wunschFragen(o, d, null, n), 50)]);
   knoepfe.push(['Abbrechen', null]);
   dialog('„' + n + '“ ändern', knoepfe);
 };

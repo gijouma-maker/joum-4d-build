@@ -1,3 +1,5 @@
+/* Stift-Symbol im gleichen Linien-Stil wie Mikrofon und Lautsprecher */
+if (!ICON.stift) ICON.stift = ic('<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>');
 /* Joum 4D Build – Umbauen im Studio
    1) Wände einziehen/verschieben in JEDEM Raum (auch Garage): Trennwand bis Decke, halbhoch, Glas, Raumteiler-Regal, Vorwand;
       quer/längs, Position per Regler, Durchgang links/rechts/beide Seiten („von beiden Seiten begehbar“) oder Mitte.
@@ -125,7 +127,7 @@ render = function () {
   let k = document.getElementById('stift-knopf');
   const quelle = document.querySelector('[data-akt="studioStift"]');
   if (!quelle) { if (k) k.remove(); return; }
-  if (!k) { k = document.createElement('button'); k.id = 'stift-knopf'; k.className = 'sprech-knopf stift-knopf'; k.setAttribute('aria-label', 'Auf dem Plan zeichnen'); k.innerHTML = ICON.stift || '✏'; document.body.appendChild(k); }
+  if (!k) { k = document.createElement('button'); k.id = 'stift-knopf'; k.className = 'sprech-knopf stift-knopf'; k.setAttribute('aria-label', 'Auf dem Plan zeichnen'); k.innerHTML = ICON.stift; document.body.appendChild(k); }
   k.onclick = (e) => {
     e.preventDefault(); e.stopPropagation();
     const q = document.querySelector('[data-akt="studioStift"]'), plan = document.querySelector('.studio-plan'); if (!q || !plan) return;

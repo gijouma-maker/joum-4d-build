@@ -245,7 +245,7 @@ function studioSeite(rid, q) {
     ${nicht.length ? `<details class="klein grau"><summary>${nicht.length} Idee(n) passen hier nicht</summary><ul>${nicht.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>` : ''}
     ${v ? `<section class="karte"><h3>${esc(v.titel)}</h3><p class="klein">${esc(v.unter)}</p>
       <div class="studio-plan" data-k="${esc(v.konzept || '')}">${raumSVG(o, v.plan)}</div>
-      <div class="zeile wrap"><button class="btn hell" data-akt="studioStift" ${d}>✏️ Auf dem Plan einzeichnen</button><button class="btn hell" data-akt="studioWunsch" ${d}>💬 Wunsch sagen</button></div>
+      <div class="zeile wrap"><button class="btn hell icon-text" data-akt="studioStift" ${d}>${ICON.stift} Auf dem Plan einzeichnen</button><button class="btn hell icon-text" data-akt="studioWunsch" ${d}>${ICON.mikro} Wunsch sagen</button></div>
       <div class="unter">Antippen zum Ändern</div>
       <div class="zeile wrap">${[...new Map(v.plan.filter((e) => !e.gruppe).map((e) => [e.n, e])).values()].map((e) => `<button class="chip teil-chip ${e.konzept ? 'konzept' : ''}" data-akt="studioTeil" ${d} data-n="${esc(e.n)}">${esc(e.n)}${v.plan.filter((x) => x.n === e.n).length > 1 ? ' ×' + v.plan.filter((x) => x.n === e.n).length : ''}</button>`).join('')}<button class="chip plus" data-akt="studioPlus" ${d}>＋ Hinzufügen</button></div>
       <ul class="los-pruef">${v.ergebnis.filter((x) => !x.ok || x.ersatz || x.verschoben || x.neu).map((x) => x.ok

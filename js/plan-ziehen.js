@@ -79,7 +79,7 @@ render = function () {
   const box = document.querySelector('.studio-plan'); if (!box) return;
   const d = Object.assign({}, q.dataset), o = studioObj(d), konzept = box.dataset.k || '';
   if (PZ.sel && PZ.sel.k === konzept) { const el = box.querySelector(`rect[data-n="${CSS.escape(PZ.sel.n)}"][data-i="${PZ.sel.i}"]`); if (el) PZ.sel.rot = +el.dataset.rot || 0; else PZ.sel = null; }
-  if (!box.querySelector('.pz-hinweis')) box.insertAdjacentHTML('afterend', `<div class="pz-hinweis"><button class="btn hell voll" data-akt="pzVoll">✋ Möbel verschieben & drehen (groß)</button><span class="klein grau">oder direkt hier im Plan ziehen / antippen</span></div>${PZ.voll ? '' : pzLeiste(d)}`);
+  if (!box.querySelector('.pz-hinweis')) box.insertAdjacentHTML('afterend', `<div class="pz-hinweis"><button class="btn hell voll icon-text" data-akt="pzVoll">${ic('<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>')} Möbel verschieben & drehen (groß)</button><span class="klein grau">oder direkt hier im Plan ziehen / antippen</span></div>${PZ.voll ? '' : pzLeiste(d)}`);
   pzBinden(box, d, o, konzept);
   if (PZ.voll) {
     let ov = document.getElementById('pz-voll');
