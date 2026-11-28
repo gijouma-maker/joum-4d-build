@@ -447,7 +447,7 @@ div.schritt { cursor: default; }
 body.ohne-schwebe #mikro-knopf,body.ohne-schwebe #sprech-knopf{display:none}
 .haus-baustein{border-bottom:1px solid rgba(127,127,127,.2)}.haus-schalter{display:flex;width:100%;align-items:center;background:none;border:0;color:inherit;font:inherit;font-weight:600;padding:12px 0;text-align:left}.haus-schalter span{flex:1}.haus-schalter i{font-style:normal;font-size:.8em;padding:4px 10px;border-radius:999px;background:rgba(127,127,127,.3)}.haus-baustein.an .haus-schalter i{background:#2e9e5b;color:#fff}.haus-opt{padding:0 0 12px;display:grid;gap:6px}.haus input[type=range]{width:100%}
 .haus-posten{padding:8px 0;border-bottom:1px solid rgba(127,127,127,.15);display:grid;gap:2px}.haus-summe{padding-top:10px;font-size:1.1em}
-.stift-knopf { bottom: calc(206px + env(safe-area-inset-bottom)); background: #f28c28; border-color: #ffb36b; font-size: 22px; }
+.stift-knopf { bottom: calc(206px + env(safe-area-inset-bottom)); }
 
 .mk-foto-knopf{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:2px dashed #f28c28;background:rgba(242,140,40,.1);color:inherit;border-radius:14px;padding:12px;font:inherit;margin:8px 0 10px}.mk-foto-knopf>span:first-child{font-size:1.8em}.mk-foto-knopf small{display:block;opacity:.75}
 .mk-kats{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}.mk-kats .chip{white-space:nowrap}
@@ -458,3 +458,51 @@ body.ohne-schwebe #mikro-knopf,body.ohne-schwebe #sprech-knopf{display:none}
 .pz-hinweis{text-align:center;margin-top:4px}
 .pz-leiste{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;padding:8px;border-radius:12px;background:rgba(242,140,40,.12);border:1px solid rgba(242,140,40,.5)}.pz-leiste b{flex-basis:100%;font-size:.9em}
 .studio-plan svg text{pointer-events:none}
+
+/* Kopfleiste & Funktionen-Blatt wie JoumHome */
+.kopf-knoepfe{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding:8px 14px 4px;flex-wrap:nowrap}
+.icon-btn{border:1px solid var(--linie);background:var(--karte);border-radius:50%;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;color:var(--text);flex:none;font-weight:700;font-size:16px}
+.icon-btn.hilfe-btn.an{border-color:var(--text)}
+.sprach-sel{height:38px;border-radius:999px;border:1px solid var(--linie);background:var(--karte);color:var(--text);padding:0 8px;max-width:104px;min-width:0;flex:1 1 auto}
+.func-btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 13px;border-radius:999px;border:1px solid var(--linie);background:var(--karte);color:var(--text);font-weight:600;font-size:13px;cursor:pointer;flex:none}
+.func-btn svg{width:17px;height:17px;flex:none}
+@media(max-width:360px){.func-btn span{display:none}.func-btn{padding:0;width:38px;justify-content:center}}
+.sheet{display:flex;flex-direction:column;gap:14px;max-width:640px;margin:0 auto;border:1px solid var(--linie)}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}.spread h2{margin:0}
+.btn.sm{padding:6px 12px;min-height:0;font-size:13px}.btn.ghost{background:transparent;border:1px solid var(--linie);color:var(--text)}
+.fn-lab{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--grau);margin-top:4px}
+.fn-group{background:#161616;border:1px solid var(--linie);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.fn-row{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:10px 14px;background:none;border:0;border-top:1px solid var(--linie);color:var(--text);font:inherit;text-align:start;cursor:pointer}
+.fn-row:first-child{border-top:0}.fn-row .tx{flex:1;min-width:0;display:flex;flex-direction:column}.fn-row .tx b{font-weight:600}.fn-row .tx small{color:var(--grau);font-size:12.5px}
+.fn-row select{width:auto;max-width:170px;border:1px solid var(--linie);background:var(--bg);color:var(--text);border-radius:999px;height:38px;padding:0 12px}
+.fn-row .chev{color:var(--grau);flex:none}
+.sw{width:50px;height:30px;border-radius:999px;background:#333;border:1px solid var(--linie);padding:2px;display:flex;align-items:center;flex:none;transition:background .15s}
+.sw::after{content:"";width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.fn-row[aria-pressed="true"] .sw{background:var(--text);border-color:var(--text)}.fn-row[aria-pressed="true"] .sw::after{transform:translateX(20px);background:#000}
+.gsel{display:grid;grid-template-columns:1fr 1fr;gap:8px}.gsel.drei{grid-template-columns:1fr 1fr 1fr}
+.gsel button{display:flex;flex-direction:column;gap:2px;text-align:start;padding:12px;border-radius:14px;border:1px solid var(--linie);background:#161616;color:var(--text);font:inherit;cursor:pointer}
+.gsel button small{color:var(--grau);font-size:12px}.gsel button[aria-pressed="true"]{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+/* Bearbeiten im Plan, Wohnung, Druck, Vorher/Nachher */
+.pz-hinweis{display:grid;gap:4px;text-align:center;margin:8px 0}
+.pz-winkel{display:flex;align-items:center;gap:8px;flex-basis:100%;font-size:.85em}.pz-winkel input{flex:1}
+.pz-voll{position:fixed;inset:0;z-index:85;background:var(--bg);overflow:auto;padding:calc(14px + env(safe-area-inset-top)) 14px 90px}
+.pz-kopf{position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2}.pz-gross svg{width:100%;height:auto}
+.w-plan svg{width:100%;height:auto;touch-action:none;border-radius:12px}.w-raum{cursor:grab}
+.w-zahlen{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.w-zahlen div{background:rgba(127,127,127,.12);border-radius:12px;padding:10px;display:flex;flex-direction:column}
+.druck-leiste{display:flex;gap:8px;padding:14px;position:sticky;top:0;background:var(--bg);z-index:3}
+.druck{padding:0 14px 90px}.dr-kopf{border-bottom:2px solid var(--text);padding:10px 0;margin-bottom:10px}.dr-kopf h1{margin:4px 0}
+.druck-raum{border:1px solid var(--linie);border-radius:12px;padding:12px;margin:12px 0;background:#fff;color:#111}
+.druck-raum h2 small{font-size:.6em;color:#555;display:block}.druck-raum .klein{color:#444}
+.druck-raum table{width:100%;border-collapse:collapse;font-size:.85em;margin:6px 0}.druck-raum th,.druck-raum td{border-bottom:1px solid #ddd;text-align:left;padding:5px 4px;vertical-align:top}
+.dr-bilder{display:grid;grid-template-columns:1fr;gap:10px}@media(min-width:600px){.dr-bilder{grid-template-columns:1fr 1fr}}
+.dr-plan svg{width:100%;height:auto}.dr-3d{width:100%;border-radius:10px;background:#eee;min-height:120px}
+.dr-mass{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.8em;color:#333;margin-top:4px}
+.dr-farbe{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid #999;vertical-align:middle;margin-right:4px}
+.dr-summe td:last-child{text-align:right;font-weight:700}
+.druck-raum .los-svg>rect:first-of-type{fill:#fff;stroke:#111}.druck-raum .los-svg text{fill:#111}
+.vn{position:relative;border-radius:12px;overflow:hidden;background:#222;aspect-ratio:3/4}.vn img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vn-nachher{position:absolute;inset:0}.vn-linie{position:absolute;top:0;bottom:0;width:3px;background:#fff;transform:translateX(-1px);pointer-events:none;box-shadow:0 0 6px rgba(0,0,0,.6)}
+.vn input[type=range]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:ew-resize;margin:0}
+.vn-l,.vn-r{position:absolute;bottom:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.8em;padding:3px 8px;border-radius:999px;pointer-events:none}.vn-l{left:10px}.vn-r{right:10px}
+.rm-box{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid #f28c28;background:rgba(242,140,40,.1);margin:10px 0}
+@media print{.nicht-drucken,.pz-hinweis,#mikro-knopf,#sprech-knopf,#stift-knopf,.laser-chip,.kopf-knoepfe{display:none!important}.druck-raum{break-inside:avoid-page;break-after:page;border:0}.druck{padding:0}textarea{border:1px solid #999}}

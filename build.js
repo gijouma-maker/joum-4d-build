@@ -3,7 +3,7 @@
    3D-Dateien werden NICHT gebündelt – die lädt js/lade3d.js erst bei Bedarf. */
 const fs = require('fs'), { execSync } = require('child_process');
 const DATEIEN = ['data-raeume', 'data-anleitungen', 'data-garten', 'core', 'lade3d', 'screens-projekte', 'screens-garten', 'screens-markt', 'ki-pruefung',
-  'screens-installation', 'tour', 'assistent', 'vorlesen', 'sprachsteuerung', 'loslegen', 'studio', 'stile-mehr', 'studio-mehr', 'studio-material', 'umbau', 'haus', 'laser','fachfrage', 'moebel', 'fitness', 'plan-ziehen','treppe', 'bauamt', 'bauteile3d', 'ar', 'konfig', 'anmeldung', 'sprachen', 'funktionen', 'startseite', 'nav']
+  'screens-installation', 'tour', 'assistent', 'vorlesen', 'sprachsteuerung', 'loslegen', 'studio', 'stile-mehr', 'studio-mehr', 'studio-material', 'umbau', 'haus', 'laser','fachfrage', 'moebel', 'fitness', 'plan-ziehen', 'wohnung', 'druck', 'teilen', 'foto-tools','treppe', 'bauamt', 'bauteile3d', 'ar', 'konfig', 'anmeldung', 'sprachen', 'funktionen', 'startseite', 'nav']
   .filter((n) => fs.existsSync('js/' + n + '.js'));
 const roh = DATEIEN.map((n) => `/* ===== ${n}.js ===== */\n` + fs.readFileSync('js/' + n + '.js', 'utf8')).join('\n;\n');
 fs.writeFileSync('js/app.js', roh);

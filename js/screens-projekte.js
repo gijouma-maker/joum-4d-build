@@ -93,7 +93,7 @@ route('projekte', (_, q) => {
   const tabs = [['innen', 'Innen'], ['aussen', 'Haus außen'], ['garten', 'Garten']];
   let inhalt = '';
   if (tab === 'innen') {
-    inhalt = `<p class="klein">Alle Räume mit Katalog, Sicherheitshinweisen und passenden Anleitungen.</p><div class="raster2">${RAEUME.filter((r) => r.bereich === 'innen').map((r) => `<a class="raum-kachel" href="#/raum/${r.id}"><b>${esc(r.name)}</b><span class="klein">${r.katalog.length} Elemente · ${r.projekte.length} Projekte</span></a>`).join('')}</div>`;
+    inhalt = `<a class="karte los-einstieg" href="#/wohnung"><b>🏠 Ganze Wohnung planen</b><span class="klein">Alle Räume zu einem Grundriss zusammensetzen, verschieben, in 3D ansehen, als PDF für Handwerker.</span></a><p class="klein">Alle Räume mit Katalog, Sicherheitshinweisen und passenden Anleitungen.</p><div class="raster2">${RAEUME.filter((r) => r.bereich === 'innen').map((r) => `<a class="raum-kachel" href="#/raum/${r.id}"><b>${esc(r.name)}</b><span class="klein">${r.katalog.length} Elemente · ${r.projekte.length} Projekte</span></a>`).join('')}</div>`;
   } else {
     const ids = tab === 'aussen' ? ['fenster', 'haustuer', 'dach', 'dachfenster', 'fassade', 'regenrinne', 'vordach', 'carport', 'garagentor', 'balkon_abdichten'] : ['gartenplaner', 'hochbeet', 'terrasse', 'gartenweg', 'teich', 'zaun', 'gartenhaus', 'bewaesserung', 'gartenlicht'];
     const raumFuer = (id) => tab === 'garten' ? 'garten' : (['dach', 'dachfenster'].includes(id) ? 'dach' : ['carport', 'garagentor'].includes(id) ? 'garage' : id === 'balkon_abdichten' ? 'balkon' : 'fassade');

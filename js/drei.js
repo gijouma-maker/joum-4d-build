@@ -2,6 +2,7 @@
 (function () {
   const T = window.THREE;
   const aktiv = [];
+  const abm = (e) => { const f = fussabdruck(e); return [f.w / 100, f.h / 100]; };
 
   /* ---------- Grund-Viewer ---------- */
   function viewer(box, opt) {
@@ -385,7 +386,7 @@
       const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : (window.GRUPPEN_FARBE_3D[e.g] || '#aaa'));
       const g = modell(e, e.fotoFarbe || farbe, stil ? stil.akzent : '#7a9ab8');
       if (e.foto) { const tl = new T.TextureLoader().load(e.foto); tl.encoding = T.sRGBEncoding; let groesst = null, gv = 0; g.traverse((c) => { if (c.isMesh && c.geometry) { c.geometry.computeBoundingBox(); const b = c.geometry.boundingBox, vv = (b.max.x - b.min.x) * (b.max.y - b.min.y) + (b.max.z - b.min.z) * (b.max.y - b.min.y); if (vv > gv) { gv = vv; groesst = c; } } }); if (groesst) groesst.material = new T.MeshStandardMaterial({ map: tl, roughness: 0.45 }); }
-      const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
+      const [ew, ed] = abm(e);
       g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2);
       g.rotation.y = -(e.rot || 0) * Math.PI / 180;
       g.userData.id = e.id;
@@ -411,7 +412,7 @@
       if (beiAuswahl) beiAuswahl(hit ? (hit.object.userData.flaeche != null && hit.object.userData.id == null ? 'flaeche:' + hit.object.userData.flaeche : hit.object.userData.id) : null);
     });
     v.raum = { objekte, B, D };
-    v.bewegen = (e) => { const g = objekte.find((o) => o.userData.id === e.id); if (!g) return; const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100; g.position.x = e.x / 100 + ew / 2 - B / 2; g.position.z = e.y / 100 + ed / 2 - D / 2; };
+    v.bewegen = (e) => { const g = objekte.find((o) => o.userData.id === e.id); if (!g) return; const [ew, ed] = abm(e); g.position.x = e.x / 100 + ew / 2 - B / 2; g.position.z = e.y / 100 + ed / 2 - D / 2; };
     window.raum3DViewer = v;
     v.start();
     return v;
@@ -464,7 +465,7 @@
     const teile = (p.plan || []).map((e) => {
       const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
-      const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
+      const [ew, ed] = abm(e);
       g.position.set(e.x / 100 + ew / 2 - B / 2, 3, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; g.visible = false;
       sc.add(g); return { g, n: e.n };
     });
@@ -545,16 +546,17 @@
     Object.assign(so.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr }); sc.add(so);
     const lampe = new T.PointLight(0xffe2b8, 0.45, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
     const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
-    const bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2));
+    const FL = p.flaechen;
+    let bt; if (FL && FL.boden && window.musterBild) { const mb = window.musterBild(FL.boden); bt = new T.CanvasTexture(mb.c); bt.wrapS = bt.wrapT = T.RepeatWrapping; bt.encoding = T.sRGBEncoding; bt.repeat.set(B / mb.mx, D / mb.my); } else { bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2)); }
     const boden = mesh(new T.PlaneGeometry(B, D), new T.MeshStandardMaterial({ map: bt, roughness: 0.75 })); boden.rotation.x = -Math.PI / 2; sc.add(boden);
-    const wf = stil ? stil.wand : '#ece8e1';
-    [[B, 0, -D / 2, 0], [B, 0, D / 2, Math.PI], [D, -B / 2, 0, Math.PI / 2], [D, B / 2, 0, -Math.PI / 2]].forEach(([w, x, z, ry]) => { const m = mesh(new T.PlaneGeometry(w, 2.5), mat(wf, { roughness: 0.95 })); m.position.set(x, 1.25, z); m.rotation.y = ry; sc.add(m); });
+    const wf = stil ? stil.wand : '#ece8e1', wIdx = [0, 2, 3, 1];
+    [[B, 0, -D / 2, 0], [B, 0, D / 2, Math.PI], [D, -B / 2, 0, Math.PI / 2], [D, B / 2, 0, -Math.PI / 2]].forEach(([w, x, z, ry], wi) => { const WD = FL && FL.waende ? FL.waende[wIdx[wi]] || {} : {}; const m = mesh(new T.PlaneGeometry(w, 2.5), mat(WD.fliesen ? WD.fliesen.farbe : (WD.farbe || wf), { roughness: 0.95 })); m.position.set(x, 1.25, z); m.rotation.y = ry; sc.add(m); });
     if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.7 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
     sc.add(tuerGruppe(p, B));
     (p.plan || []).forEach((e) => {
       const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : ((window.GRUPPEN_FARBE_3D || {})[e.g] || '#aaa'));
       const g = modell(e, farbe, stil ? stil.akzent : '#7a9ab8');
-      const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100;
+      const [ew, ed] = abm(e);
       g.position.set(e.x / 100 + ew / 2 - B / 2, 0, e.y / 100 + ed / 2 - D / 2); g.rotation.y = -(e.rot || 0) * Math.PI / 180; sc.add(g);
     });
     const cam = new T.PerspectiveCamera(50, Wb / Hb, 0.05, 100);
@@ -647,7 +649,7 @@
 
     /* Einrichtung analysieren */
     const plan = p.plan || [];
-    const mitte = (e) => { const rot = (e.rot || 0) % 180 !== 0, ew = (rot ? e.d : e.w) / 100, ed = (rot ? e.w : e.d) / 100; return [e.x / 100 + ew / 2 - B / 2, e.y / 100 + ed / 2 - D / 2]; };
+    const mitte = (e) => { const [ew, ed] = abm(e); return [e.x / 100 + ew / 2 - B / 2, e.y / 100 + ed / 2 - D / 2]; };
     const SAN = /WC|Waschtisch|Handwaschbecken|Dusche|Badewanne|Spüle|Waschmaschine|Geschirrspüler|Ausgussbecken|Bodenablauf|Wasch-Trocken/;
     const AB_H = (n) => /WC/.test(n) ? 0.23 : /Dusche|Bodenablauf/.test(n) ? 0.06 : /Badewanne/.test(n) ? 0.12 : /Spüle|Geschirr/.test(n) ? 0.47 : /Waschmaschine|Wasch-Trocken/.test(n) ? 0.75 : 0.55;
     const DN = (n) => /WC/.test(n) ? 100 : /Waschtisch|Handwasch|Geschirr/.test(n) ? 40 : 50;

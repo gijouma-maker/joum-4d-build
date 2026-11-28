@@ -125,7 +125,7 @@ render = function () {
   let k = document.getElementById('stift-knopf');
   const quelle = document.querySelector('[data-akt="studioStift"]');
   if (!quelle) { if (k) k.remove(); return; }
-  if (!k) { k = document.createElement('button'); k.id = 'stift-knopf'; k.className = 'sprech-knopf stift-knopf'; k.setAttribute('aria-label', 'Auf dem Plan zeichnen'); k.innerHTML = '✏️'; document.body.appendChild(k); }
+  if (!k) { k = document.createElement('button'); k.id = 'stift-knopf'; k.className = 'sprech-knopf stift-knopf'; k.setAttribute('aria-label', 'Auf dem Plan zeichnen'); k.innerHTML = ICON.stift || '✏'; document.body.appendChild(k); }
   k.onclick = (e) => {
     e.preventDefault(); e.stopPropagation();
     const q = document.querySelector('[data-akt="studioStift"]'), plan = document.querySelector('.studio-plan'); if (!q || !plan) return;

@@ -133,7 +133,9 @@ function raumSVG(p, plan, opt) {
     const f = fussabdruck(e), fa = (typeof GRUPPEN_FARBE !== 'undefined' && GRUPPEN_FARBE[e.g]) || '#999', dk = ebene(e.n) === 'decke';
     const idx = e.gruppe ? 0 : (zaehl[e.n] = (zaehl[e.n] || 0) + 1);
     if (dk) return;
-    s += `<rect ${idx ? `data-n="${esc(e.n)}" data-i="${idx}" data-x="${f.x}" data-y="${f.y}" data-w="${f.w}" data-h="${f.h}" data-rot="${e.rot || 0}"` : ''} x="${ox + f.x * sk}" y="${oy + f.y * sk}" width="${Math.max(2, f.w * sk)}" height="${Math.max(2, f.h * sk)}" rx="2" fill="${fa}" fill-opacity=".85" stroke="${e.neu ? '#ffd27a' : '#000'}" stroke-width="${e.neu ? 2 : 0.6}"/>`;
+    const schr = ((((e.rot || 0) % 90) + 90) % 90) !== 0, cx = ox + (f.x + f.w / 2) * sk, cy = oy + (f.y + f.h / 2) * sk;
+    const rx = schr ? cx - e.w * sk / 2 : ox + f.x * sk, ry = schr ? cy - e.d * sk / 2 : oy + f.y * sk, rw = schr ? e.w * sk : f.w * sk, rh = schr ? e.d * sk : f.h * sk;
+    s += `<rect ${idx ? `data-n="${esc(e.n)}" data-i="${idx}" data-x="${f.x}" data-y="${f.y}" data-w="${f.w}" data-h="${f.h}" data-rot="${e.rot || 0}"` : ''} x="${rx}" y="${ry}" width="${Math.max(2, rw)}" height="${Math.max(2, rh)}" rx="2" fill="${fa}" fill-opacity=".85" stroke="${e.neu ? '#ffd27a' : '#000'}" stroke-width="${e.neu ? 2 : 0.6}"${schr ? ` transform="rotate(${e.rot} ${cx} ${cy})"` : ''}/>`;
     const kurz = e.n.split(/[ /(]/)[0];
     if (f.w * sk > 26 && f.h * sk > 11) s += `<text x="${ox + (f.x + f.w / 2) * sk}" y="${oy + (f.y + f.h / 2) * sk + 3}" font-size="${Math.min(10, f.w * sk / kurz.length * 1.6)}" text-anchor="middle" fill="#000">${esc(kurz)}</text>`;
   });

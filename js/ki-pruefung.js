@@ -58,9 +58,15 @@ function wandReihenfolge(n) {
 }
 function tuerZone(p) { const w = Math.min(95, Math.max(60, p.breite - 45)); return { x: 0, y: p.tiefe / 2 - 50, w, h: 100 }; }
 function schneidet(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
-function fussabdruck(e) { const r = (e.rot || 0) % 180 !== 0; return { x: e.x, y: e.y, w: r ? e.d : e.w, h: r ? e.w : e.d }; }
+function fussabdruck(e) {
+  const g = (((e.rot || 0) % 360) + 360) % 360;
+  if (g % 90 === 0) { const r = g % 180 !== 0; return { x: e.x, y: e.y, w: r ? e.d : e.w, h: r ? e.w : e.d }; }
+  const a = g * Math.PI / 180, c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a));
+  return { x: e.x, y: e.y, w: Math.round(e.w * c + e.d * s), h: Math.round(e.w * s + e.d * c) };
+}
 function vorneZone(e) { // Bereich vor dem Objekt (weg von der Wand)
   const f = fussabdruck(e), c = vorne(e.n), r = ((e.rot || 0) % 360 + 360) % 360;
+  if (r % 90 !== 0) return { x: f.x, y: f.y, w: 0, h: 0 };
   if (r === 0) return { x: f.x, y: f.y + f.h, w: f.w, h: c };
   if (r === 90) return { x: f.x - c, y: f.y, w: c, h: f.h };
   if (r === 180) return { x: f.x, y: f.y - c, w: f.w, h: c };

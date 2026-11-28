@@ -228,7 +228,7 @@ function studioSeite(rid, q) {
   const sel = Math.min(L.sel || 0, Math.max(0, vs.length - 1)), v = vs[sel];
   STUDIO_CACHE = { key: o.id + o.stil, vs };
   const M = stilMix(o), st = M.stil;
-  nachRender(() => { studio3D(o, v); ['.stil-chip.an', '.variante-karte.an'].forEach((q) => { const e = document.querySelector(q); if (e && e.parentElement) e.parentElement.scrollLeft = e.offsetLeft - 12; }); });
+  nachRender(() => { if (typeof vnNachherRendern === 'function') vnNachherRendern(o, o.entwurf ? { r: o.raum } : { p: o.id }); studio3D(o, v); ['.stil-chip.an', '.variante-karte.an'].forEach((q) => { const e = document.querySelector(q); if (e && e.parentElement) e.parentElement.scrollLeft = e.offsetLeft - 12; }); });
   const F = o.fensterPos;
   return kopf(r.name, 'Studio · wische durch die Vorschläge', '#/projekte') + `<div class="inhalt studio">
     <div class="studio-3d" id="studio3d"><div class="studio-3d-titel">${v ? esc(v.titel) + ' · ' + esc(M.name) : ''}</div></div>
@@ -256,8 +256,9 @@ function studioSeite(rid, q) {
         <div class="zeile"><span style="flex:1">+ Montage durch Handwerker</span><b>ca. ${euro(v.kosten.montage)}</b></div>
         <div class="klein grau">Spanne ${euro(v.kosten.min)} – ${euro(v.kosten.max)} · Richtwerte</div>
       </div>
-      <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
+      <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studioDruck" ${d}>📄 PDF für Handwerker</button><button class="btn" data-akt="studioTeilen" ${d}>🔗 Teilen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
     </section>` : '<div class="hinweis">Keine Idee passt mit dieser Auswahl – Maße prüfen oder Teile entfernen.</div>'}
+    ${typeof vnKarte === 'function' ? vnKarte(o, d) : ''}
     ${typeof waendeKarte === 'function' ? waendeKarte(o, d) : ''}
     ${typeof materialKarte === 'function' ? materialKarte(o, d) : ''}
     <section class="karte studio-raum"><h3>Dein Raum</h3>
