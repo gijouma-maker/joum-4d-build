@@ -506,3 +506,5 @@ body.ohne-schwebe #mikro-knopf,body.ohne-schwebe #sprech-knopf{display:none}
 .vn-l,.vn-r{position:absolute;bottom:10px;background:rgba(0,0,0,.6);color:#fff;font-size:.8em;padding:3px 8px;border-radius:999px;pointer-events:none}.vn-l{left:10px}.vn-r{right:10px}
 .rm-box{display:grid;gap:8px;padding:12px;border-radius:14px;border:1px solid #f28c28;background:rgba(242,140,40,.1);margin:10px 0}
 @media print{.nicht-drucken,.pz-hinweis,#mikro-knopf,#sprech-knopf,#stift-knopf,.laser-chip,.kopf-knoepfe{display:none!important}.druck-raum{break-inside:avoid-page;break-after:page;border:0}.druck{padding:0}textarea{border:1px solid #999}}
+
+.deko-leiste{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:6px 0}.deko-leiste .chip{white-space:nowrap}.deko-leiste .klein{white-space:nowrap}

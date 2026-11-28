@@ -33,7 +33,7 @@ route('druck', (_, q) => {
   else { const d = q.p ? { p: q.p } : { r: q.r }; const o = studioObj(d); if (o) teile = [[o, d]]; }
   const name = q.w ? 'Ganze Wohnung' : (teile[0] ? (raum(teile[0][0].raum) || {}).name : '');
   nachRender(() => lade3D().then(() => document.querySelectorAll('img[data-druck3d]').forEach((img) => {
-    try { const d = JSON.parse(img.dataset.druck3d), o = studioObj(d), { v } = studioAktuell(d), c = JSON.parse(JSON.stringify(o)); c.plan = v.plan; c.flaechen = typeof flaechen === 'function' ? flaechen(o) : null; window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE; img.src = raumBild(c, stilMix(o).stil); } catch (e) { img.remove(); }
+    try { const d = JSON.parse(img.dataset.druck3d), o = studioObj(d), { v } = studioAktuell(d), c = JSON.parse(JSON.stringify(o)); c.plan = v.plan; c.flaechen = typeof flaechen === 'function' ? flaechen(o) : null; if (typeof dekoAnwenden === 'function') dekoAnwenden(o, c); window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE; img.src = raumBild(c, stilMix(o).stil); } catch (e) { img.remove(); }
   })).catch(() => {}));
   return `<div class="druck">
     <div class="druck-leiste nicht-drucken"><button class="btn hell" data-akt="druckZurueck">← Zurück</button><button class="btn" data-akt="druckenJetzt">📄 Als PDF speichern / Drucken</button></div>

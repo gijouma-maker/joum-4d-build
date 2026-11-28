@@ -157,3 +157,4 @@
 - ☑ Vorher/Nachher-Schieberegler (Raumfoto ↔ 3D-Entwurf), Möbel auf dem Foto wegradieren (im Gerät). ☐ KI-Server: fotorealistisch radieren, Entwurf perspektivisch ins Foto setzen
 - ☑ Ähnliches finden: Foto an Google Lens teilen, Suche in 7 Shops (IKEA, OTTO, home24, XXXLutz, Amazon, Google Shopping, Kleinanzeigen). ☐ Server: Bildsuche + Preisvergleich direkt in der App, Partner-/Affiliate-Verträge (Kennzeichnung „Werbung“)
 - ☑ Plan-Editor groß (Vollbild), freies Drehen in 15°-Schritten / Regler; Kopfleiste und Funktionen-Blatt im JoumHome-Stil (Hilfe, Sprachhilfe männlich/weiblich + Tempo, Sprache, Funktionen, Profil)
+- ☑ Deko & Wohnlichkeit: Stufen Schlicht/Dezent/Gemütlich/Viel Deko (Standard: Gemütlich), Deko je Raum (Teppich, Pflanzen, Bilder, Bodenvase, Korb, Lichterkette, warme Stehleuchte), auf Möbeln Kissen, Decken, Bücher, Vasen, Kerzen, Lampen in Stilfarben; warmes Licht, Vorhänge, wärmere Wände, 🌙 Abendlicht; Deko-Kategorie im Möbel-Katalog

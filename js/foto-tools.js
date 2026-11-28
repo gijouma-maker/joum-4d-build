@@ -17,7 +17,7 @@ function vnKarte(o, d) {
 }
 function vnNachherRendern(o, d) {
   const img = document.getElementById('vn-nachher'); if (!img || img.getAttribute('src')) return;
-  lade3D().then(() => { try { const { v } = studioAktuell(d); const c = JSON.parse(JSON.stringify(o)); c.plan = v.plan; c.flaechen = flaechen(o); window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE; VN.bild = raumBild(c, stilMix(o).stil); VN.key = o.id + (losStatus(o).sel || 0) + o.stil; img.src = VN.bild; } catch (e) {} });
+  lade3D().then(() => { try { const { v } = studioAktuell(d); const c = JSON.parse(JSON.stringify(o)); c.plan = v.plan; c.flaechen = flaechen(o); if (typeof dekoAnwenden === 'function') dekoAnwenden(o, c); window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE; VN.bild = raumBild(c, stilMix(o).stil); VN.key = o.id + (losStatus(o).sel || 0) + o.stil; img.src = VN.bild; } catch (e) {} });
 }
 EIN.vnPos = (v) => { VN.pos = +v; const n = document.querySelector('.vn-nachher'), l = document.querySelector('.vn-linie'); if (n) n.style.clipPath = `inset(0 0 0 ${v}%)`; if (l) l.style.left = v + '%'; };
 EIN.vnFoto = (v, d, el) => { const f = el.files && el.files[0]; if (!f) return; bildVerkleinern(f, 1200, (url) => aendern(() => { const o = studioObj(d); o.raumFoto = url; delete o.raumFotoLeer; }, 'Raumfoto')); };

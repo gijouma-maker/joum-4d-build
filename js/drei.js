@@ -326,12 +326,49 @@
     } else if (is(/Tür$/)) { g.add(kiste(w, h, 0.04, '#f0ece4', 0, h / 2, 0)); g.add(kiste(0.12, 0.02, 0.05, '#888', w * 0.38, 1.05, 0.04, { metalness: 0.8 }));
     } else if (is(/Fenster|Dachfenster/)) { g.add(kiste(w, h, 0.08, '#f4f4f4', 0, 0.9 + h / 2, 0)); g.add(kiste(w * 0.9, h * 0.9, 0.09, '#9fd3ef', 0, 0.9 + h / 2, 0, { transparent: true, opacity: 0.5, roughness: 0.05 }));
     } else if (is(/Laufband/)) { g.add(kiste(w, 0.2, d, '#333', 0, 0.1, 0)); g.add(kiste(w * 0.8, 0.02, d * 0.85, '#111', 0, 0.21, 0)); g.add(kiste(w, 0.06, 0.15, '#333', 0, h, -d / 2 + 0.1)); [-1, 1].forEach((s) => g.add(kiste(0.05, h, 0.05, '#555', s * w / 2, h / 2, -d / 2 + 0.1)));
+    } else if (is(/Bodenvase/)) { g.add(mesh(new T.CylinderGeometry(w * 0.3, w * 0.42, h * 0.55, 24), mat(akzent, { roughness: 0.4 }), 0, h * 0.275, 0)); for (let i = 0; i < 7; i++) { const z = zyl(0.006, h * 0.6, '#6b5a3a', (i - 3) * 0.03, h * 0.75, (i % 2) * 0.03); z.rotation.z = (i - 3) * 0.12; g.add(z); g.add(mesh(new T.SphereGeometry(0.05, 8, 6), mat('#c9b48a'), (i - 3) * 0.08, h * 1.02, (i % 2) * 0.03)); }
+    } else if (is(/Korb/)) { g.add(mesh(new T.CylinderGeometry(w / 2, w * 0.42, h, 20, 1, true), mat('#b08a5a', { side: T.DoubleSide, roughness: 1 }), 0, h / 2, 0)); g.add(kiste(w * 0.7, 0.08, w * 0.7, '#e8dcc8', 0, h * 0.85, 0));
+    } else if (is(/Wandbilder|Bilderwand|Bild groß/)) { const ye = 1.15, n3 = is(/3er|Bilderwand/) ? 3 : 1, bw = (w - 0.1 * (n3 - 1)) / n3, farben = ['#c98b6b', '#8aa39b', '#d8c3a5', akzent];
+      for (let i = 0; i < n3; i++) { const x = -w / 2 + bw / 2 + i * (bw + 0.1); g.add(kiste(bw, h, 0.03, '#2a2a2a', x, ye + h / 2, 0)); g.add(kiste(bw * 0.86, h * 0.86, 0.035, '#f3efe8', x, ye + h / 2, 0.003)); g.add(kiste(bw * 0.6, h * 0.55, 0.04, farben[i % farben.length], x, ye + h / 2, 0.006)); }
+    } else if (is(/Lichterkette/)) { for (let i = 0; i < 14; i++) g.add(mesh(new T.SphereGeometry(0.02, 8, 6), new T.MeshStandardMaterial({ color: '#ffe2a8', emissive: new T.Color('#ffcf7a'), emissiveIntensity: 2 }), -w / 2 + i * w / 13, 2.1 - Math.sin(i / 13 * Math.PI) * 0.25, 0));
     } else {
       const ye = hoehe(n);
       g.add(mesh(new T.BoxGeometry(w, h, d), mat(farbe, { roughness: 0.6 }), 0, ye + h / 2, 0));
     }
+    if (e.deko) anziehen(g, e, w, d, h, akzent);
     return g;
   }
+  /* Wohnlich machen: Kissen, Decken, Bücher, Vasen, Kerzen, Lampen auf/an den Möbeln (rein optisch) */
+  function anziehen(g, e, w, d, h, akzent) {
+    const n = e.n, is = (re) => re.test(n), L = e.deko, P = e.dekoFarben || [akzent, '#d9c3a5', '#b5643f', '#8aa39b'], R = (() => { let x = (n.length * 9301 + 49297) % 233280; return () => (x = (x * 9301 + 49297) % 233280) / 233280; })();
+    const warm = (x, y, z, r) => { g.add(mesh(new T.SphereGeometry(r || 0.05, 12, 10), new T.MeshStandardMaterial({ color: '#fff1d6', emissive: new T.Color('#ffc978'), emissiveIntensity: 1.6 }), x, y, z)); };
+    const kissen = (x, y, z, f, rx) => { const k = kiste(0.42, 0.42, 0.13, f, x, y, z, { roughness: 1 }); k.rotation.x = rx || -0.25; k.rotation.z = (R() - 0.5) * 0.3; g.add(k); };
+    const vase = (x, y, z, bl) => { g.add(mesh(new T.CylinderGeometry(0.05, 0.07, 0.22, 16), mat(P[1], { roughness: 0.35 }), x, y + 0.11, z)); if (bl) for (let i = 0; i < 5; i++) { g.add(zyl(0.004, 0.25, '#4c6b3c', x + (i - 2) * 0.02, y + 0.33, z)); g.add(mesh(new T.SphereGeometry(0.035, 8, 6), mat(i % 2 ? P[2] : '#f2e6d0'), x + (i - 2) * 0.03, y + 0.46 + (i % 2) * 0.03, z)); } };
+    const buecher = (x, y, z, anz, quer) => { for (let i = 0; i < anz; i++) { const bh = 0.18 + R() * 0.1, f = P[i % P.length]; if (quer) g.add(kiste(0.24, 0.04, 0.17, f, x, y + 0.02 + i * 0.045, z)); else g.add(kiste(0.035, bh, 0.18, f, x + i * 0.04, y + bh / 2, z)); } };
+    const kerze = (x, y, z) => { g.add(zyl(0.025, 0.12, '#f4efe6', x, y + 0.06, z)); warm(x, y + 0.14, z, 0.012); };
+    const pflanzeKlein = (x, y, z) => { g.add(mesh(new T.CylinderGeometry(0.07, 0.055, 0.13, 14), mat('#c9b8a3'), x, y + 0.065, z)); [[0, 0.2, 0, 0.1], [0.05, 0.25, 0.02, 0.07], [-0.05, 0.23, -0.02, 0.07]].forEach(([a, b, c, r]) => g.add(mesh(new T.SphereGeometry(r, 10, 8), mat('#5f8a4e', { roughness: 0.9 }), x + a, y + b, z + c))); };
+    const lampe = (x, y, z) => { g.add(zyl(0.06, 0.02, '#333', x, y + 0.01, z)); g.add(zyl(0.008, 0.3, '#333', x, y + 0.16, z)); g.add(mesh(new T.CylinderGeometry(0.08, 0.12, 0.16, 18, 1, true), new T.MeshStandardMaterial({ color: '#f2e6d0', emissive: new T.Color('#ffcf8a'), emissiveIntensity: 0.9, side: T.DoubleSide }), x, y + 0.36, z)); };
+    if (is(/Sofa|Ecksofa|Wohnlandschaft|Schlafsofa|Récamiere|Modulsofa|Sitzbank/)) {
+      const anz = L >= 2 ? Math.min(4, Math.max(2, Math.round(w / 0.6))) : 2;
+      for (let i = 0; i < anz; i++) kissen(-w / 2 + 0.35 + i * (w - 0.7) / Math.max(1, anz - 1), h * 0.62, -d * 0.28, P[i % P.length]);
+      if (L >= 2) { const dk = kiste(0.55, 0.03, d * 0.9, P[1], w / 2 - 0.3, h * 0.47, 0, { roughness: 1 }); g.add(dk); g.add(kiste(0.55, 0.25, 0.03, P[1], w / 2 - 0.3, h * 0.35, d / 2 + 0.01, { roughness: 1 })); }
+    } else if (is(/[Bb]ett/) && !is(/Babybett|Etagenbett|Hochebene|Hochbett|Schrankbett/)) {
+      const hb = 0.52; kissen(-w * 0.2, hb + 0.18, -d / 2 + 0.3, P[0], -0.5); kissen(w * 0.2, hb + 0.18, -d / 2 + 0.3, P[3], -0.5);
+      if (L >= 2) { kissen(0, hb + 0.15, -d / 2 + 0.42, P[2], -0.4); g.add(kiste(w * 0.98, 0.04, 0.55, P[1], 0, hb + 0.04, d / 2 - 0.35, { roughness: 1 })); g.add(kiste(w * 0.98, 0.3, 0.03, P[1], 0, hb - 0.1, d / 2 + 0.005, { roughness: 1 })); }
+    } else if (is(/Regal|Bücher|Vitrine/) && h > 0.6) {
+      const boeden = Math.max(2, Math.floor(h / 0.38));
+      for (let b = 0; b < boeden; b++) { const y = 0.05 + b * h / boeden; if (L >= 1) buecher(-w / 2 + 0.06 + R() * w * 0.2, y, 0, 4 + Math.floor(R() * 6)); if (L >= 2 && b % 2) pflanzeKlein(w / 2 - 0.15, y, 0); if (L >= 3 && b === 1) kerze(0, y, 0); }
+    } else if (is(/Sideboard|Kommode|TV-Board|Lowboard|Highboard|Konsolentisch|Kamin/)) {
+      const y = is(/Kamin/) ? h : h; vase(-w / 2 + 0.2, y, 0, L >= 2); buecher(w / 2 - 0.3, y, 0, 3, true); if (L >= 2) { kerze(w / 2 - 0.55, y, 0.05); kerze(w / 2 - 0.62, y, -0.04); } if (L >= 3) pflanzeKlein(0, y, 0);
+    } else if (is(/Esstisch|Ausziehtisch/)) { vase(0, h, 0, true); if (L >= 2) { kerze(-0.25, h, 0); kerze(0.25, h, 0); g.add(kiste(Math.min(w * 0.7, 1.6), 0.005, 0.38, P[1], 0, h + 0.003, 0, { roughness: 1 })); }
+    } else if (is(/Couchtisch|Satztische/)) { g.add(kiste(0.4, 0.02, 0.28, '#3a2c20', 0, h + 0.01, 0)); kerze(-0.08, h + 0.02, 0); if (L >= 2) { buecher(0.25, h, 0.05, 2, true); vase(-0.3, h, -0.05, true); }
+    } else if (is(/Schreibtisch/)) { lampe(w / 2 - 0.2, h, -d / 2 + 0.15); if (L >= 2) { pflanzeKlein(-w / 2 + 0.15, h, -d / 2 + 0.15); buecher(-w / 2 + 0.35, h, -d / 2 + 0.15, 3, true); }
+    } else if (is(/Nachttisch/)) { lampe(0, h, -0.05); if (L >= 2) buecher(0.1, h, 0.08, 2, true);
+    } else if (is(/Waschtisch|Handwaschbecken/)) { if (L >= 1) g.add(kiste(0.3, 0.4, 0.03, P[1], w / 2 + 0.05, 0.6, -d / 2 + 0.05, { roughness: 1 })); if (L >= 2) pflanzeKlein(-w / 2 + 0.12, h, -d / 2 + 0.12); if (L >= 3) kerze(-w / 2 + 0.3, h, -d / 2 + 0.1);
+    } else if (is(/Kücheninsel|Arbeitsplatte|Halbinsel/)) { if (L >= 1) { g.add(mesh(new T.CylinderGeometry(0.16, 0.1, 0.08, 20), mat('#b08a5a'), 0, h + 0.04, 0)); [[0.04, 0], [-0.04, 0.03], [0, -0.04]].forEach(([a, b], i) => g.add(mesh(new T.SphereGeometry(0.045, 10, 8), mat(['#d9a03a', '#b8402a', '#7aa04a'][i]), a, h + 0.1, b))); } if (L >= 2) pflanzeKlein(w / 2 - 0.2, h, 0);
+    } else if (is(/Spiegelschrank|^Spiegel/)) { /* nichts */ }
+  }
+  window.J4D_ANZIEHEN = anziehen;
 
   /* Tür an der linken Wand (Mitte); im Bad mit Lüftungsgitter */
   function tuerGruppe(p, B) {
@@ -366,7 +403,7 @@
     const wf = stil ? stil.wand : '#ece8e1';
     const wand = (w, x, z, ry, idx) => {
       const WD = FL && FL.waende ? FL.waende[idx] || {} : {};
-      const m = mesh(new T.PlaneGeometry(w, H), new T.MeshStandardMaterial({ color: new T.Color(WD.farbe || wf), roughness: 0.95, side: T.FrontSide })); m.position.set(x, H / 2, z); m.rotation.y = ry; m.userData.flaeche = String(idx); sc.add(m); flaechenMeshes.push(m);
+      const m = mesh(new T.PlaneGeometry(w, H), new T.MeshStandardMaterial({ color: WD.farbe ? new T.Color(WD.farbe) : (p._deko >= 2 ? new T.Color(wf).lerp(new T.Color('#e9cfa8'), 0.28) : new T.Color(wf)), roughness: 0.95, side: T.FrontSide })); m.position.set(x, H / 2, z); m.rotation.y = ry; m.userData.flaeche = String(idx); sc.add(m); flaechenMeshes.push(m);
       if (WD.fliesen && window.musterBild) { const fh = WD.fliesen.hoehe === 'voll' ? H : 1.2; const fm = mesh(new T.PlaneGeometry(w, fh), new T.MeshStandardMaterial({ map: musterTex(WD.fliesen, w, fh), roughness: WD.fliesen.foto ? 0.6 : 0.3 })); fm.position.set(x, fh / 2, z); fm.rotation.y = ry; fm.translateZ(0.004); fm.userData.flaeche = String(idx); sc.add(fm); flaechenMeshes.push(fm); } const sockel = mesh(new T.PlaneGeometry(w, 0.07), mat('#fafafa')); sockel.position.set(x, 0.035, z); sockel.rotation.y = ry; sockel.translateZ(0.003); sc.add(sockel); };
     wand(B, 0, -D / 2, 0, 0); wand(B, 0, D / 2, Math.PI, 2); wand(D, -B / 2, 0, Math.PI / 2, 3); wand(D, B / 2, 0, -Math.PI / 2, 1);
     // Decke (nur von innen sichtbar) + Lampe
@@ -380,7 +417,17 @@
     // Fenster an der Rückwand (Lichtschein)
     if (p.fenster !== false) { const fen = mesh(new T.PlaneGeometry(Math.min(1.2, B * 0.4), 1.3), mat('#bfe6ff', { emissive: new T.Color('#9fd3ef'), emissiveIntensity: 0.6 })); fen.position.set(B * 0.2, 1.55, -D / 2 + 0.004); sc.add(fen); }
     sc.add(tuerGruppe(p, B));
-    const raumLicht = new T.PointLight(0xfff1dd, 0.35, 10); raumLicht.position.set(0, 2.3, 0); sc.add(raumLicht);
+    const raumLicht = new T.PointLight(0xffe2bf, p._deko ? 0.55 : 0.35, 10); raumLicht.position.set(0, 2.3, 0); sc.add(raumLicht);
+    if (p._deko) {
+      sc.traverse((l) => { if (l.isHemisphereLight) { l.color.set('#fff2e0'); l.groundColor.set('#6a5240'); } if (l.isDirectionalLight) l.color.set('#ffe9cc'); });
+      v.renderer.toneMappingExposure = 0.86;
+      if (p.fenster !== false && p._deko >= 2) { const fb = Math.min(1.2, B * 0.4), vf = (p._dekoFarben || ['#d9c3a5'])[1]; [-1, 1].forEach((sd) => { for (let i = 0; i < 4; i++) { const f = mesh(new T.BoxGeometry(0.09, 2.35, 0.05), new T.MeshStandardMaterial({ color: new T.Color(vf).offsetHSL(0, 0, i % 2 ? 0.03 : -0.02), roughness: 1 }), B * 0.2 + sd * (fb / 2 + 0.08 + i * 0.07), 1.2, -D / 2 + 0.08 + (i % 2) * 0.03); sc.add(f); } }); const st = mesh(new T.CylinderGeometry(0.012, 0.012, fb + 0.9, 8), mat('#3a3a3a'), B * 0.2, 2.4, -D / 2 + 0.09); st.rotation.z = Math.PI / 2; sc.add(st); }
+    }
+    if (p._abend) {
+      sc.environment = null; sc.traverse((l) => { if (l.isDirectionalLight) l.intensity = 0.08; if (l.isHemisphereLight) { l.intensity = 0.18; l.color.set('#9fb0d0'); } });
+      v.renderer.setClearColor(0x07070c); v.renderer.toneMappingExposure = 0.95;
+      [[0, 2.2, 0, 1.0], [-B * 0.3, 1.0, -D * 0.3, 0.55], [B * 0.3, 1.0, D * 0.2, 0.45]].forEach(([x, y, z, i]) => { const pl = new T.PointLight(0xffb56b, i, 7, 1.6); pl.position.set(x, y, z); pl.castShadow = i > 0.9; sc.add(pl); });
+    }
     const objekte = [];
     (p.plan || []).forEach((e) => {
       const farbe = e.farbe || (stil && e.g === 'Möbel' ? stil.moebel : (window.GRUPPEN_FARBE_3D[e.g] || '#aaa'));
@@ -394,6 +441,7 @@
       if (e.id === auswahlId) { const bb = new T.Box3().setFromObject(g); const hl = new T.Box3Helper(bb, 0xffffff); sc.add(hl); }
       sc.add(g); objekte.push(g);
     });
+    if (p._deko || p._abend) sc.traverse((m) => { if (m.isMesh && m.material && 'envMapIntensity' in m.material) { m.material = m.material.clone(); m.material.envMapIntensity = p._abend ? 0.05 : 0.5; } });
     if (p._innen) { v.renderer.toneMappingExposure = 0.62; v.camera.position.set(-B * 0.05, 1.6, D * 0.05); v.controls.target.set(0, 1.5, 0); v.camera.position.set(0.05, 1.55, 0.12); v.camera.fov = 70; v.camera.updateProjectionMatrix(); v.controls.autoRotate = false; v.controls.enableZoom = false; v.controls.enablePan = false; v.controls.minPolarAngle = 0.15; v.controls.maxPolarAngle = Math.PI * 0.9; v.controls.rotateSpeed = -0.4; const cx = -B / 2 + Math.min(0.6, B * 0.2); v.camera.position.set(cx, 1.55, 0.25); v.controls.target.set(cx + 0.15, 1.5, 0.2); }
     else if (raumKamera && raumKamera.raum === p.id && !raumKamera.innen) { v.camera.position.copy(raumKamera.pos); v.controls.target.copy(raumKamera.ziel); v.controls.autoRotate = false; }
     else { const m = Math.max(B, D); v.camera.position.set(B * 0.75, m * 0.95 + 1.2, D * 0.95 + m * 0.55); v.controls.target.set(0, 0.6, 0); }
@@ -541,10 +589,10 @@
     renderer.setSize(Wb, Hb); renderer.setPixelRatio(1); renderer.outputEncoding = T.sRGBEncoding;
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap; renderer.setClearColor(0x15130f);
     const sc = new T.Scene(), B = p.breite / 100, D = p.tiefe / 100, gr = Math.max(B, D);
-    sc.add(new T.HemisphereLight(0xffffff, 0x3a3a3a, 0.8));
+    sc.add(p._deko ? new T.HemisphereLight(0xfff2e0, 0x6a5240, 0.85) : new T.HemisphereLight(0xffffff, 0x3a3a3a, 0.8));
     const so = new T.DirectionalLight(0xfff4e0, 0.9); so.position.set(3, 7, 4); so.castShadow = true; so.shadow.mapSize.set(2048, 2048);
     Object.assign(so.shadow.camera, { left: -gr, right: gr, top: gr, bottom: -gr }); sc.add(so);
-    const lampe = new T.PointLight(0xffe2b8, 0.45, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
+    const lampe = new T.PointLight(0xffe2b8, p._deko ? 0.65 : 0.45, 12); lampe.position.set(0, 2.3, 0); sc.add(lampe);
     const nass = ['bad', 'gaestewc', 'kueche', 'waschraum', 'keller', 'heizungsraum', 'garage'].includes(p.raum);
     const FL = p.flaechen;
     let bt; if (FL && FL.boden && window.musterBild) { const mb = window.musterBild(FL.boden); bt = new T.CanvasTexture(mb.c); bt.wrapS = bt.wrapT = T.RepeatWrapping; bt.encoding = T.sRGBEncoding; bt.repeat.set(B / mb.mx, D / mb.my); } else { bt = holzTextur(stil ? stil.boden : (nass ? '#cfcac2' : '#b8916a'), nass); bt.repeat.set(B * (nass ? 1.6 : 1.2), D * (nass ? 1.6 : 1.2)); }

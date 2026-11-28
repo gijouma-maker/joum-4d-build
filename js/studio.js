@@ -233,6 +233,7 @@ function studioSeite(rid, q) {
   return kopf(r.name, 'Studio · wische durch die Vorschläge', '#/projekte') + `<div class="inhalt studio">
     <div class="studio-3d" id="studio3d"><div class="studio-3d-titel">${v ? esc(v.titel) + ' · ' + esc(M.name) : ''}</div></div>
     <div class="stil-leiste">${STILE.map((s) => `<button class="stil-chip ${o.stil === s.id ? 'an' : ''}" data-akt="studioStil" ${d} data-s="${s.id}"><i style="background:${s.wand};border-color:${s.akzent}"></i><i style="background:${STIL_FARBE[s.id]}"></i>${esc(s.name)}</button>`).join('')}</div>
+    ${typeof dekoLeiste === 'function' ? dekoLeiste(o, d) : ''}
     <details class="stil-mix" ${o.stil2 ? 'open' : ''}><summary>Stile mischen ${o.stil2 ? '· ' + esc(M.name) : ''}</summary>
       <div class="stil-leiste"><button class="stil-chip ${!o.stil2 ? 'an' : ''}" data-akt="studioStil2" ${d} data-s="">Kein Mix</button>${STILE.filter((s) => s.id !== o.stil).map((s) => `<button class="stil-chip ${o.stil2 === s.id ? 'an' : ''}" data-akt="studioStil2" ${d} data-s="${s.id}"><i style="background:${s.wand};border-color:${s.akzent}"></i>${esc(s.name)}</button>`).join('')}</div>
       ${o.stil2 ? `<div class="zeile wrap">${[['80', '80/20 – Akzente'], ['70', '70/30'], ['50', '50/50']].map(([k, t]) => `<button class="chip ${(o.mix || '70') === k ? 'an' : ''}" data-akt="studioMix" ${d} data-m="${k}">${t}</button>`).join('')}</div>` : ''}
@@ -287,6 +288,7 @@ function studio3D(o, v) {
   if (typeof flaechen === 'function') c.flaechen = JSON.parse(JSON.stringify(flaechen(o)));
   c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}, /^Trennwand|^Halbhohe Wand|^Vorwand/.test(e.n) && !e.farbe ? { farbe: M.stil.wand } : {}, FT[e.n] ? { foto: FT[e.n].foto, fotoFarbe: FT[e.n].farbe } : {}));
   c._innen = typeof MAT !== 'undefined' && MAT.innen;
+  if (typeof dekoAnwenden === 'function') dekoAnwenden(o, c);
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
   const dd = o.entwurf ? { r: o.raum } : { p: o.id };
   box.insertAdjacentHTML('beforeend', '');

@@ -1,5 +1,5 @@
 /* Joum 4D Build – Service Worker: App läuft auch offline */
-const CACHE = 'j4d-v41';
+const CACHE = 'j4d-v43';
 const DATEIEN = ['./', './index.html', './css/app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './js/app.min.js',
   './js/vendor/three.min.js', './js/vendor/OrbitControls.js', './js/vendor/RoomEnvironment.js', './js/vendor/Sky.js', './js/drei.js'];
 
