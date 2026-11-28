@@ -392,3 +392,9 @@ div.schritt { cursor: default; }
 .ar-knoepfe { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .ar-knoepfe button { pointer-events: auto; min-height: 48px; padding: 0 16px; border-radius: 999px; border: none; background: #fff; color: #000; font: inherit; font-weight: 600; }
 .ar-knopf { border-color: #ffd27a !important; }
+
+/* Bauamt-Check */
+.ba-ergebnis { border-width: 2px; } .ba-ergebnis.rot { border-color: #b8483a; } .ba-ergebnis.gelb { border-color: #c9a64a; } .ba-ergebnis.gruen { border-color: #3c7a4c; }
+.ba-ampel { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.ba-ergebnis.rot .ba-ampel { color: #ff9a8a; } .ba-ergebnis.gelb .ba-ampel { color: #ffd27a; } .ba-ergebnis.gruen .ba-ampel { color: #9fe0ae; }
+.ba-text { width: 100%; box-sizing: border-box; background: #0a0a0a; color: #eee; border: 1px solid #333; border-radius: 12px; padding: 12px; font: 14px/1.5 inherit; margin: 6px 0 10px; }

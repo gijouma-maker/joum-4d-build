@@ -110,6 +110,7 @@
 - ☐ Notfallplan: Wer macht was, wenn der Server ausfällt / Daten verloren gehen
 
 ## Ideen-Eingang (neue Ideen → hier eintragen, dann einsortieren)
+- ☐ **Bauamt automatisch anschreiben** (Bauamt-Check ist fertig, heute: E-Mail öffnen/Kopieren/PDF): Server versendet die Anfrage im Namen des Nutzers (Antwort geht an seine E-Mail), Datenbank der Bauämter mit E-Mail je Landkreis/Stadt pflegen, Eingangsbestätigung im Projekt speichern. Bauantrag selbst nur über den Online-Dienst „Digitaler Bauantrag“ (EfA, 13 Länder) bzw. mit Entwurfsverfasser – später Schnittstelle (XBau) prüfen. Rechtlich klären: Haftung für Ersteinschätzung, Landesregeln jährlich aktualisieren
 - ☐ **„Andere KIs fragen“** (Knopf im Studio ist fertig, wartet auf Server): Endpunkt `POST /raum-ideen` auf dem Joum-Server; Server fragt Sprach-KI (Grundriss-Ideen als JSON) und Bild-KI (Foto im Stil). Antwortformat siehe `js/stile-mehr.js`. App prüft jede Idee mit den Raumregeln, nur Bestandenes wird gezeigt. Adresse in `js/konfig.js` → `kiServer` und in `_headers` bei `connect-src` freigeben. Interior AI/RoomGPT & Co. haben meist keine offene Schnittstelle – deshalb eigene KI-Anbindung mit Lizenz (Kosten je Anfrage, Limits im Abo)
 - ☐ **Treppen-Rückmeldungen lernen**: 👍/👎 und übernommene Treppen liegen in `S.lernen` → anonym an den Server, auswerten, Regeln/Vorschläge verbessern. Norm-Warnungen werden NIE automatisch abgeschaltet – nur von Fachleuten geprüft angepasst. Landesbauordnungen je Bundesland (Abweichungen z. B. Geländerhöhe) als Datenbank pflegen
 - ☐ Studio: KI-Server erzeugt zusätzliche, freie Grundriss-Ideen (z. B. nach Vorbild-Video/-Bild) – Ergebnis immer durch die App-Regeln prüfen; Möbel-Modelle je Stil realistischer (Hersteller-3D-Modelle)
@@ -130,6 +131,8 @@
 - ☑ KI-Raumprüfung (Regelwerk), Wasser/Abwasser/Elektro-Planer, Teile in 3D
 - ☑ Datensicherung lokal: Versionen, Papierkorb, Export/Import
 - ☑ Sicherheits-Header, Router-/Scroll-Fehler behoben
+- ☑ Bauamt-Check: Adresse → zuständiges Bauamt (PLZ-Suche OpenPLZ, kostenlos), 15 Vorhaben mit Ampel je Bundesland, Denkmal/WEG/Mieter-Hinweise, fertige Anfrage (E-Mail/Kopieren/PDF), Online-Dienste BY/HH/HB
+- ☑ Schneller Start (1 Datei, 3D lädt bei Bedarf), neue Startseite, Möbel per Kamera (AR, Android/Chrome)
 - ☑ „Bauteile erklärt“ in echtem 3D (ohne Server): Holzständerhaus + Dachstuhl, Holz mit Maserung, Schatten, Beschriftung mit Linie/Punkt, Montage, Vorlesen, Reel-Export – als Nächstes Mauerwerk, Trockenbau, Bad-Installation
 - ☐ KI-Video im Stil der Reels (Start-/Endbild → Video-KI über fal.ai o. ä., ca. 0,03–0,75 $/Sek.) – Konto beim Anbieter nötig, Entscheidung offen
 - ☑ Treppen-Planer nach DIN 18065/MBO: Steigung, Auftritt, Schrittmaß, Laufbreite, Kopfhöhe aus Deckenöffnung, passt in den Raum, Podest, Türen (Absatz ≥ Türbreite, keine Tür neben Stufen), KI-Vorschläge, Rückmeldungen

@@ -34,6 +34,7 @@ route('start', () => {
         <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
         <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
         <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>
+        <a class="kachel" href="#/bauamt">${ICON.beleg}<span>Bauamt-Check</span></a>
         <a class="kachel" href="#/treppe">${ICON.wuerfel}<span>Treppe</span></a>
         <a class="kachel" href="#/bauteile">${ICON.wuerfel}<span>Bauteile 3D</span></a>
         <a class="kachel" href="#/tour">${ICON.film}<span>Kino-Tour</span></a>

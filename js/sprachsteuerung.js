@@ -28,6 +28,7 @@ function absicht(text) {
   if (/zollstock|foto messen|per foto/.test(t)) return proj('#/fotomessen/{id}', 'label.datei-knopf', 'Halte den Zollstock an die Wand und mach ein Foto. Tippe auf den blinkenden Knopf.');
   if (/messen|ausmessen|maße|wie groß/.test(t)) return proj('#/messen/{id}', 'input[data-feld="breite"]', 'Trag hier Breite und Tiefe ein – oder sag die Maße mit dem Mikrofon.');
   if (/bauteil|ständer|staender|dachstuhl|holzrahmen|holzständer|sparren|rähm/.test(t)) return { route: '#/bauteile', ziel: '#bt-play', sag: 'Hier siehst du ein Holzständerhaus mit Dachstuhl in echtem 3D – Teil für Teil erklärt.' };
+  if (/bauamt|genehmigung|bauantrag|baugenehmigung|darf ich/.test(t)) return { route: '#/bauamt', ziel: '[data-ein="baPlz"]', sag: 'Hier prüfst du, ob du eine Genehmigung brauchst. Trag die Postleitzahl ein – ich finde dein Bauamt und schreibe die Anfrage.' };
   if (/treppe|stufen|steigung/.test(t)) return { route: '#/treppe', ziel: '.treppe-ergebnis', sag: 'Hier planst du deine Treppe nach Norm. Trag Geschosshöhe, Raum und Deckenöffnung ein – ich prüfe Stufen, Kopfhöhe und Türen.' };
   if (/grundriss/.test(t)) return proj('#/messen/{id}', 'label.datei-knopf', 'Tippe auf den blinkenden Knopf und lade deinen Grundriss hoch.');
   if (/skizze|zeichn/.test(t)) return proj('#/loslegen/{id}', '[data-akt="studioZu"][data-z="skizze"]', 'Tippe auf den blinkenden Knopf und zeichne deinen Raum mit dem Finger – oder fotografiere eine Skizze auf Papier.');

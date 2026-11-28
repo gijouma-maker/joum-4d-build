@@ -141,6 +141,7 @@ route('projekt', (id) => {
       ${a ? `<div class="klein">Richtwert selbst ${euro(a.kosten[0] * (p.menge || 1))} · Profi ${euro(a.kosten[1] * (p.menge || 1))}</div>` : ''}
       <div class="klein">Ausgaben bisher: ${euro(ausgaben)}</div></div></section>
     ${p.bereich === 'innen' && !(p.plan || []).length ? `<a class="karte los-einstieg" href="#/studio/${p.raum}?p=${p.id}"><b>Raum-Studio: Vorschläge in 8 Stilen</b><span class="klein">Grundriss-Ideen, Kosten, Material – direkt ändern, Foto/Skizze/Vorbild.</span></a>` : ''}
+    ${typeof vorhabenFuer === 'function' && vorhabenFuer(p.anleitung) ? `<a class="karte los-einstieg" href="#/bauamt?v=${vorhabenFuer(p.anleitung).id}"><b>Bauamt: Brauche ich eine Genehmigung?</b><span class="klein">Ersteinschätzung für dein Bundesland + fertige Anfrage ans Bauamt.</span></a>` : ''}
     ${wasJetztKarte(p)}
     <label class="feld">Projektname<input value="${esc(p.name)}" data-ein="projektFeld" data-id="${p.id}" data-feld="name"></label>
     ${a ? `<label class="feld">Menge (${a.einheit})<input inputmode="decimal" value="${zahl(p.menge)}" data-ein="projektFeld" data-id="${p.id}" data-feld="menge" data-zahl="1"></label>` : ''}
