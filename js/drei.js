@@ -231,7 +231,28 @@
     const g = new T.Group(), n = e.n, w = e.w / 100, d = Math.max(0.03, e.d / 100), h = Math.max(0.02, e.h / 100);
     const holz = '#a27b55', WEI = '#f4f4f4';
     const is = (re) => re.test(n);
-    if (is(/Sofa|Ecksofa|Schlafsofa|Sessel|Kinosessel|Lounge/)) {
+    const pfosten = (hh, xs, zs) => xs.forEach((x) => zs.forEach((z) => g.add(kiste(0.07, hh, 0.07, holz, x, hh / 2, z))));
+    const matratze = (y, ww, dd2, x, z) => { g.add(kiste(ww, 0.06, dd2, holz, x || 0, y, z || 0)); g.add(kiste(ww * 0.96, 0.14, dd2 * 0.94, WEI, x || 0, y + 0.1, z || 0)); };
+    const leiter = (x, z, hh) => { [-0.18, 0.18].forEach((dz) => g.add(kiste(0.05, hh, 0.05, holz, x, hh / 2, z + dz))); for (let i = 1; i < 5; i++) g.add(kiste(0.04, 0.04, 0.36, holz, x, i * hh / 5, z)); };
+    if (is(/Glaswand/)) {
+      g.add(mesh(new T.BoxGeometry(w, h, Math.max(0.012, d)), new T.MeshStandardMaterial({ color: new T.Color('#cfe8f5'), transparent: true, opacity: 0.28, roughness: 0.05, metalness: 0.1 }), 0, h / 2, 0));
+      [0.015, h - 0.015].forEach((y) => g.add(kiste(w, 0.03, 0.05, '#222', 0, y, 0))); [-w / 2, w / 2].forEach((x) => g.add(kiste(0.03, h, 0.05, '#222', x, h / 2, 0)));
+    } else if (is(/Etagenbett/)) {
+      pfosten(1.65, [-w / 2, w / 2], [-d / 2, d / 2]); matratze(0.25, w, d); matratze(1.2, w, d);
+      g.add(kiste(w, 0.25, 0.04, holz, 0, 1.5, d / 2)); leiter(w / 2 - 0.25, d / 2 + 0.03, 1.4);
+    } else if (is(/Hochebene/)) {
+      pfosten(2.0, [-w / 2, w / 2], [-d / 2, 0, d / 2]); g.add(kiste(w, 0.05, d, '#c9a46e', 0, 1.35, 0));
+      [[w, 0.04, 0, -d / 2], [w * 0.7, 0.04, -w * 0.15, d / 2]].forEach(([l, t, x, z]) => g.add(kiste(l, 0.6, t, holz, x, 1.68, z))); [-w / 2, w / 2].forEach((x) => g.add(kiste(0.04, 0.6, d, holz, x, 1.68, 0)));
+      matratze(0.2, 0.9, Math.min(2, d - 0.05), -w / 4, 0); matratze(0.2, 0.9, Math.min(2, d - 0.05), w / 4, 0);
+      g.add(kiste(w * 0.5, 0.08, d * 0.6, akzent, -w * 0.1, 1.42, 0)); leiter(w / 2 - 0.2, d / 2 + 0.03, 1.35);
+    } else if (is(/Hochbett mit/)) {
+      pfosten(1.9, [-w / 2, w / 2], [-d / 2, d / 2]); matratze(1.35, w, d); g.add(kiste(w, 0.3, 0.04, holz, 0, 1.7, d / 2)); leiter(w / 2 - 0.25, d / 2 + 0.03, 1.35);
+      if (is(/Schreibtisch/)) { g.add(kiste(w * 0.6, 0.04, d * 0.6, '#f2f2f2', -w * 0.15, 0.74, -d * 0.2)); g.add(kiste(0.5, 0.9, 0.3, holz, -w / 2 + 0.3, 0.45, -d * 0.3)); }
+      else { g.add(kiste(w * 0.85, 1.2, 0.02, akzent, -w * 0.05, 0.65, d / 2)); g.add(kiste(w * 0.6, 0.15, d * 0.7, '#e8dcc8', -w * 0.1, 0.08, -0.05)); }
+    } else if (is(/Hausbett/)) {
+      matratze(0.12, w, d); [-w / 2, w / 2].forEach((x) => { [-1, 1].forEach((sz) => { const b = kiste(0.06, 1.05, 0.06, holz, x, 1.05, sz * d / 4); b.rotation.x = sz * 0.6; g.add(b); }); });
+      g.add(kiste(w + 0.1, 0.06, 0.06, holz, 0, 1.58, 0)); [-w / 2, w / 2].forEach((x) => [-d / 2, d / 2].forEach((z) => g.add(kiste(0.06, 0.6, 0.06, holz, x, 0.3, z))));
+    } else if (is(/Sofa|Ecksofa|Schlafsofa|Sessel|Kinosessel|Lounge/)) {
       g.add(kiste(w, h * 0.45, d, farbe, 0, h * 0.225, 0)); g.add(kiste(w, h, d * 0.25, farbe, 0, h / 2, -d * 0.375));
       g.add(kiste(w * 0.1, h * 0.65, d, farbe, -w * 0.45, h * 0.325, 0)); g.add(kiste(w * 0.1, h * 0.65, d, farbe, w * 0.45, h * 0.325, 0));
       const k = new T.Color(farbe).offsetHSL(0, 0, 0.08).getStyle(); g.add(kiste(w * 0.78, 0.1, d * 0.68, k, 0, h * 0.5, d * 0.1));

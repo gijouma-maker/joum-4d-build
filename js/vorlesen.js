@@ -104,7 +104,7 @@ function hilfeFuer(el) {
 let druckTimer = null, langGedrueckt = false;
 document.addEventListener('pointerdown', (e) => {
   const el = e.target.closest('[data-akt], a, button, label.datei-knopf, .kachel');
-  if (!el || el.closest('.plan-boden') || el.closest('.fm-buehne')) return;
+  if (!el || el.closest('.plan-boden') || el.closest('.fm-buehne') || S.einstellungen.blasenAus) return;
   langGedrueckt = false;
   clearTimeout(druckTimer);
   druckTimer = setTimeout(() => { langGedrueckt = true; const h = hilfeFuer(el); if (h) { blase(el, h); sprich(h); } }, 550);

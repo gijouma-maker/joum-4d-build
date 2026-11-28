@@ -31,6 +31,7 @@ route('start', () => {
       <div class="raster4">
         <a class="kachel" href="#/assistent">${ICON.mikro}<span>Assistent</span></a>
         <a class="kachel" href="#/garten">${ICON.baum}<span>Garten 4D</span></a>
+        <a class="kachel" href="#/haus">🏠<span>Haus außen</span></a>
         <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
         <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
         <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>

@@ -426,3 +426,25 @@ div.schritt { cursor: default; }
 .mat-foto{width:56px;height:56px;object-fit:cover;border-radius:8px}.foto-teil{align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(127,127,127,.2)}
 .mat-check{border-radius:12px;padding:12px;margin:12px 0;background:rgba(127,127,127,.12)}.mat-check.ok{border-left:4px solid #2e9e5b}.mat-check.gelb{border-left:4px solid #e0a800}.mat-check.nein{border-left:4px solid #d9534f}.mat-check ul{margin:6px 0;padding-left:18px}.mat-check li.ok{color:#5cc98a}.mat-check li.gelb{color:#f0c14b}.mat-check li.nein{color:#ff7b73}
 .klein-reihe i{width:22px;height:22px;border-radius:6px;display:inline-block;border:1px solid rgba(255,255,255,.3)}
+
+.wand-box{border:1px solid rgba(127,127,127,.3);border-radius:12px;padding:10px;margin:8px 0;display:grid;gap:6px}.wand-box input[type=range]{width:100%}
+
+.funktionen-leiste{display:flex;justify-content:flex-end;padding:0 16px;margin:-6px 0 8px}
+.funktionen-knopf{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:inherit;border-radius:999px;padding:8px 14px;font:inherit;font-weight:600}
+.fk-trenner{width:1px;height:16px;background:rgba(255,255,255,.25)}.fk-zahn{opacity:.8}
+.fk-overlay{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0);display:flex;align-items:flex-end;transition:background .2s}.fk-overlay.an{background:rgba(0,0,0,.55)}
+.fk-blatt{width:100%;max-height:86vh;overflow:auto;background:var(--karte,#161616);border-radius:22px 22px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .22s ease-out}.fk-overlay.an .fk-blatt{transform:none}
+.fk-griff{width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:0 auto 10px}
+.fk-zu{border:0;background:rgba(255,255,255,.1);color:inherit;width:36px;height:36px;border-radius:50%}
+.fk-teil{border-bottom:1px solid rgba(127,127,127,.2)}
+.fk-kopf{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:14px 2px;text-decoration:none}.fk-kopf small,.fk-schalter small,.fk-stimme small{display:block;opacity:.65;font-size:.82em;font-weight:400}
+.fk-icon{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:1.15em}.fk-pfeil{opacity:.5;transition:transform .2s}.fk-teil.offen .fk-pfeil{transform:rotate(90deg)}
+.fk-inhalt{padding:0 0 14px}
+.fk-suche{width:100%;font:inherit;padding:11px 12px;border-radius:12px;border:1px solid rgba(127,127,127,.4);background:transparent;color:inherit;margin-bottom:8px}
+.fk-sprachen{display:grid;grid-template-columns:1fr 1fr;gap:6px}.fk-sprache{text-align:left;border:1px solid rgba(127,127,127,.3);background:transparent;color:inherit;border-radius:10px;padding:10px;font:inherit}.fk-sprache.an{border-color:var(--akzent,#f28c28);background:rgba(242,140,40,.12);font-weight:700}
+.fk-stimmen{display:grid;gap:6px;margin-bottom:10px}.fk-stimme{display:flex;align-items:center;gap:8px;border:1px solid rgba(127,127,127,.3);background:transparent;color:inherit;border-radius:10px;padding:10px;font:inherit;text-align:left}.fk-stimme.an{border-color:var(--akzent,#f28c28);background:rgba(242,140,40,.12)}
+.fk-schalter{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:10px 0}.fk-schalter span{flex:1}.fk-schalter i{width:46px;height:28px;border-radius:14px;background:rgba(127,127,127,.4);position:relative;flex:none;transition:background .2s}.fk-schalter i:after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s}.fk-schalter.an i{background:#2e9e5b}.fk-schalter.an i:after{left:21px}
+body.ohne-schwebe #mikro-knopf,body.ohne-schwebe #sprech-knopf{display:none}
+.haus-baustein{border-bottom:1px solid rgba(127,127,127,.2)}.haus-schalter{display:flex;width:100%;align-items:center;background:none;border:0;color:inherit;font:inherit;font-weight:600;padding:12px 0;text-align:left}.haus-schalter span{flex:1}.haus-schalter i{font-style:normal;font-size:.8em;padding:4px 10px;border-radius:999px;background:rgba(127,127,127,.3)}.haus-baustein.an .haus-schalter i{background:#2e9e5b;color:#fff}.haus-opt{padding:0 0 12px;display:grid;gap:6px}.haus input[type=range]{width:100%}
+.haus-posten{padding:8px 0;border-bottom:1px solid rgba(127,127,127,.15);display:grid;gap:2px}.haus-summe{padding-top:10px;font-size:1.1em}
+.stift-knopf { bottom: calc(206px + env(safe-area-inset-bottom)); background: #f28c28; border-color: #ffb36b; font-size: 22px; }

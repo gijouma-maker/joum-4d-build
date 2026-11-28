@@ -112,6 +112,7 @@ function spiegelY(o, els) { return els.map((e) => { const f = fussabdruck(e); re
 function nimm(liste, re) { const i = liste.findIndex((k) => re.test(k[0])); return i >= 0 ? liste.splice(i, 1)[0] : null; }
 
 function konzeptVorplan(o, konzept, liste) {
+  if (typeof SONDER_KONZEPT !== 'undefined' && SONDER_KONZEPT[konzept]) return SONDER_KONZEPT[konzept](o, liste.slice());
   if (raumArt(o.raum) === 'wasch' && typeof waschVorplan === 'function') return waschVorplan(o, konzept, liste.slice());
   const art = raumArt(o.raum), B = o.breite, T = o.tiefe, tz = tuerZone(o), rest = liste.slice();
   const links = tz.w + 10;   // Durchgang neben der Tür freihalten
@@ -190,8 +191,9 @@ function vorne_(n) { return vorne(n); }
 function studioVarianten(o) {
   if (typeof eigeneSpecsLaden === 'function') eigeneSpecsLaden(o);
   const st = stilMix(o).regeln, art = raumArt(o.raum), liste = stilListe(o);
-  const eigene = (losStatus(o).eigene || []).map((e) => JSON.parse(JSON.stringify(e)));
+  const eigene = (losStatus(o).eigene || []).map((e) => JSON.parse(JSON.stringify(e))).concat(typeof wandElemente === 'function' ? wandElemente(o) : []);
   let konzepte = st.konzepte;
+  if (art === 'kind' && typeof KIND_K !== 'undefined' && o.raum !== 'babyzimmer') { const i = Math.max(0, STILE.findIndex((x) => x.id === o.stil)) % KIND_K.length; konzepte = KIND_K.slice(i).concat(KIND_K.slice(0, i), st.konzepte); }
   if (art === 'wasch') { const i = Math.max(0, STILE.findIndex((x) => x.id === o.stil)) % WASCH_K.length; konzepte = WASCH_K.slice(i).concat(WASCH_K.slice(0, i)); }
   const flaeche = (k) => k[2] * Math.max(k[3], 4), prio = (k) => (ebene(k[0]) !== 'boden' ? 2 : WICHTIG.test(k[0]) ? 0 : 1);
   const sortiert = (l) => l.slice().sort((a, b) => (prio(a) - prio(b)) || (flaeche(b) - flaeche(a)));
@@ -254,6 +256,7 @@ function studioSeite(rid, q) {
       </div>
       <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
     </section>` : '<div class="hinweis">Keine Idee passt mit dieser Auswahl – Maße prüfen oder Teile entfernen.</div>'}
+    ${typeof waendeKarte === 'function' ? waendeKarte(o, d) : ''}
     ${typeof materialKarte === 'function' ? materialKarte(o, d) : ''}
     <section class="karte studio-raum"><h3>Dein Raum</h3>
       <div class="raster3">
@@ -279,7 +282,7 @@ function studio3D(o, v) {
   const box = document.getElementById('studio3d'); if (!box || !window.zeigeRaum3D || !v) return;
   const M = stilMix(o), c = JSON.parse(JSON.stringify(o)), FT = losStatus(o).fotoTeile || {};
   if (typeof flaechen === 'function') c.flaechen = JSON.parse(JSON.stringify(flaechen(o)));
-  c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}, FT[e.n] ? { foto: FT[e.n].foto, fotoFarbe: FT[e.n].farbe } : {}));
+  c.plan = v.plan.map((e) => Object.assign({}, e, e.g === 'Möbel' && !e.farbe ? { farbe: M.moebel } : {}, /^Trennwand|^Halbhohe Wand|^Vorwand/.test(e.n) && !e.farbe ? { farbe: M.stil.wand } : {}, FT[e.n] ? { foto: FT[e.n].foto, fotoFarbe: FT[e.n].farbe } : {}));
   c._innen = typeof MAT !== 'undefined' && MAT.innen;
   window.GRUPPEN_FARBE_3D = GRUPPEN_FARBE;
   const dd = o.entwurf ? { r: o.raum } : { p: o.id };

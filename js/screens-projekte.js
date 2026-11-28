@@ -97,7 +97,7 @@ route('projekte', (_, q) => {
   } else {
     const ids = tab === 'aussen' ? ['fenster', 'haustuer', 'dach', 'dachfenster', 'fassade', 'regenrinne', 'vordach', 'carport', 'garagentor', 'balkon_abdichten'] : ['gartenplaner', 'hochbeet', 'terrasse', 'gartenweg', 'teich', 'zaun', 'gartenhaus', 'bewaesserung', 'gartenlicht'];
     const raumFuer = (id) => tab === 'garten' ? 'garten' : (['dach', 'dachfenster'].includes(id) ? 'dach' : ['carport', 'garagentor'].includes(id) ? 'garage' : id === 'balkon_abdichten' ? 'balkon' : 'fassade');
-    inhalt = (tab === 'aussen' ? `<div class="raster2" style="margin-bottom:12px">${['balkon', 'garage'].map((id) => `<a class="raum-kachel" href="#/raum/${id}"><b>${raum(id).name}</b><span class="klein">Planer & Katalog</span></a>`).join('')}</div>` : '') +
+    inhalt = (tab === 'aussen' ? `<a class="karte los-einstieg" href="#/haus"><b>🏠 Haus außen planen – in 3D</b><span class="klein">Dachform, Dachüberstand, Dach erneuern, Gauben, Solar, Carport, Garage, Vordach, Terrassendach, Wintergarten, Balkon, Anbau – mit Kosten & Bauamt-Check.</span></a><div class="raster2" style="margin-bottom:12px">${['balkon', 'garage'].map((id) => `<a class="raum-kachel" href="#/raum/${id}"><b>${raum(id).name}</b><span class="klein">Planer & Katalog</span></a>`).join('')}</div>` : '') +
       ids.map((id) => { const a = ANLEITUNGEN[id]; return `<div class="liste-zeile"><a href="${a.route || '#/anleitung/' + id}" style="flex:1"><b>${esc(a.t)}</b><span class="klein block">${a.dauer ? esc(a.dauer) + ' · ' : ''}${a.route ? '5 Vorschläge, Zeit-Regler' : 'Richtwert ' + euro(a.kosten[0]) + '–' + euro(a.kosten[1]) + ' je ' + a.einheit}</span></a>${werBadge(a.wer)}<button class="btn klein-btn" data-akt="neuesProjekt" data-raum="${raumFuer(id)}" data-anl="${id}">+ Projekt</button></div>`; }).join('');
   }
   return kopf('Projekte', 'Innen · Haus außen · Garten') + `<div class="inhalt">
@@ -112,7 +112,7 @@ route('projekte', (_, q) => {
 route('raum', (id) => {
   const r = raum(id);
   if (!r) return kopf('Nicht gefunden', '', '#/projekte');
-  if (r.bereich === 'innen' && typeof studioSeite === 'function') return studioSeite(id, {});
+  if ((r.bereich === 'innen' || r.id === 'garage') && typeof studioSeite === 'function') return studioSeite(id, {});
   const gruppen = [...new Set(r.katalog.map((k) => k[1]))];
   return kopf(r.name, 'Raum · Katalog & Projekte', '#/projekte') + `<div class="inhalt">
     <h3>Was möchtest du machen?</h3>
