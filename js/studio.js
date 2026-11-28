@@ -259,6 +259,7 @@ function studioSeite(rid, q) {
       </div>
       <div class="zeile wrap"><button class="btn hell" data-akt="studioNehmen" ${d}>Gefällt mir – übernehmen</button><button class="btn" data-akt="studioDruck" ${d}>📄 PDF für Handwerker</button><button class="btn" data-akt="studioTeilen" ${d}>🔗 Teilen</button><button class="btn" data-akt="studio4D" ${d}>${ICON.film || '▶'} 4D-Film</button><button class="btn" data-akt="studioEinkauf" ${d}>Einkaufsliste</button><button class="btn ar-knopf" data-akt="studioAR" ${d}>${ICON.kamera} In echt ansehen (AR)</button></div>
     </section>` : '<div class="hinweis">Keine Idee passt mit dieser Auswahl – Maße prüfen oder Teile entfernen.</div>'}
+    ${typeof anschlussKarte === 'function' ? anschlussKarte(o, d, v) : ''}
     ${typeof vnKarte === 'function' ? vnKarte(o, d) : ''}
     ${typeof waendeKarte === 'function' ? waendeKarte(o, d) : ''}
     ${typeof materialKarte === 'function' ? materialKarte(o, d) : ''}
