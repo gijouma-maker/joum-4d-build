@@ -194,6 +194,7 @@ function studioVarianten(o) {
   const eigene = (losStatus(o).eigene || []).map((e) => JSON.parse(JSON.stringify(e))).concat(typeof wandElemente === 'function' ? wandElemente(o) : []);
   let konzepte = st.konzepte;
   if (art === 'kind' && typeof KIND_K !== 'undefined' && o.raum !== 'babyzimmer') { const i = Math.max(0, STILE.findIndex((x) => x.id === o.stil)) % KIND_K.length; konzepte = KIND_K.slice(i).concat(KIND_K.slice(0, i), st.konzepte); }
+  if (art === 'fit' && typeof FIT_KEYS !== 'undefined') { const i = Math.max(0, STILE.findIndex((x) => x.id === o.stil)) % FIT_KEYS.length; konzepte = FIT_KEYS.slice(i).concat(FIT_KEYS.slice(0, i)); }
   if (art === 'wasch') { const i = Math.max(0, STILE.findIndex((x) => x.id === o.stil)) % WASCH_K.length; konzepte = WASCH_K.slice(i).concat(WASCH_K.slice(0, i)); }
   const flaeche = (k) => k[2] * Math.max(k[3], 4), prio = (k) => (ebene(k[0]) !== 'boden' ? 2 : WICHTIG.test(k[0]) ? 0 : 1);
   const sortiert = (l) => l.slice().sort((a, b) => (prio(a) - prio(b)) || (flaeche(b) - flaeche(a)));
@@ -204,6 +205,7 @@ function studioVarianten(o) {
     if (vp.fehler) { nicht.push(titel + ': ' + vp.fehler); return; }
     if (eigene.length) { const f = vorplanOk(o, eigene.concat(vp.vor || [])); if (f) { nicht.push(titel + ': mit deiner Zeichnung – ' + f); return; } vp.vor = eigene.concat(vp.vor || []); }
     const r = losBauen(o, sortiert(vp.rest), { alternativen: true, vorplan: vp.vor, folge: vp.folge });
+    if (typeof planZiehenAnwenden === 'function') planZiehenAnwenden(o, k, r);
     const sig = JSON.stringify(r.plan.map((e) => [e.n, Math.round(e.x / 10), Math.round(e.y / 10), e.rot]));
     if (gesehen.has(sig)) return; gesehen.add(sig);
     out.push({ konzept: k, titel, unter: text, plan: r.plan, ergebnis: r.ergebnis, kosten: losKosten(o, r.plan) });
@@ -241,7 +243,7 @@ function studioSeite(rid, q) {
     <button class="btn voll ki-knopf" data-akt="studioKI" ${d}>✨ Mehr Ideen von anderen KIs holen</button>
     ${nicht.length ? `<details class="klein grau"><summary>${nicht.length} Idee(n) passen hier nicht</summary><ul>${nicht.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></details>` : ''}
     ${v ? `<section class="karte"><h3>${esc(v.titel)}</h3><p class="klein">${esc(v.unter)}</p>
-      <div class="studio-plan">${raumSVG(o, v.plan)}</div>
+      <div class="studio-plan" data-k="${esc(v.konzept || '')}">${raumSVG(o, v.plan)}</div>
       <div class="zeile wrap"><button class="btn hell" data-akt="studioStift" ${d}>✏️ Auf dem Plan einzeichnen</button><button class="btn hell" data-akt="studioWunsch" ${d}>💬 Wunsch sagen</button></div>
       <div class="unter">Antippen zum Ändern</div>
       <div class="zeile wrap">${[...new Map(v.plan.filter((e) => !e.gruppe).map((e) => [e.n, e])).values()].map((e) => `<button class="chip teil-chip ${e.konzept ? 'konzept' : ''}" data-akt="studioTeil" ${d} data-n="${esc(e.n)}">${esc(e.n)}${v.plan.filter((x) => x.n === e.n).length > 1 ? ' ×' + v.plan.filter((x) => x.n === e.n).length : ''}</button>`).join('')}<button class="chip plus" data-akt="studioPlus" ${d}>＋ Hinzufügen</button></div>
