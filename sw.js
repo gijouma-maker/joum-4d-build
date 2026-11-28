@@ -1,8 +1,7 @@
 /* Joum 4D Build – Service Worker: App läuft auch offline */
-const CACHE = 'j4d-v25';
-const DATEIEN = ['./', './index.html', './css/app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png',
-  './js/data-raeume.js', './js/data-anleitungen.js', './js/data-garten.js', './js/core.js', './js/nav.js', './js/drei.js', './js/vendor/three.min.js', './js/vendor/OrbitControls.js',
-  './js/screens-projekte.js', './js/screens-garten.js', './js/screens-markt.js', './js/ki-pruefung.js', './js/screens-installation.js', './js/tour.js', './js/assistent.js', './js/vorlesen.js', './js/sprachsteuerung.js', './js/loslegen.js', './js/studio.js', './js/stile-mehr.js', './js/treppe.js', './js/bauteile3d.js', './js/konfig.js', './js/anmeldung.js', './js/sprachen.js', './js/vendor/RoomEnvironment.js', './js/vendor/Sky.js'];
+const CACHE = 'j4d-v26';
+const DATEIEN = ['./', './index.html', './css/app.css', './manifest.webmanifest', './icons/icon.svg', './icons/icon-192.png', './js/app.min.js',
+  './js/vendor/three.min.js', './js/vendor/OrbitControls.js', './js/vendor/RoomEnvironment.js', './js/vendor/Sky.js', './js/drei.js'];
 
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(DATEIEN)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((k) => Promise.all(k.filter((x) => x !== CACHE).map((x) => caches.delete(x)))).then(() => self.clients.claim())); });

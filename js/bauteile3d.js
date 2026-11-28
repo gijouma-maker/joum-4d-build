@@ -3,8 +3,7 @@
    weiche Schatten, Studio-Licht, Beschriftung mit Linie + Punkt (in der 3D-Szene → auch im Video),
    Montage Teil für Teil, Vorlesen, Zeitleiste, Export als Reel (Hochformat). Läuft komplett im Handy, ohne Server. */
 (function () {
-  const T = window.THREE;
-  if (!T) return;
+  let T = window.THREE;
 
   /* ---------- Oberflächen (prozedural, keine Downloads nötig) ---------- */
   function zufall(seed) { let s = seed; return () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; }
@@ -229,14 +228,15 @@
 
   /* ---------- Bildschirm ---------- */
   route('bauteile', () => {
-    nachRender(() => {
+    nachRender(() => lade3D().then(() => {
+      T = window.THREE;
       const box = document.getElementById('bt-buehne'); if (!box) return;
       const st = starten(box, {
         phase: (i) => { const u = document.getElementById('bt-text'); if (u) u.innerHTML = `<b>${i + 1}. ${PHASEN[i][0]}</b> – ${esc(PHASEN[i][1])}`; document.querySelectorAll('.bt-phase').forEach((b, j) => b.classList.toggle('an', j === i)); if (st && st.spielt && S.einstellungen.vorlesen !== false) sprich(PHASEN[i][1], true); },
         zeit: (a) => { const r = document.getElementById('bt-zeit'); if (r && document.activeElement !== r) r.value = Math.round(a * 1000); },
         ende: () => { const k = document.getElementById('bt-play'); if (k) k.textContent = '▶ Nochmal'; if (BT_AUFNAHME) BT_AUFNAHME.stop(); }
       });
-    });
+    }));
     return kopf('Bauteile erklärt', 'Holzständerhaus mit Dachstuhl · echtes 3D', '#/') + `<div class="inhalt bauteile">
       <div class="zeile wrap"><button class="chip an">Holzständerhaus + Dach</button><button class="chip" data-akt="btBald" data-n="Mauerwerk">Mauerwerk</button><button class="chip" data-akt="btBald" data-n="Trockenbau">Trockenbau</button><button class="chip" data-akt="btBald" data-n="Bad-Installation">Bad-Installation</button></div>
       <div class="bt-buehne" id="bt-buehne"></div>
