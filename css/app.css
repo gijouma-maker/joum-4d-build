@@ -401,3 +401,13 @@ div.schritt { cursor: default; }
 
 .laser-chip{position:fixed;right:10px;top:calc(40px + env(safe-area-inset-top));z-index:60;background:#0f5132;color:#fff;border:0;border-radius:999px;padding:8px 14px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .sk-mess.aus{display:none}.sk-mess{margin:10px 0}
+
+.ff-wie{display:grid;gap:8px;margin:14px 0}.ff-wie div{display:flex;gap:10px;align-items:center}.ff-wie b{width:28px;height:28px;border-radius:50%;background:var(--akzent,#f28c28);color:#fff;display:grid;place-items:center;flex:none}
+.ff-fach{display:flex;flex-wrap:wrap;gap:8px}
+.ff-profi{display:flex;flex-direction:column;gap:4px;width:100%;text-align:left;border:2px solid transparent;cursor:pointer;color:inherit;font:inherit}.ff-profi.an{border-color:var(--akzent,#f28c28)}.ff-preis{color:var(--akzent,#f28c28)}
+.ff-fotos{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.ff-fotos span{position:relative}.ff-fotos img{width:84px;height:84px;object-fit:cover;border-radius:10px}.ff-fotos button{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:#111;color:#fff}
+.ff-summe{margin:12px 0}
+.ff-status{font-size:.8em;padding:4px 8px;border-radius:999px;background:#fff3e0;color:#8a4b00;white-space:nowrap}.ff-status.beantwortet{background:#e6f4ea;color:#0f5132}.ff-status.erstattet{background:#eee;color:#555}
+.ff-schritte{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:6px}.ff-schritte li{padding-left:28px;position:relative;opacity:.55}.ff-schritte li:before{content:'○';position:absolute;left:4px}.ff-schritte li.ok,.ff-schritte li.jetzt{opacity:1}.ff-schritte li.ok:before{content:'✓';color:#2e9e5b}.ff-schritte li.jetzt:before{content:'●';color:var(--akzent,#f28c28)}
+.ff-blase{padding:12px;border-radius:14px;margin:10px 0;background:rgba(127,127,127,.12)}.ff-blase.kunde{margin-left:28px}.ff-blase.profi{margin-right:28px;background:rgba(46,158,91,.14)}.ff-blase p{margin:6px 0;white-space:pre-wrap}.ff-blase img{max-width:100%;border-radius:10px;margin-top:6px;display:block}
+.ff-konto{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.ff-konto div{background:rgba(127,127,127,.12);border-radius:12px;padding:10px;display:flex;flex-direction:column}

@@ -126,6 +126,8 @@ route('markt', (_, q) => {
     <h3>Projekt vergeben</h3>
     ${S.projekte.filter((p) => !S.auftraege.find((a) => a.projekt === p.id)).map((p) => `<a class="liste-zeile" href="#/markt?p=${p.id}"><span style="flex:1">${esc(p.name)}</span><span class="klein">vergeben ›</span></a>`).join('') || '<p class="klein">Lege zuerst ein Projekt an.</p>'}
     <a class="btn voll" href="#/handwerker">Ich bin Handwerker</a>
+    <a class="karte los-einstieg" href="#/fragen" style="margin-top:12px"><b>💬 Frage an Profi</b><span class="klein">Nur eine Frage? Architekt, Statiker oder Handwerker antworten zum Festpreis – Antwort in 48 h oder Geld zurück.</span></a>
+    <a class="liste-zeile" href="#/profi"><span style="flex:1">Profi-Bereich: Fragen beantworten & verdienen</span>›</a>
   </div>`;
 });
 
@@ -269,7 +271,7 @@ route('ticket', (_, q) => {
 EIN.einst = (v, d) => aendern((s) => { s.einstellungen[d.k] = v; });
 route('mehr', () => kopf('Mehr', 'Joum 4D Build') + `<div class="inhalt">
   <a class="btn hell voll" href="#/anmelden" style="margin-bottom:12px">${S.konto && S.konto.angemeldet ? 'Mein Konto' : 'Anmelden mit Google – ohne Passwort'}</a>
-  ${[['#/assistent', 'Planungs-Assistent (sprechen/schreiben)'], ['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/tour', 'Kino-Tour (Video aus Fotos)'], ['#/installation', 'Wasser, Abwasser & Elektro'], ['#/installation?tab=werkzeug', 'Werkzeug kaufen & leihen'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
+  ${[['#/assistent', 'Planungs-Assistent (sprechen/schreiben)'], ['#/projekte', 'Alle Räume & Projekte'], ['#/garten', 'Gartenplaner 4D'], ['#/tour', 'Kino-Tour (Video aus Fotos)'], ['#/installation', 'Wasser, Abwasser & Elektro'], ['#/installation?tab=werkzeug', 'Werkzeug kaufen & leihen'], ['#/rechner', 'Tipps & Rechner'], ['#/einkauf', 'Einkauf'], ['#/preise', 'Produkt-Preisvergleich'], ['#/finanzen', 'Finanzen & Steuer'], ['#/fragen', 'Frage an Profi (Architekt, Handwerker)'], ['#/markt', 'Profi & Marktplatz'], ['#/handwerker', 'Handwerker-Pro'], ['#/community', 'Community'], ['#/ticket', 'JoumHome-Ticket übernehmen'], ['#/sicherung', 'Datensicherung & Versionen']].map(([h, n]) => `<a class="liste-zeile" href="${h}"><span style="flex:1">${n}</span>›</a>`).join('')}
   <h3>Einstellungen</h3>
   <label class="feld">Mein Können (für Zeitpläne)<select data-ein="koennen">${[['anfaenger', 'Anfänger'], ['fortgeschritten', 'Fortgeschritten'], ['profi', 'Profi / Handwerker']].map(([v, n]) => `<option value="${v}" ${(S.einstellungen.koennen || 'fortgeschritten') === v ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
   <label class="schalter"><input type="checkbox" ${S.einstellungen.vorlesen ? 'checked' : ''} data-ein="einst" data-k="vorlesen"> Alles vorlesen (bei jedem Antippen und Seitenwechsel)</label>
