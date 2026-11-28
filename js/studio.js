@@ -254,7 +254,7 @@ function studioSeite(rid, q) {
       <div class="unter">Fenster</div>
       <div class="zeile wrap"><button class="chip ${!F && o.fenster === false ? 'an' : ''}" data-akt="studioFenster" ${d} data-w="-1">Kein Fenster</button>${[0, 1, 2].map((w) => `<button class="chip ${F && F.wand === w ? 'an' : ''}" data-akt="studioFenster" ${d} data-w="${w}">${['oben', 'rechts', 'unten'][w]}</button>`).join('')}${F ? `<label class="feld mini">Breite cm<input inputmode="numeric" data-ein="studioFensterB" ${d} value="${Math.round(F.b)}"></label>` : ''}</div>
       <div class="unter">Foto, Skizze, Vorbild</div>
-      <div class="zeile wrap"><button class="chip" data-akt="studioZu" ${d} data-z="fotomessen">${ICON.kamera} Raum messen per Foto</button><button class="chip" data-akt="studioZu" ${d} data-z="skizze">${ICON.stift} Skizze zeichnen</button>${dateiKnopf(o.vorbild ? 'Anderes Vorbild' : 'Vorbild-Bild', 'studioVorbild', o.entwurf ? { r: o.raum } : { p: o.id }, { icon: ICON.bild, klasse: 'chip-knopf' })}</div>
+      <div class="zeile wrap"><button class="chip" data-akt="studioZu" ${d} data-z="fotomessen">${ICON.kamera} Raum messen per Foto</button><button class="chip" data-akt="studioZu" ${d} data-z="skizze">${ICON.stift} Skizze zeichnen</button><button class="chip" data-akt="laserVerbinden">📏 Laser verbinden</button>${dateiKnopf(o.vorbild ? 'Anderes Vorbild' : 'Vorbild-Bild', 'studioVorbild', o.entwurf ? { r: o.raum } : { p: o.id }, { icon: ICON.bild, klasse: 'chip-knopf' })}</div>
       ${bilderLeiste(o)}
     </section>
     <a class="btn voll" href="#/bauteile">Bauteile erklärt in echtem 3D (Holzständer, Dachstuhl)</a>

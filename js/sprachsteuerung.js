@@ -25,6 +25,7 @@ function absicht(text) {
   if (/quittung|beleg|kassenbon|rechnung (speichern|fotograf)/.test(t)) return { route: '#/finanzen', ziel: 'label.datei-knopf', sag: 'Tippe auf den blinkenden Knopf und fotografiere die Quittung.' };
   if (/steuer|finanz|ausgaben/.test(t)) return { route: '#/finanzen', sag: 'Hier siehst du deine Ausgaben und was du absetzen kannst.' };
   if (/einkauf|einkaufsliste|was muss ich kaufen|material/.test(t)) return p && /material/.test(t) && ANLEITUNGEN[p.anleitung] ? { route: '#/projekt/' + p.id, ziel: '[data-akt="materialInListe"]', sag: 'Tippe auf den blinkenden Knopf – dann kommt das Material mit Menge in die Einkaufsliste.' } : { route: '#/einkauf', sag: 'Das ist deine Einkaufsliste.' };
+  if (/laser|entfernungsmess|bluetooth/.test(t)) { SK.modus = 'messen'; return proj('#/skizze/{id}', '[data-akt="laserVerbinden"]', 'Tippe auf den blinkenden Knopf, schalte Bluetooth am Laser ein und wähle ihn aus. Dann Wand antippen und messen.'); }
   if (/zollstock|foto messen|per foto/.test(t)) return proj('#/fotomessen/{id}', 'label.datei-knopf', 'Halte den Zollstock an die Wand und mach ein Foto. Tippe auf den blinkenden Knopf.');
   if (/messen|ausmessen|maße|wie groß/.test(t)) return proj('#/messen/{id}', 'input[data-feld="breite"]', 'Trag hier Breite und Tiefe ein – oder sag die Maße mit dem Mikrofon.');
   if (/bauteil|ständer|staender|dachstuhl|holzrahmen|holzständer|sparren|rähm/.test(t)) return { route: '#/bauteile', ziel: '#bt-play', sag: 'Hier siehst du ein Holzständerhaus mit Dachstuhl in echtem 3D – Teil für Teil erklärt.' };

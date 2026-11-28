@@ -340,10 +340,16 @@ route('skizze', (id) => {
   if (!p) return kopf('Kein Projekt', '', '#/projekte');
   nachRender(() => skizzeStarten(p));
   return kopf('Skizze zeichnen', p.name, '#/studio/' + p.raum + '?p=' + p.id) + `<div class="inhalt">
-    <p class="klein">Zeichne den Grundriss mit dem Finger. „Gerade Linie“ zieht saubere Wände (rastet an den Kästchen ein). Maße trägst du im nächsten Schritt ein.</p>
-    <div class="zeile wrap"><button class="chip ${SK.modus === 'linie' ? 'an' : ''}" data-akt="skModus" data-m="linie">Gerade Linie</button><button class="chip ${SK.modus === 'frei' ? 'an' : ''}" data-akt="skModus" data-m="frei">Freihand</button><button class="chip" data-akt="skZurueck">↶ Rückgängig</button><button class="chip" data-akt="skLeeren">Alles löschen</button></div>
+    <p class="klein">Zeichne den Grundriss mit dem Finger. „Gerade Linie“ zieht saubere Wände (rastet an den Kästchen ein). Danach „📏 Messen“: Wand antippen, mit dem Bluetooth-Laser messen – das Maß steht sofort an der Wand.</p>
+    <div class="zeile wrap"><button class="chip ${SK.modus === 'linie' ? 'an' : ''}" data-akt="skModus" data-m="linie">Gerade Linie</button><button class="chip ${SK.modus === 'frei' ? 'an' : ''}" data-akt="skModus" data-m="frei">Freihand</button><button class="chip ${SK.modus === 'messen' ? 'an' : ''}" data-akt="skMessen">📏 Messen</button><button class="chip" data-akt="skZurueck">↶ Rückgängig</button><button class="chip" data-akt="skLeeren">Alles löschen</button></div>
     <canvas id="skizze-flaeche" class="skizze-flaeche" width="900" height="900"></canvas>
-    <button class="btn hell voll" data-akt="skSpeichern" data-id="${p.id}">Skizze speichern & weiter zu den Maßen</button>
+    <div class="sk-mess ${SK.modus === 'messen' ? '' : 'aus'}">
+      <p class="klein" id="sk-info">${skInfoText()}</p>
+      <div class="zeile"><label class="feld" style="flex:1">Länge der gewählten Wand (cm)<input id="sk-mass" inputmode="numeric" data-ein="skMass" placeholder="z. B. 342"></label>
+      <button class="btn hell" data-akt="laserVerbinden">📏 ${LASER.geraet ? 'Laser verbunden' : 'Laser verbinden'}</button></div>
+      <button class="btn voll" data-akt="skMasseUebernehmen" data-id="${p.id}">Maße übernehmen</button>
+    </div>
+    <button class="btn hell voll" data-akt="skSpeichern" data-id="${p.id}">Skizze speichern & weiter</button>
   </div>`;
 });
 function skizzeMalen(cv) {
@@ -352,7 +358,16 @@ function skizzeMalen(cv) {
   c.strokeStyle = '#dfe6ee'; c.lineWidth = 1;
   for (let i = 0; i <= 18; i++) { c.beginPath(); c.moveTo(i * R, 0); c.lineTo(i * R, cv.height); c.stroke(); c.beginPath(); c.moveTo(0, i * R); c.lineTo(W, i * R); c.stroke(); }
   c.strokeStyle = '#111'; c.lineWidth = 6; c.lineCap = 'round'; c.lineJoin = 'round';
-  SK.striche.forEach((s) => { c.beginPath(); s.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.stroke(); });
+  SK.striche.forEach((s, i) => { c.strokeStyle = SK.modus === 'messen' && SK.sel === i ? '#f28c28' : '#111'; c.beginPath(); s.forEach(([x, y], k) => (k ? c.lineTo(x, y) : c.moveTo(x, y))); c.stroke(); });
+  const M = SK.masse || {};
+  if (typeof skLinien === 'function') skLinien().forEach(({ i, s }) => {
+    if (!M[i] && SK.modus !== 'messen') return;
+    const mx = (s[0][0] + s[1][0]) / 2, my = (s[0][1] + s[1][1]) / 2, waag = Math.abs(s[1][1] - s[0][1]) < Math.abs(s[1][0] - s[0][0]);
+    const t = M[i] ? zahl(M[i] / 100) + ' m' : '?';
+    c.font = 'bold 30px system-ui,sans-serif'; const w = c.measureText(t).width + 18, x = mx + (waag ? 0 : 34), y = my + (waag ? -30 : 0);
+    c.fillStyle = M[i] ? '#0f5132' : (SK.sel === i ? '#f28c28' : '#8a96a3'); c.fillRect(x - w / 2, y - 20, w, 40);
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t, x, y + 1);
+  });
 }
 function skizzeStarten() {
   const cv = document.getElementById('skizze-flaeche'); if (!cv) return;
@@ -360,7 +375,10 @@ function skizzeStarten() {
   const pos = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
   let aktiv = null;
   skizzeMalen(cv);
-  cv.addEventListener('pointerdown', (e) => { e.preventDefault(); cv.setPointerCapture(e.pointerId); let pt = pos(e); if (SK.modus === 'linie') pt = pt.map(einrasten); aktiv = [pt]; if (SK.modus === 'linie') aktiv.push(pt.slice()); SK.striche.push(aktiv); skizzeMalen(cv); });
+  LASER.ziel = (m) => { if (SK.modus !== 'messen') AKT.skMessen(); if (SK.sel == null) { toast('Erst eine Wand antippen'); return; } skMassSetzen(SK.sel, m * 100); toast('📏 ' + zahl(m) + ' m an die Wand geschrieben'); };
+  cv.addEventListener('pointerdown', (e) => { e.preventDefault();
+    if (SK.modus === 'messen') { const [x, y] = pos(e), i = skNaechste(x, y); if (i != null) { SK.sel = i; skizzeMalen(cv); const f = document.getElementById('sk-mass'); if (f) f.value = (SK.masse || {})[i] || ''; const z = document.getElementById('sk-info'); if (z) z.textContent = skInfoText(); } return; }
+    cv.setPointerCapture(e.pointerId); let pt = pos(e); if (SK.modus === 'linie') pt = pt.map(einrasten); aktiv = [pt]; if (SK.modus === 'linie') aktiv.push(pt.slice()); SK.striche.push(aktiv); skizzeMalen(cv); });
   cv.addEventListener('pointermove', (e) => {
     if (!aktiv) return; let pt = pos(e);
     if (SK.modus === 'linie') { pt = pt.map(einrasten); const a = aktiv[0]; if (Math.abs(pt[0] - a[0]) > Math.abs(pt[1] - a[1]) * 2) pt[1] = a[1]; else if (Math.abs(pt[1] - a[1]) > Math.abs(pt[0] - a[0]) * 2) pt[0] = a[0]; aktiv[1] = pt; } else aktiv.push(pt);
@@ -370,14 +388,14 @@ function skizzeStarten() {
   cv.addEventListener('pointerup', ende); cv.addEventListener('pointercancel', ende);
 }
 AKT.skModus = (d) => { SK.modus = d.m; render(); };
-AKT.skZurueck = () => { SK.striche.pop(); const cv = document.getElementById('skizze-flaeche'); if (cv) skizzeMalen(cv); };
-AKT.skLeeren = () => { SK.striche = []; const cv = document.getElementById('skizze-flaeche'); if (cv) skizzeMalen(cv); };
+AKT.skZurueck = () => { if (SK.masse) delete SK.masse[SK.striche.length - 1]; SK.striche.pop(); const cv = document.getElementById('skizze-flaeche'); if (cv) skizzeMalen(cv); };
+AKT.skLeeren = () => { SK.striche = []; SK.masse = {}; SK.sel = null; const cv = document.getElementById('skizze-flaeche'); if (cv) skizzeMalen(cv); };
 AKT.skSpeichern = (d) => {
   const cv = document.getElementById('skizze-flaeche'); if (!cv) return;
   if (!SK.striche.length) { info('Zeichne zuerst etwas – oder geh zurück und tippe die Maße ein.'); return; }
   const url = cv.toDataURL('image/jpeg', 0.8);
   aendern(() => { projekt(d.id).skizze = url; }, 'Skizze gezeichnet');
-  SK.striche = []; toast('Skizze gespeichert'); const pp = projekt(d.id); geh('#/studio/' + pp.raum + '?p=' + d.id);
+  SK.striche = []; SK.masse = {}; SK.sel = null; toast('Skizze gespeichert'); const pp = projekt(d.id); geh('#/studio/' + pp.raum + '?p=' + d.id);
 };
 
 HILFE.losUebernehmen = 'Diese Variante übernehmen. Sie kommt in den Planer, dort kannst du sie in 3D ansehen und anpassen.';
