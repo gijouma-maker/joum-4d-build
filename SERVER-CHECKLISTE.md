@@ -130,6 +130,8 @@
 - ☑ KI-Raumprüfung (Regelwerk), Wasser/Abwasser/Elektro-Planer, Teile in 3D
 - ☑ Datensicherung lokal: Versionen, Papierkorb, Export/Import
 - ☑ Sicherheits-Header, Router-/Scroll-Fehler behoben
+- ☑ „Bauteile erklärt“ in echtem 3D (ohne Server): Holzständerhaus + Dachstuhl, Holz mit Maserung, Schatten, Beschriftung mit Linie/Punkt, Montage, Vorlesen, Reel-Export – als Nächstes Mauerwerk, Trockenbau, Bad-Installation
+- ☐ KI-Video im Stil der Reels (Start-/Endbild → Video-KI über fal.ai o. ä., ca. 0,03–0,75 $/Sek.) – Konto beim Anbieter nötig, Entscheidung offen
 - ☑ Treppen-Planer nach DIN 18065/MBO: Steigung, Auftritt, Schrittmaß, Laufbreite, Kopfhöhe aus Deckenöffnung, passt in den Raum, Podest, Türen (Absatz ≥ Türbreite, keine Tür neben Stufen), KI-Vorschläge, Rückmeldungen
 - ☑ 24 Einrichtungsstile + Stil-Mix (80/20, 70/30, 50/50) im Studio
 - ☑ Raum-Studio für alle Innenräume: Raum antippen → 3D + 8 Stile mit eigenen Möbeln/Farben/Preisen + Grundriss-Ideen (Trennwand/Zonen, WC abgetrennt, Hauptstück frei, an einer Wand, klassisch) → direkt ändern, übernehmen, 4D-Film, Einkaufsliste

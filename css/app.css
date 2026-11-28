@@ -362,3 +362,10 @@ div.schritt { cursor: default; }
 
 .stil-mix { margin: 4px 0 6px; } .stil-mix summary { color: #ffd27a; font-size: 14px; padding: 4px 0; cursor: pointer; }
 .ki-knopf { border: 1px dashed #ffd27a !important; color: #ffd27a !important; margin-bottom: 10px; }
+
+/* Bauteile erklärt */
+.bt-buehne { width: 100%; aspect-ratio: 9 / 16; max-height: 72vh; margin: 8px auto; border-radius: 18px; overflow: hidden; background: #e9e8e4; }
+.bt-buehne canvas { width: 100% !important; height: 100% !important; display: block; }
+.bt-text { min-height: 3.2em; font-size: 15px; }
+#bt-zeit { width: 100%; margin: 4px 0 10px; }
+.bt-phase.an { background: #fff; color: #000; }

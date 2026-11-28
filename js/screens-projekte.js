@@ -77,6 +77,7 @@ route('start', () => {
       <a class="kachel" href="#/finanzen">${ICON.beleg}<span>Finanzen</span></a>
       <a class="kachel" href="#/markt">${ICON.hand}<span>Profi${auftr ? ' · ' + auftr : ''}</span></a>
       <a class="kachel" href="#/tour">${ICON.film}<span>Kino-Tour</span></a>
+      <a class="kachel" href="#/bauteile">${ICON.wuerfel}<span>Bauteile 3D</span></a>
     </div>
     ${S.projekte.length > 1 ? `<h3>Weitere Projekte</h3>${S.projekte.filter((x) => x !== p).slice(0, 5).map(projektZeile).join('')}` : ''}
   </div>`;
