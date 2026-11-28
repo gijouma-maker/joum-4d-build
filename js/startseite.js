@@ -22,8 +22,8 @@ route('start', () => {
       <div class="zeile wrap">${['Bad renovieren', 'Wand streichen', 'Boden verlegen', 'Garten planen'].map((t) => `<button class="chip" data-akt="startBeispiel" data-t="${t}">${t}</button>`).join('')}</div>
     </section>
     <div class="drei-wege">
-      <a class="weg-karte" href="#/projekte">${ICON.hausStift}<b>Raum planen</b><span>Foto, Skizze oder Maße → Vorschläge in 3D mit Kosten</span></a>
-      <a class="weg-karte" href="#/arbeiten">${ICON.hammer}<b>Reparieren & Renovieren</b><span>Schritt-für-Schritt-Anleitungen mit Material und Zeit</span></a>
+      <a class="weg-karte" href="#/projekte">${ICON.sofa}<b>Raum planen</b><span>Foto, Skizze oder Maße → Vorschläge in 3D mit Kosten</span></a>
+      <a class="weg-karte" href="#/arbeiten">${doppel(ICON.hammer, ICON.werkzeuge)}<b>Reparieren & Renovieren</b><span>Schritt-für-Schritt-Anleitungen mit Material und Zeit</span></a>
       <a class="weg-karte" href="#/markt">${ICON.urkunde}<b>Profi holen${auftr ? ' · ' + auftr : ''}</b><span>Handwerker in der Nähe – Festpreis, sicher bezahlt</span></a>
     </div>
     ${projektKarte}
@@ -35,12 +35,12 @@ route('start', () => {
         <a class="kachel" href="#/wohnung">${ICON.grundriss}<span>Ganze Wohnung</span></a>
         <a class="kachel" href="#/einkauf">${ICON.korb}<span>Einkauf${offen ? ' · ' + offen : ''}</span></a>
         <a class="kachel" href="#/rechner">${ICON.rechner}<span>Rechner</span></a>
-        <a class="kachel" href="#/finanzen">${ICON.euro}<span>Finanzen</span></a>
-        <a class="kachel" href="#/bauamt">${ICON.paragraf}<span>Bauamt-Check</span></a>
+        <a class="kachel" href="#/finanzen">${doppel(ICON.euro, ICON.beleg)}<span>Finanzen</span></a>
+        <a class="kachel" href="#/bauamt">${doppel(ICON.paragraf, ICON.behoerde)}<span>Bauamt-Check</span></a>
         <a class="kachel" href="#/treppe">${ICON.treppe}<span>Treppe</span></a>
         <a class="kachel" href="#/bauteile">${ICON.wuerfel3d}<span>Bauteile 3D</span></a>
-        <a class="kachel" href="#/tour">${ICON.film}<span>Kino-Tour</span></a>
-        <a class="kachel" href="#/installation">${ICON.tropfen}<span>Wasser & Strom</span></a>
+        <a class="kachel" href="#/tour">${ICON.kamera}<span>Kino-Tour</span></a>
+        <a class="kachel" href="#/installation">${doppel(ICON.tropfen, ICON.stecker)}<span>Wasser & Strom</span></a>
       </div>
     </details>
     ${S.projekte.length > 1 ? `<h3>Deine Projekte</h3>${S.projekte.filter((x) => x !== p).slice(0, 5).map(projektZeile).join('')}` : ''}
